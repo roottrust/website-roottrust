@@ -1,0 +1,27 @@
+ROOT TRUST · CORES
+==================
+
+
+[PRINCIPAL]
+Verde Raiz   HEX #003428   RGB 0 52 40   CMYK 93 44 76 69   Pantone 627 C   · Logotipo, fundos e grandes áreas
+Superfície   HEX #F5F5F2   RGB 245 245 242   CMYK 5 4 5 0   Impressão no próprio papel off-white   · Fundo e respiro
+Rocha        HEX #2E2E2E   RGB 46 46 46   CMYK 77 68 63 65   Pantone 426 C   · Texto em fundo claro
+
+[VERDES]
+Musgo        HEX #4C6B58   RGB 76 107 88   CMYK 70 37 62 30   Pantone 5545 C
+Floresta     HEX #175B4B   RGB 23 91 75   CMYK 85 32 65 44   Pantone 554 C
+Folha        HEX #62AF96   RGB 98 175 150   CMYK 62 5 47 7   Pantone 556 C
+Menta        HEX #CCE9DC   RGB 204 233 220   CMYK 22 3 17 0   Pantone 317 C
+
+[QUENTES]
+Terracota    HEX #DCC9A3   RGB 220 201 163   CMYK 17 20 41 0   Pantone 467 C   · Apoio — nunca no logotipo
+Areia        HEX #CFB9A3   RGB 207 185 163   CMYK 21 27 36 2   Pantone 4745 C
+Areia clara  HEX #E6DDC5   RGB 230 221 197   CMYK 13 12 26 0   Pantone 454 C
+
+[DADOS E DESTAQUE]
+Azul dados   HEX #2E4A5D   RGB 46 74 93   CMYK 81 52 35 45   Pantone 302 C   · Somente em dados
+Sinal        HEX #00D63D   RGB 0 214 61   CMYK —   —   · Só tela, não imprimir
+
+Proporção de uso: 50% Superfície · 35% Verde Raiz · 10% apoio · restante para destaques digitais.
+CMYK convertido pelo perfil FOGRA39 (offset, papel revestido). Pantone = correspondência mais próxima na escala Solid Coated: confirme em escala física e prova de cor antes de imprimir.
+Terracota nunca é usada no logotipo. Sinal (#00D63D) é só para tela: não imprimir nem usar em texto sobre fundo claro.
