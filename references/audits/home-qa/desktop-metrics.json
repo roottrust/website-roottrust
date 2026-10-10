@@ -1,0 +1,134 @@
+{
+  "viewport": "1440x1000",
+  "project": "chromium-desktop",
+  "reducedMotion": "reduce",
+  "deviceScaleFactor": 1,
+  "native": {
+    "metrics": {
+      "documentHeight": 6853,
+      "overflowX": false,
+      "canvases": 13,
+      "h1": "Confiabilidade com profundidade.",
+      "fontsLoaded": [
+        "baloo 400 800",
+        "baloo Fallback normal",
+        "archivo 100 900",
+        "archivo Fallback normal"
+      ],
+      "sections": {
+        "hero": {
+          "top": 0,
+          "height": 805
+        },
+        "pilares": {
+          "top": 805,
+          "height": 970
+        },
+        "servicos": {
+          "top": 1774,
+          "height": 988
+        },
+        "como": {
+          "top": 2763,
+          "height": 889
+        },
+        "lidera": {
+          "top": 3651,
+          "height": 548
+        },
+        "ferramentas": {
+          "top": 4199,
+          "height": 811
+        },
+        "newsletter": {
+          "top": 5010,
+          "height": 660
+        },
+        "cta": {
+          "top": 5670,
+          "height": 1083
+        },
+        "ctasym": {
+          "top": 5989,
+          "height": 465
+        }
+      }
+    },
+    "files": [
+      "desktop-native-01-hero-1.jpg",
+      "desktop-native-02-pilares-1.jpg",
+      "desktop-native-03-servicos-1.jpg",
+      "desktop-native-04-como-1.jpg",
+      "desktop-native-05-lidera-1.jpg",
+      "desktop-native-06-ferramentas-1.jpg",
+      "desktop-native-07-newsletter-1.jpg",
+      "desktop-native-08-cta-1.jpg",
+      "desktop-native-09-ctasym-1.jpg"
+    ],
+    "pageErrors": []
+  },
+  "baseline": {
+    "metrics": {
+      "documentHeight": 6384,
+      "overflowX": false,
+      "canvases": 10,
+      "h1": "Confiabilidade com profundidade.",
+      "fontsLoaded": [
+        "Baloo 2 400 800",
+        "Archivo 100 900",
+        "Baloo 2 400 800",
+        "Archivo 100 900"
+      ],
+      "sections": {
+        "hero": {
+          "top": 0,
+          "height": 805
+        },
+        "pilares": {
+          "top": 805,
+          "height": 970
+        },
+        "servicos": {
+          "top": 1774,
+          "height": 988
+        },
+        "como": {
+          "top": 2763,
+          "height": 889
+        },
+        "lidera": {
+          "top": 3651,
+          "height": 548
+        },
+        "ferramentas": {
+          "top": 4199,
+          "height": 811
+        },
+        "newsletter": {
+          "top": 5010,
+          "height": 424
+        },
+        "cta": {
+          "top": 5434,
+          "height": 851
+        },
+        "ctasym": {
+          "top": 5637,
+          "height": 465
+        }
+      }
+    },
+    "files": [
+      "desktop-baseline-01-hero-1.jpg",
+      "desktop-baseline-02-pilares-1.jpg",
+      "desktop-baseline-03-servicos-1.jpg",
+      "desktop-baseline-04-como-1.jpg",
+      "desktop-baseline-05-lidera-1.jpg",
+      "desktop-baseline-06-ferramentas-1.jpg",
+      "desktop-baseline-07-newsletter-1.jpg",
+      "desktop-baseline-08-cta-1.jpg",
+      "desktop-baseline-09-ctasym-1.jpg"
+    ],
+    "pageErrors": []
+  }
+}
