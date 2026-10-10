@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<title>Risco de Shadow AI — Root Trust</title>
+<link rel="stylesheet" href="_ds/root-trust-design-system-488cd677-bea5-475d-a16a-7a9e32e8fc53/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/root-trust-design-system-488cd677-bea5-475d-a16a-7a9e32e8fc53/tokens/colors.css">
+<link rel="stylesheet" href="_ds/root-trust-design-system-488cd677-bea5-475d-a16a-7a9e32e8fc53/tokens/typography.css">
+<link rel="stylesheet" href="_ds/root-trust-design-system-488cd677-bea5-475d-a16a-7a9e32e8fc53/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/root-trust-design-system-488cd677-bea5-475d-a16a-7a9e32e8fc53/tokens/fig-variables.css">
+<link rel="stylesheet" href="_ds/root-trust-design-system-488cd677-bea5-475d-a16a-7a9e32e8fc53/tokens/fig-typography.css">
+<link rel="stylesheet" href="_ds/root-trust-design-system-488cd677-bea5-475d-a16a-7a9e32e8fc53/styles.css">
+<script src="_ds/root-trust-design-system-488cd677-bea5-475d-a16a-7a9e32e8fc53/_ds_bundle.js"></script>
+<link rel="icon" href="assets/simbolo-negativo.svg">
+<style>
+html,body{margin:0;background:#171717;}
+a{color:var(--rt-menta);}
+a:hover{color:var(--rt-folha);}
+input::placeholder{color:#9DB3A8;}
+input:focus{outline:none;}
+a:focus-visible,button:focus-visible{outline:2px solid var(--rt-folha);outline-offset:3px;}
+summary{cursor:pointer;}
+summary::marker{color:var(--rt-folha);}
+summary:focus-visible,select:focus-visible,input[type=radio]:focus-visible,input[type=checkbox]:focus-visible{outline:2px solid var(--rt-folha);outline-offset:3px;}
+input[type=radio],input[type=checkbox]{accent-color:var(--rt-folha);}
+select{appearance:none;-webkit-appearance:none;}
+button:disabled{cursor:not-allowed;}
+</style>
+</helmet>
+
+<div ref="{{ setRoot }}" style="position:relative;overflow:clip;background:#171717;color:var(--rt-superficie);font:400 18px/1.55 var(--font-body);min-height:100vh;">
+<canvas ref="{{ setFrame }}" aria-hidden="true" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:3;pointer-events:none;display:block;"></canvas>
+<header style="position:fixed;top:0;left:0;right:0;z-index:50;background:#171717;box-shadow:inset 0 -1px 0 {{ hdrLine }};transition:box-shadow 200ms ease;">
+  <nav aria-label="Principal" style="max-width:1320px;margin:0 auto;padding:0 clamp(20px,4vw,60px);box-sizing:border-box;height:76px;display:flex;align-items:center;justify-content:space-between;gap:24px;">
+    <a href="Home.dc.html" aria-label="Root Trust, início" style="display:flex;text-decoration:none;">
+      <img src="assets/roottrust-horizontal-negativo.svg" alt="roottrust" style="height:34px;width:auto;display:block;">
+    </a>
+    <sc-if value="{{ wide }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;gap:40px;align-items:center;">
+      <a href="Home.dc.html#servicos" style="color:var(--rt-superficie);text-decoration:none;font:500 15px/1 var(--font-body);transition:color 160ms ease-out;" style-hover="color:var(--rt-folha);">Serviços</a>
+      <a href="Home.dc.html#ferramentas" style="color:var(--rt-superficie);text-decoration:none;font:500 15px/1 var(--font-body);transition:color 160ms ease-out;" style-hover="color:var(--rt-folha);">Ferramentas</a>
+      <a href="Home.dc.html#newsletter" style="color:var(--rt-superficie);text-decoration:none;font:500 15px/1 var(--font-body);transition:color 160ms ease-out;" style-hover="color:var(--rt-folha);">Newsletter</a>
+    </div>
+    </sc-if>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <sc-if value="{{ showHdrCta }}" hint-placeholder-val="{{ true }}">
+    <a href="Home.dc.html#contato" style="display:inline-flex;align-items:center;gap:10px;height:42px;padding:0 20px;border-radius:999px;white-space:nowrap;background:var(--rt-superficie);color:var(--rt-verde-raiz);font:600 14px/1 var(--font-body);text-decoration:none;transition:background-color 160ms ease-out;" style-hover="background:var(--rt-menta);color:var(--rt-verde-raiz);">Solicitar diagnóstico<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></a>
+      </sc-if>
+      <sc-if value="{{ narrow }}" hint-placeholder-val="{{ false }}">
+        <button type="button" onClick="{{ toggleMenu }}" aria-expanded="{{ menuOpen }}" aria-controls="menu-mobile" aria-label="{{ menuLabel }}" style="width:44px;height:44px;display:grid;place-items:center;border:0;border-radius:999px;background:transparent;box-shadow:inset 0 0 0 1px var(--rt-rocha);color:var(--rt-superficie);cursor:pointer;transition:box-shadow 160ms ease;" style-hover="box-shadow:inset 0 0 0 1px var(--rt-folha);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16" style="transform-origin:12px 7px;transform:{{ m1 }};transition:transform 200ms cubic-bezier(0.23,1,0.32,1);"></path><path d="M4 17h16" style="transform-origin:12px 17px;transform:{{ m2 }};transition:transform 200ms cubic-bezier(0.23,1,0.32,1);"></path></svg>
+        </button>
+      </sc-if>
+    </div>
+  </nav>
+  <sc-if value="{{ menuShow }}" hint-placeholder-val="{{ false }}">
+    <div id="menu-mobile" style="border-top:1px solid var(--rt-rocha);background:#171717;opacity:{{ menuOp }};transform:translateY({{ menuTy }});transition:opacity 200ms cubic-bezier(0.23,1,0.32,1), transform 200ms cubic-bezier(0.23,1,0.32,1);">
+      <div style="max-width:1320px;margin:0 auto;padding:8px clamp(20px,4vw,60px) 24px;box-sizing:border-box;display:flex;flex-direction:column;">
+        <sc-for list="{{ menuLinks }}" as="m" hint-placeholder-count="3">
+          <a href="{{ m.href }}" onClick="{{ closeMenu }}" style="display:flex;align-items:center;min-height:56px;border-bottom:1px solid var(--rt-rocha);color:var(--rt-superficie);text-decoration:none;font:600 22px/1.2 var(--font-display);">{{ m.label }}</a>
+        </sc-for>
+        <sc-if value="{{ tiny }}" hint-placeholder-val="{{ false }}">
+          <a href="Home.dc.html#contato" onClick="{{ closeMenu }}" style="margin-top:20px;align-self:flex-start;display:inline-flex;align-items:center;gap:10px;height:48px;padding:0 24px;border-radius:999px;background:var(--rt-superficie);color:var(--rt-verde-raiz);font:600 15px/1 var(--font-body);text-decoration:none;">Solicitar diagnóstico</a>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+</header>
+<div style="position:relative;z-index:1;">
+<main>
+<section data-sec="intro" data-screen-label="Introdução" style="max-width:1320px;margin:0 auto;padding:128px clamp(20px,4vw,60px) 40px;box-sizing:border-box;">
+  <div style="max-width:1200px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:32px 48px;">
+    <div style="flex:1 1 440px;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:20px;">
+      <a href="Home.dc.html#ferramentas" style="display:inline-flex;align-items:center;gap:8px;min-height:44px;font:600 14px/1 var(--font-body);color:var(--rt-menta);text-decoration:none;"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><path d="m12 19-7-7 7-7"></path></svg>Ferramentas</a>
+      <div style="display:flex;align-items:center;gap:16px;"><span style="font:700 12px/1.4 var(--font-body);letter-spacing:0.18em;text-transform:uppercase;color:var(--rt-menta);white-space:nowrap;">Ferramenta · Shadow AI</span><span style="width:40px;height:1px;background:var(--rt-musgo);flex:none;"></span></div>
+      <h1 style="margin:0;font:700 clamp(38px,4.6vw,64px)/1.04 var(--font-display);letter-spacing:-0.02em;">Organize a governança <span style="color:var(--rt-folha);">do uso de IA.</span></h1>
+      <p style="margin:0;max-width:560px;font:400 18px/1.55 var(--font-body);color:var(--rt-superficie);text-wrap:pretty;">Responda a cinco perguntas para identificar práticas declaradas, lacunas e informações a confirmar.</p>
+      <p style="margin:0;display:inline-flex;align-items:center;gap:10px;padding:8px 14px;border-radius:999px;box-shadow:inset 0 0 0 1px #3C3C3C;font:400 13px/1.4 var(--font-body);color:var(--rt-menta);"><span aria-hidden="true" style="width:6px;height:6px;border-radius:50%;background:var(--rt-folha);flex:none;"></span>Protótipo — cálculos locais; formulários de envio indisponíveis.</p>
+    </div>
+    <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:8px;margin:0 auto;">
+      <div ref="{{ balRef }}" aria-hidden="true" style="position:relative;width:220px;height:200px;pointer-events:none;"></div>
+    </div>
+  </div>
+</section>
+
+<section id="formulario" data-sec="form" data-frame-cut="1" data-screen-label="Ferramenta" style="max-width:1320px;margin:0 auto;padding:40px clamp(20px,4vw,60px) 72px;box-sizing:border-box;">
+  <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:{{ cols }};gap:32px 48px;align-items:start;">
+  <form novalidate onSubmit="{{ onSubmit }}" aria-label="Checklist de Shadow AI" style="min-width:0;display:flex;flex-direction:column;gap:24px;padding:clamp(20px,2.4vw,28px);border-radius:12px;background:#1D1D1D;box-shadow:inset 0 0 0 1px #3C3C3C;"><sc-for list="{{ perguntas }}" as="q" hint-placeholder-count="5"><div role="radiogroup" aria-labelledby="{{ q.lid }}" style="display:flex;flex-direction:column;gap:10px;"><div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;min-height:24px;"><span id="{{ q.lid }}" style="font:600 15px/1.4 var(--font-body);color:var(--rt-superficie);"><span style="font-family:var(--font-display);color:var(--rt-folha);">{{ q.n }}</span> · {{ q.text }}</span><button type="button" onClick="{{ q.onHelp }}" aria-expanded="{{ q.helpOpen }}" aria-label="Ajuda: desta pergunta" style="flex:none;width:44px;height:44px;margin:-10px -10px -10px 0;display:grid;place-items:center;border:0;background:transparent;cursor:pointer;"><span aria-hidden="true" style="width:24px;height:24px;border-radius:50%;display:grid;place-items:center;box-shadow:inset 0 0 0 1px {{ q.helpRing }};font:700 13px/1 var(--font-body);color:var(--rt-menta);">?</span></button></div><sc-if value="{{ q.helpOpen }}" hint-placeholder-val="{{ false }}"><p style="margin:0;font:400 14px/1.5 var(--font-body);color:var(--rt-menta);">{{ q.help }}</p></sc-if><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,118px),1fr));gap:8px;"><sc-for list="{{ q.opts }}" as="o" hint-placeholder-count="4"><label style="display:flex;align-items:center;gap:10px;min-height:44px;padding:8px 12px;border-radius:12px;background:#171717;box-shadow:inset 0 0 0 1px {{ o.ring }};cursor:pointer;font:400 15px/1.3 var(--font-body);color:var(--rt-superficie);"><input type="radio" name="{{ o.key }}" value="{{ o.v }}" checked="{{ o.checked }}" onChange="{{ o.onChange }}" style="width:18px;height:18px;margin:0;flex:none;">{{ o.label }}</label></sc-for></div><sc-if value="{{ q.err }}" hint-placeholder-val="{{ false }}"><span role="alert" style="display:flex;gap:8px;font:600 14px/1.5 var(--font-body);color:var(--rt-terracota);"><span aria-hidden="true">!</span>Responda esta pergunta.</span></sc-if></div></sc-for><div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px;padding-top:20px;border-top:1px dotted var(--rt-musgo);"><button type="submit" style="display:inline-flex;align-items:center;gap:10px;height:48px;padding:0 24px;border:0;border-radius:999px;white-space:nowrap;background:var(--rt-superficie);color:var(--rt-verde-raiz);font:600 15px/1 var(--font-body);cursor:pointer;transition:background-color 160ms ease-out, transform 120ms ease-out;" style-hover="background:var(--rt-menta);" style-active="transform:scale(0.98);">Ver orientações<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></button><button type="button" onClick="{{ onClear }}" style="height:48px;padding:0 20px;border:0;border-radius:999px;background:transparent;box-shadow:inset 0 0 0 1px #3C3C3C;color:var(--rt-superficie);font:600 15px/1 var(--font-body);white-space:nowrap;cursor:pointer;transition:box-shadow 160ms ease;" style-hover="box-shadow:inset 0 0 0 1px var(--rt-folha);">Limpar respostas</button></div><sc-if value="{{ formErr }}" hint-placeholder-val="{{ false }}"><p role="alert" style="margin:0;font:600 14px/1.5 var(--font-body);color:var(--rt-terracota);">{{ formErrMsg }}</p></sc-if></form>
+  <aside id="resultado" aria-label="Resultado" style="min-width:0;display:flex;flex-direction:column;gap:16px;position:{{ asidePos }};top:96px;max-height:{{ asideMax }};overflow-y:{{ asideOv }};overscroll-behavior:contain;">
+    <div aria-live="polite" style="display:flex;flex-direction:column;gap:16px;"><div style="display:flex;align-items:center;gap:16px;"><span style="font:700 12px/1.4 var(--font-body);letter-spacing:0.18em;text-transform:uppercase;color:var(--rt-menta);white-space:nowrap;">Orientações</span><span style="width:40px;height:1px;background:var(--rt-musgo);flex:none;"></span></div><sc-if value="{{ stale }}" hint-placeholder-val="{{ false }}"><p role="status" style="margin:0;padding:12px 16px;border-radius:12px;box-shadow:inset 0 0 0 1px var(--rt-terracota);font:600 14px/1.5 var(--font-body);color:var(--rt-terracota);">{{ staleMsg }}</p></sc-if><div style="display:flex;flex-direction:column;gap:10px;opacity:{{ resOp }};transition:opacity 200ms ease;"><sc-for list="{{ rows }}" as="r" hint-placeholder-count="5"><div style="display:grid;grid-template-columns:32px minmax(0,1fr);gap:0 14px;padding:14px 16px;border-radius:12px;background:#1D1D1D;box-shadow:inset 0 0 0 1px #3C3C3C;"><span aria-hidden="true" style="width:32px;height:32px;border-radius:50%;display:grid;place-items:center;box-shadow:inset 0 0 0 1.5px {{ r.ring }};font:700 15px/1 var(--font-display);color:{{ r.ring }};">{{ r.mark }}</span><div style="display:flex;flex-direction:column;gap:2px;min-width:0;"><span style="font:700 12px/1.4 var(--font-body);letter-spacing:0.18em;text-transform:uppercase;color:var(--rt-menta);">{{ r.theme }}</span><span style="font:600 15px/1.4 var(--font-body);color:var(--rt-superficie);">{{ r.label }}</span><span style="font:400 14px/1.5 var(--font-body);color:var(--rt-superficie);">{{ r.text }}</span></div></div></sc-for></div><p style="margin:0;font:400 15px/1.55 var(--font-body);color:{{ noteColor }};opacity:{{ resOp }};">{{ readNote }}</p><sc-if value="{{ sumNote }}" hint-placeholder-val="{{ false }}"><p style="margin:0;font:400 15px/1.55 var(--font-body);color:var(--rt-menta);opacity:{{ resOp }};">{{ sumNoteText }}</p></sc-if></div>
+    <details id="metodo" style="border-radius:12px;background:#1D1D1D;box-shadow:inset 0 0 0 1px #3C3C3C;"><summary style="padding:16px 20px;font:600 18px/1.3 var(--font-display);color:var(--rt-superficie);border-radius:12px;">Como chegamos a este resultado</summary><div style="padding:4px 20px 24px;display:flex;flex-direction:column;gap:14px;font:400 15px/1.55 var(--font-body);color:var(--rt-superficie);"><p style="margin:0;">Tudo é calculado neste navegador, com as suas respostas, e nada é enviado ou guardado.</p><ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px;"><sc-for list="{{ formulas }}" as="f" hint-placeholder-count="5"><li style="display:flex;gap:10px;align-items:baseline;"><span style="font:700 15px/1 var(--font-display);color:var(--rt-folha);">√</span><span>{{ f }}</span></li></sc-for></ul><p style="margin:0;color:var(--rt-menta);"><strong style="color:var(--rt-superficie);">Limites.</strong> Autoavaliação educativa, baseada no que você declara. Não inspeciona sistemas, não detecta ferramentas e não é auditoria, nota, classificação de risco, parecer de conformidade legal ou certificação. As perguntas são uma adaptação da Root Trust, não um checklist oficial do NIST nem da Microsoft.</p><p style="margin:0;color:var(--rt-menta);"><strong style="color:var(--rt-superficie);">Fontes de conceito.</strong> <a href="https://airc.nist.gov/airmf-resources/airmf/5-sec-core/" target="_blank" rel="noopener" style="color:var(--rt-menta);">NIST AI RMF — Core 1.0</a> · <a href="https://learn.microsoft.com/en-us/purview/deploymentmodels/depmod-data-leak-shadow-ai-intro" target="_blank" rel="noopener" style="color:var(--rt-menta);">Microsoft — Shadow AI e vazamento de dados</a></p></div></details>
+  </aside>
+  </div>
+</section>
+
+<section id="relatorio" data-sec="relatorio" data-frame-cut="1" data-screen-label="Relatório" style="max-width:1320px;margin:0 auto;padding:48px clamp(20px,4vw,60px) 96px;box-sizing:border-box;">
+  <div style="max-width:1200px;margin:0 auto;padding:clamp(20px,3vw,36px);border-radius:12px;background:#1D1D1D;box-shadow:inset 0 0 0 1px #3C3C3C;display:flex;flex-direction:column;gap:20px;">
+    <h2 style="margin:0;font:700 clamp(26px,2.8vw,34px)/1.15 var(--font-display);">Receba o relatório de Shadow AI</h2>
+    <p style="margin:0;font:400 16px/1.55 var(--font-body);color:var(--rt-superficie);max-width:560px;">Material padrão sobre o tema, conceitos e próximos passos gerais. Não é personalizado a partir das suas respostas.</p>
+    <form novalidate onSubmit="{{ onReport }}" style="display:flex;flex-wrap:wrap;gap:12px;">
+      <label for="f-mail" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);">Seu e-mail</label>
+      <input id="f-mail" type="email" disabled="disabled" placeholder="Seu e-mail" style="flex:1 1 240px;min-width:0;height:48px;padding:0 16px;border:0;border-radius:12px;background:#171717;box-shadow:inset 0 0 0 1px #3C3C3C;color:var(--rt-superficie);font:400 16px/1.4 var(--font-body);opacity:0.6;">
+      <button type="submit" style="height:48px;padding:0 24px;border:0;border-radius:999px;white-space:nowrap;background:transparent;box-shadow:inset 0 0 0 1px var(--rt-folha);color:var(--rt-superficie);font:600 15px/1 var(--font-body);cursor:pointer;transition:background-color 160ms ease-out;" style-hover="background:#262626;">Receber relatório</button>
+    </form>
+    <sc-if value="{{ repOk }}" hint-placeholder-val="{{ false }}"><p role="status" style="margin:0;font:600 15px/1.5 var(--font-body);color:var(--rt-terracota);">O envio do relatório ainda não está disponível. Nenhum e-mail foi coletado.</p></sc-if>
+    <p style="margin:0;font:400 14px/1.5 var(--font-body);color:var(--rt-menta);">Este pedido não inscreve você na newsletter. Suas respostas nunca são associadas ao e-mail.</p>
+  </div>
+</section>
+
+<div data-band="cta" style="background:var(--rt-verde-raiz);">
+  <section data-sec="diagnostico" data-screen-label="Diagnóstico" style="max-width:1320px;margin:0 auto;padding:96px clamp(20px,4vw,60px) 104px;box-sizing:border-box;">
+    <div style="max-width:1200px;margin:0 auto;display:flex;flex-direction:column;align-items:flex-start;gap:24px;">
+      <div style="display:flex;align-items:center;gap:16px;"><span style="font:700 12px/1.4 var(--font-body);letter-spacing:0.18em;text-transform:uppercase;color:var(--rt-menta);">Próximo passo</span><span style="width:40px;height:1px;background:var(--rt-folha);"></span></div>
+      <h2 style="margin:0;font:700 clamp(36px,4vw,56px)/1.05 var(--font-display);letter-spacing:-0.02em;">Quer conversar <span style="display:block;color:var(--rt-folha);">sobre o seu cenário?</span></h2>
+      <p style="margin:0;max-width:520px;font:400 18px/1.55 var(--font-body);color:var(--rt-superficie);">Conversa inicial gratuita de qualificação. Retorno por ligação ou WhatsApp no próximo dia útil.</p>
+      <a href="Home.dc.html#contato" style="display:inline-flex;align-items:center;gap:10px;height:48px;padding:0 24px;border-radius:999px;white-space:nowrap;background:var(--rt-superficie);color:var(--rt-verde-raiz);font:600 15px/1 var(--font-body);text-decoration:none;transition:background-color 160ms ease-out;" style-hover="background:var(--rt-menta);color:var(--rt-verde-raiz);">Solicitar diagnóstico<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></a>
+      <p style="margin:0;font:400 13px/1.5 var(--font-body);color:var(--rt-menta);">Demonstração: o formulário de contato fica na Home e ainda não envia solicitações.</p>
+    </div>
+  </section>
+</div>
+</main>
+
+<footer data-frame-cut="1" style="max-width:1320px;margin:0 auto;padding:36px clamp(20px,4vw,60px);box-sizing:border-box;background:#171717;">
+  <div style="max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:24px 40px;flex-wrap:wrap;">
+    <img src="assets/roottrust-horizontal-negativo.svg" alt="roottrust" style="height:28px;width:auto;display:block;">
+    <span style="font:600 16px/1.2 var(--font-display);color:var(--rt-menta);white-space:nowrap;">A base que sustenta o crescimento!</span>
+    <span style="width:1px;height:20px;background:var(--rt-rocha);"></span>
+    <div style="display:flex;gap:32px;flex-wrap:wrap;">
+      <a href="Home.dc.html#servicos" style="font:400 13px/1.4 var(--font-body);color:var(--rt-menta);text-decoration:none;" style-hover="color:var(--rt-folha);">Serviços</a>
+      <a href="Home.dc.html#ferramentas" style="font:400 13px/1.4 var(--font-body);color:var(--rt-menta);text-decoration:none;" style-hover="color:var(--rt-folha);">Ferramentas</a>
+      <a href="Home.dc.html#newsletter" style="font:400 13px/1.4 var(--font-body);color:var(--rt-menta);text-decoration:none;" style-hover="color:var(--rt-folha);">Newsletter</a>
+      <a href="#" style="font:400 13px/1.4 var(--font-body);color:var(--rt-menta);text-decoration:none;" style-hover="color:var(--rt-folha);">Privacidade</a>
+    </div>
+    <span style="margin-left:auto;font:400 13px/1.4 var(--font-body);color:#9DB3A8;">© 2026 Root Trust. Todos os direitos reservados.</span>
+  </div>
+</footer>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+class Component extends DCLogic {
+  state = { wide: true, tiny: false, menuOpen: false, menuMounted: false, paused: false, help: {}, tried: false, snap: null, repOk: false, ans: { regras: '', visib: '', dados: '', forn: '', equipe: '' } };
+  Q = [
+    { k: 'regras', t: 'Regras', q: 'Existem regras conhecidas para o uso de IA no trabalho?', h: 'Regras escritas ou comunicadas sobre quais usos são permitidos, limites e responsáveis.', m: 'Definir ou completar usos permitidos, limites e responsáveis; comunicar as regras.', c: 'Confirmar com o responsável se há regra vigente e como encontrá-la.' },
+    { k: 'visib', t: 'Visibilidade', q: 'A organização conhece as ferramentas de IA utilizadas pela equipe?', h: 'Inclui as ferramentas aprovadas e as que as pessoas usam por conta própria.', m: 'Organizar e manter um inventário de ferramentas e usos declarados.', c: 'Consultar responsáveis e usuários para identificar o que já está mapeado.' },
+    { k: 'dados', t: 'Dados sensíveis', q: 'Existem orientações e controles para evitar envio indevido de dados sensíveis à IA?', h: 'Orientações sobre quais dados podem ser enviados e os meios de aplicá-las.', m: 'Definir dados permitidos, restrições de compartilhamento e meios de aplicá-las.', c: 'Confirmar quais dados podem ser enviados e quais controles existem.' },
+    { k: 'forn', t: 'Fornecedores', q: 'Ferramentas e fornecedores de IA são avaliados antes de adoção?', h: 'Avaliação de tratamento de dados, retenção e acessos antes de aprovar o uso.', m: 'Avaliar tratamento de dados, retenção, acessos e condições antes de aprovar usos.', c: 'Identificar quem aprova fornecedores e quais verificações realiza.' },
+    { k: 'equipe', t: 'Equipe', q: 'A equipe recebe orientação prática sobre uso responsável de IA?', h: 'Orientação sobre regras, dados e conferência das respostas, com um canal para dúvidas.', m: 'Preparar orientação sobre regras, dados, conferência de saídas e canal de dúvidas.', c: 'Confirmar treinamento e orientações disponíveis e quem os mantém.' }
+  ];
+  OPTS = [['sim', 'Sim'], ['parc', 'Parcialmente'], ['nao', 'Não'], ['ns', 'Não sei']];
+  FORMULAS = [
+    'Cada resposta leva a uma orientação fixa por tema. Não há pesos, pontos, faixas nem porcentagens.',
+    '“Sim” é uma prática declarada, sem verificação de implementação ou eficácia.',
+    '“Parcialmente” e “Não” recebem uma ação de melhoria; “Não sei” recebe um passo para confirmar a situação.',
+    'Os cinco temas seguem o que os guias de governança de IA costumam destacar: regras, visibilidade, dados, fornecedores e equipe.'
+  ];
+  onSubmit = e => {
+    e.preventDefault();
+    const a = this.state.ans, miss = this.Q.filter(q => !a[q.k]);
+    if (miss.length) { this.setState({ tried: true }); const el = document.querySelector('input[name="' + miss[0].k + '"]'); if (el) el.focus(); return; }
+    this.setState({ tried: true, snap: Object.assign({}, a) });
+    this.scrollRes();
+  };
+  onClear = () => { this.setState({ ans: { regras: '', visib: '', dados: '', forn: '', equipe: '' }, tried: false, snap: null }); this.scrollForm(); };
+
+  brl(v) { const s = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Math.abs(v)); return (v < 0 && Math.round(Math.abs(v) * 100) > 0 ? '−' : '') + s; }
+  pct(v) { return (v < 0 && Math.abs(v) >= 0.05 ? '−' : '') + new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(Math.abs(v)) + '%'; }
+  num(v, d) { return new Intl.NumberFormat('pt-BR', { maximumFractionDigits: d == null ? 2 : d }).format(v); }
+  P(s, pc) {
+    let t = String(s == null ? '' : s).trim().replace(/^R\$\s*/i, '').replace(/\s*%$/, '').replace(/\s+/g, '');
+    if (!t) return { st: 'empty' };
+    if (/^[-−–]/.test(t)) return { st: 'bad', msg: 'O valor não pode ser negativo.' };
+    if (t.indexOf(',') >= 0) t = t.replace(/\./g, '').replace(',', '.');
+    else if (/^\d{1,3}(\.\d{3})+$/.test(t)) t = t.replace(/\./g, '');
+    if (!/^\d+(\.\d+)?$/.test(t)) return { st: 'bad', msg: 'Use apenas números, por exemplo 25.000,00.' };
+    const v = Number(t);
+    if (!Number.isFinite(v)) return { st: 'bad', msg: 'Valor grande demais para calcular.' };
+    if (pc && v > 100) return { st: 'bad', msg: 'Informe um percentual de 0 a 100.' };
+    return { st: 'ok', v };
+  }
+
+  common() {
+    const st = this.state, pinOn = st.wide;
+    return {
+      wide: st.wide, narrow: !st.wide, tiny: !!st.tiny, showHdrCta: !st.tiny, hdrLine: 'var(--rt-rocha)',
+      toggleMenu: this.toggleMenu, closeMenu: this.closeMenu, menuOpen: !!st.menuOpen, menuShow: !!st.menuMounted && !st.wide, menuLabel: st.menuOpen ? 'Fechar menu' : 'Abrir menu',
+      menuOp: st.menuOpen ? 1 : 0, menuTy: st.menuOpen || this.reduce ? '0px' : '-8px', m1: st.menuOpen ? 'translateY(5px) rotate(45deg)' : 'none', m2: st.menuOpen ? 'translateY(-5px) rotate(-45deg)' : 'none',
+      menuLinks: [{ href: 'Home.dc.html#servicos', label: 'Serviços' }, { href: 'Home.dc.html#ferramentas', label: 'Ferramentas' }, { href: 'Home.dc.html#newsletter', label: 'Newsletter' }],
+      setRoot: this.setRoot, setFrame: this.setFrame, balRef: this.balRef,
+      cols: st.wide ? 'minmax(0,1.2fr) minmax(0,1fr)' : 'minmax(0,1fr)', asidePos: pinOn ? 'sticky' : 'static', asideMax: pinOn ? 'calc(100vh - 112px)' : 'none', asideOv: pinOn ? 'auto' : 'visible',
+      onReport: this.onReport, repOk: st.repOk, onClear: this.onClear, onSubmit: this.onSubmit, formulas: this.FORMULAS
+    };
+  }
+  scrollRes() { if (!this.state.wide) setTimeout(() => { const el = document.getElementById('resultado'); if (el) { this.smoothTo(el.getBoundingClientRect().top + scrollY - this.HDR - 12); el.setAttribute('tabindex', '-1'); el.focus({ preventScroll: true }); } }, 80); }
+  scrollForm() { const el = document.getElementById('formulario'); if (el) this.smoothTo(el.getBoundingClientRect().top + scrollY - this.HDR); }
+  helpMap(keys) { const st = this.state, on = {}, open = {}; keys.forEach(k => { on[k] = () => this.setState(s => ({ help: Object.assign({}, s.help, { [k]: !s.help[k] }) })); open[k] = !!st.help[k]; open[k + 'Ring'] = st.help[k] ? 'var(--rt-folha)' : '#3C3C3C'; }); return { on, open }; }
+  onReport = e => { e.preventDefault(); this.setState({ repOk: true }); };
+  art = null; inst = null;
+  balRef = el => { this.art = el || null; if (!el && this.inst) { this.inst.dispose(); this.inst = null; } else this.mountArt(); };
+  remountArt() { if (this.inst) { this.inst.dispose(); this.inst = null; } this.mountArt(); }
+  mountArt() {
+    if (!this.three3d || !this.art || this.inst) return;
+    this.inst = this.three3d.mountPillar(this.art, 'olho', { reduce: !!this.reduce || this.state.paused, inkA: '#62AF96', inkB: '#CCE9DC', interactive: false });
+  }
+  HDR = 76;
+  // cubic-bezier(0.77, 0, 0.175, 1) — ease-in-out forte para movimento na tela
+  ease = (() => { const x1 = 0.77, y1 = 0, x2 = 0.175, y2 = 1, B = (t, a, b) => 3 * a * t * (1 - t) ** 2 + 3 * b * t * t * (1 - t) + t ** 3, D = (t, a, b) => 3 * a * (1 - t) ** 2 + 6 * (b - a) * t * (1 - t) + 3 * (1 - b) * t * t;
+    return x => { if (x <= 0) return 0; if (x >= 1) return 1; let t = x; for (let i = 0; i < 8; i++) { const d = D(t, x1, x2); if (Math.abs(d) < 1e-6) break; t -= (B(t, x1, x2) - x) / d; t = Math.min(1, Math.max(0, t)); } return B(t, y1, y2); }; })();
+  stopScroll = () => { cancelAnimationFrame(this.sraf); this.sraf = 0; };
+  smoothTo = y => {
+    this.stopScroll();
+    const max = document.documentElement.scrollHeight - innerHeight, to = Math.max(0, Math.min(max, y)), from = scrollY, dist = to - from;
+    if (this.reduce || Math.abs(dist) < 2) { window.scrollTo(0, to); return; }
+    const dur = Math.min(1100, Math.max(480, 300 + Math.abs(dist) * 0.1)), t0 = performance.now();
+    const step = now => { const u = Math.min(1, (now - t0) / dur); window.scrollTo(0, from + dist * this.ease(u)); this.sraf = u < 1 ? requestAnimationFrame(step) : 0; };
+    this.sraf = requestAnimationFrame(step);
+  };
+  onAnchor = e => {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    const a = e.target.closest && e.target.closest('a[href^="#"]'); if (!a) return;
+    const id = a.getAttribute('href').slice(1), el = id ? document.getElementById(id) : null;
+    e.preventDefault();
+    this.smoothTo(el ? el.getBoundingClientRect().top + scrollY - this.HDR : 0);
+    if (el) { el.setAttribute('tabindex', '-1'); el.focus({ preventScroll: true }); }
+  };
+  toggleMenu = () => {
+    clearTimeout(this.menuT);
+    if (this.state.menuOpen) { this.setState({ menuOpen: false }); this.menuT = setTimeout(() => this.setState({ menuMounted: false }), 200); }
+    else { this.setState({ menuMounted: true }); requestAnimationFrame(() => requestAnimationFrame(() => this.setState({ menuOpen: true }))); }
+  };
+  closeMenu = () => { if (this.state.menuOpen) this.toggleMenu(); };
+  // Moldura + G3 (Campo de verificação) nas laterais, revelado perto do cursor. ≥ 960px.
+  setFrame = el => { this.fcv = el; };
+  frameSprites(dpr) {
+    if (this.fsp && this.fsp.dpr === dpr) return this.fsp;
+    const S = 12, L = 8, k = 8 / 1630, px = S * dpr;
+    const P = [[85, 780], [250, 690], [548, 1360], [905, 85], [1545, 85]];
+    const mix = (a, b, f) => '#' + [0, 2, 4].map(i => Math.round(parseInt(a.substr(1 + i, 2), 16) * (1 - f) + parseInt(b.substr(1 + i, 2), 16) * f).toString(16).padStart(2, '0')).join('');
+    const TH = [{ base: '#262626', hi: '#4C6B58', ring: '#62AF96' }, { base: '#0E4A3A', hi: '#62AF96', ring: '#CCE9DC' }];
+    const out = TH.map(t => Array.from({ length: L }, (_, l) => [0, 1].map(ringOn => {
+      const c = document.createElement('canvas'); c.width = c.height = px; const x = c.getContext('2d');
+      x.setTransform(dpr, 0, 0, dpr, (S - 1630 * k) / 2 * dpr, (S - 1450 * k) / 2 * dpr);
+      const col = mix(t.base, t.hi, l / (L - 1));
+      x.strokeStyle = col; x.lineWidth = Math.max(0.9, 170 * k); x.lineCap = 'round'; x.lineJoin = 'round';
+      x.beginPath(); P.forEach(([a, b], i) => i ? x.lineTo(a * k, b * k) : x.moveTo(a * k, b * k)); x.stroke();
+      x.fillStyle = ringOn ? mix(col, t.ring, l / (L - 1)) : col; x.beginPath(); x.arc(1225 * k, 610 * k, Math.max(1.1, 235 * k), 0, Math.PI * 2); x.fill();
+      return c;
+    })));
+    this.fsp = { dpr, S, L, out };
+    return this.fsp;
+  }
+  drawFrame(now) {
+    const c = this.fcv, root = this.rootEl; if (!c || !root) return;
+    const vw = document.documentElement.clientWidth, vh = innerHeight, sy = scrollY, on = vw >= 960;
+    const mx = this.mx | 0, my = this.my | 0, key = [vw, vh, sy, on ? mx : 0, on ? my : 0].join(':');
+    if (key === this.fKey && now - (this.fT || 0) < 600) return;
+    this.fKey = key; this.fT = now;
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    if (c.width !== Math.round(vw * dpr) || c.height !== Math.round(vh * dpr)) { c.width = Math.round(vw * dpr); c.height = Math.round(vh * dpr); c.style.width = vw + 'px'; }
+    const x = c.getContext('2d'); x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, vw, vh);
+    if (!on) return;
+    const rt = root.getBoundingClientRect().top;
+    const bands = [...root.querySelectorAll('[data-band]')].map(e => { const r = e.getBoundingClientRect(); return [r.top - rt, r.bottom - rt]; });
+    const cuts = new Set();
+    root.querySelectorAll('[data-sec="pilares"],[data-sec="servicos"],[data-sec="como"],[data-sec="ferramentas"],[data-sec="newsletter"],[data-frame-cut]').forEach(e => { const r = e.getBoundingClientRect(); cuts.add(Math.round(r.top - rt)); });
+    const py = sy + rt + sy - sy; // page y of viewport top relative to root
+    const top = -rt; // root-relative y at viewport top
+    const theme = y => bands.some(([a, b]) => y >= a && y < b) ? 1 : 0;
+    const F = Math.min(vw - 48, 1360), fl = Math.round((vw - F) / 2) + 0.5, fr = Math.round((vw + F) / 2) - 0.5;
+    // G3 nas laterais
+    const sp = this.frameSprites(dpr), S = sp.S, P = 20, Rr = 120, reveal = !this.reduce && mx > -1e4;
+    const j0 = Math.floor(top / P), j1 = Math.ceil((top + vh) / P);
+    const cols = [];
+    const nC = Math.max(0, Math.min(6, Math.floor((fl - 24) / P) + 1));
+    for (let k = 0; k < nC; k++) cols.push(fl - 12 - k * P, fr + 12 + k * P);
+    const ol = nC ? Math.round(fl - 24 - (nC - 1) * P) + 0.5 : fl, orr = nC ? Math.round(fr + 24 + (nC - 1) * P) - 0.5 : fr;
+    const hash = (a, b) => { const s = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return s - Math.floor(s); };
+    for (let j = j0; j <= j1; j++) {
+      const y = j * P + P / 2, th = theme(y), row = sp.out[th], vy = y - top;
+      if (th) continue;
+      for (const cx of cols) {
+        let l = 0, ring = 0;
+        if (reveal) { const dx = cx - mx, dy = y - my, d2 = dx * dx + dy * dy; if (d2 < Rr * Rr) { const f = 1 - Math.sqrt(d2) / Rr; l = Math.round(f * f * (sp.L - 1)); ring = f > 0.35 && hash(Math.round(cx / P), j) < 0.4 ? 1 : 0; } }
+        x.drawImage(row[l][ring], cx - S / 2, vy - S / 2, S, S);
+      }
+    }
+    // linhas verticais da coluna
+    const LC = ['#2E2E2E', '#175B4B'], BG = ['#171717', '#003428'];
+    x.lineWidth = 1;
+    x.save(); x.beginPath(); x.rect(0, 0, vw, vh); bands.forEach(([a, b]) => x.rect(0, a - top, vw, b - a)); x.clip('evenodd');
+    const vseg = (X) => { x.strokeStyle = LC[0]; x.beginPath(); x.moveTo(X, 0); x.lineTo(X, vh); x.stroke(); };
+    vseg(fl); vseg(fr); if (nC) { vseg(ol); vseg(orr); }
+    // cortes horizontais + cantoneiras
+    cuts.forEach(y => {
+      const vy = y - top; if (vy < -8 || vy > vh + 8) return;
+      const th = theme(y + 1), Y = Math.round(vy) + 0.5; if (th) return;
+      x.strokeStyle = LC[th]; x.beginPath(); x.moveTo(ol, Y); x.lineTo(orr, Y); x.stroke();
+      (nC ? [ol, fl, fr, orr] : [fl, fr]).forEach(X => { x.fillStyle = BG[th]; x.fillRect(X - 3.5, Y - 3.5, 7, 7); x.strokeStyle = th ? '#4C6B58' : '#3C3C3C'; x.strokeRect(X - 3.5, Y - 3.5, 7, 7); });
+    });
+    x.restore();
+  }
+
+  setRoot = el => { if (el) this.rootEl = el; };
+  onMove = e => { if (!this.rootEl) return; const r = this.rootEl.getBoundingClientRect(); this.mx = e.clientX - r.left; this.my = e.clientY - r.top; };
+  onLeave = () => { this.mx = this.my = -1e5; };
+  onResize = () => { const wide = innerWidth >= 960, tiny = innerWidth < 560, up = {}; if (wide !== this.state.wide) { up.wide = wide; if (wide) { up.menuOpen = false; up.menuMounted = false; } } if (tiny !== this.state.tiny) up.tiny = tiny; if (Object.keys(up).length) this.setState(up); };
+  componentDidMount() {
+    this.mx = this.my = -1e5;
+    this.mq = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)');
+    this.reduce = !!(this.mq && this.mq.matches);
+    this.onMq = e => { this.reduce = e.matches; this.remountArt(); this.forceUpdate(); };
+    if (this.mq && this.mq.addEventListener) this.mq.addEventListener('change', this.onMq);
+    this.onResize();
+    window.addEventListener('resize', this.onResize);
+    document.addEventListener('click', this.onAnchor);
+    ['wheel', 'touchstart', 'keydown'].forEach(ev => window.addEventListener(ev, this.stopScroll, { passive: true }));
+    window.addEventListener('pointermove', this.onMove, { passive: true });
+    document.documentElement.addEventListener('pointerleave', this.onLeave);
+    import(new URL('pillars3d.js', document.baseURI).href).then(m => { this.three3d = m; this.mountArt(); }).catch(e => console.warn('balança 3D', e));
+    const loop = now => { this.raf = requestAnimationFrame(loop); this.drawFrame(now); };
+    this.raf = requestAnimationFrame(loop);
+    this.iv = setInterval(() => { if (document.hidden) this.drawFrame(performance.now()); }, 200);
+  }
+  componentWillUnmount() {
+    cancelAnimationFrame(this.raf); clearInterval(this.iv); clearTimeout(this.menuT); this.stopScroll();
+    if (this.inst) this.inst.dispose();
+    if (this.mq && this.mq.removeEventListener) this.mq.removeEventListener('change', this.onMq);
+    window.removeEventListener('resize', this.onResize);
+    document.removeEventListener('click', this.onAnchor);
+    ['wheel', 'touchstart', 'keydown'].forEach(ev => window.removeEventListener(ev, this.stopScroll));
+    window.removeEventListener('pointermove', this.onMove);
+    document.documentElement.removeEventListener('pointerleave', this.onLeave);
+  }
+
+  renderVals() {
+    const st = this.state, a = st.ans, show = st.tried, hm = this.helpMap(this.Q.map(q => q.k));
+    const stale = !!(st.snap && JSON.stringify(st.snap) !== JSON.stringify(a)), hasResult = !!st.snap;
+    const perguntas = this.Q.map((q, n) => ({ lid: 'l-' + q.k, n: n + 1, text: q.q, help: q.h + ' “Sim” é uma prática declarada, não verificada.', helpOpen: hm.open[q.k], helpRing: hm.open[q.k + 'Ring'], onHelp: hm.on[q.k], err: show && !a[q.k],
+      opts: this.OPTS.map(o => ({ key: q.k, v: o[0], label: o[1], checked: a[q.k] === o[0], ring: a[q.k] === o[0] ? 'var(--rt-folha)' : '#3C3C3C', onChange: () => this.setState(s => ({ ans: Object.assign({}, s.ans, { [q.k]: o[0] }) })) })) }));
+    const M = { sim: ['√', 'var(--rt-folha)', 'Prática declarada'], parc: ['◐', 'var(--rt-menta)', 'Cobertura parcial'], nao: ['○', 'var(--rt-terracota)', 'Não declarada'], ns: ['?', 'var(--rt-areia)', 'A confirmar'] };
+    const rows = this.Q.map(q => {
+      const v = st.snap && st.snap[q.k];
+      if (!v) return { theme: q.t, mark: '·', ring: '#9DB3A8', label: 'Aguardando resposta', text: '—' };
+      const m = M[v];
+      return { theme: q.t, mark: m[0], ring: m[1], label: m[2], text: v === 'sim' ? 'Implementação e eficácia não verificadas. Mantenha a prática revisada.' : v === 'ns' ? q.c : q.m };
+    });
+    const vals = st.snap ? this.Q.map(q => st.snap[q.k]) : [];
+    const allSim = hasResult && vals.every(v => v === 'sim'), allNs = hasResult && vals.every(v => v === 'ns');
+    return Object.assign(this.common(), {
+      perguntas, rows, hOn: hm.on, hOpen: hm.open, stale, resOp: stale ? 0.35 : 1,
+      staleMsg: 'As respostas mudaram depois desta lista. As orientações estão desatualizadas: clique em Ver orientações de novo.',
+      formErr: show && this.Q.some(q => !a[q.k]), formErrMsg: 'Responda às perguntas destacadas para ver as orientações.',
+      noteColor: hasResult ? 'var(--rt-superficie)' : 'var(--rt-menta)',
+      readNote: hasResult ? 'Autoavaliação com base no que você declarou: não é nota, classificação de risco, auditoria nem certificação.' : 'Responda às cinco perguntas e clique em Ver orientações.',
+      sumNote: allSim || allNs, sumNoteText: allSim ? 'Todas as práticas foram declaradas. A autoavaliação não verifica se estão implementadas nem se são eficazes.' : 'Confirme a situação com os responsáveis. “Não sei” não indica ausência de controle.'
+    });
+  }
+}
+</script>
+</body>
+</html>

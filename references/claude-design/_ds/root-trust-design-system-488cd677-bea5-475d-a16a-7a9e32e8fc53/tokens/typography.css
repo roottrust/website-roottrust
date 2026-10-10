@@ -1,0 +1,37 @@
+/* Root Trust typography tokens.
+   Baloo 2 = logotipo, títulos, chamadas, números de destaque. Archivo = corpo, interfaces, rótulos.
+   Sizes below are the px values applied in the Figma layers (prancha 21 + manual pages);
+   the editorial rule is written in pt (Título 56–120, Subtítulo 28–36, Corpo 15–20, Rótulo 11–13). */
+:root{
+  --font-display:"Baloo 2",ui-rounded,system-ui,sans-serif;
+  --font-body:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
+
+  /* Hierarquia (prancha 21) */
+  --type-title-size:64px;    --type-title-weight:700; --type-title-lh:1.2;  --type-title-ls:-0.01em;
+  --type-subtitle-size:34px; --type-subtitle-weight:600; --type-subtitle-lh:1.2; --type-subtitle-ls:-0.01em;
+  --type-body-size:20px;     --type-body-weight:400; --type-body-lh:1.55; /* regra escrita 155% */
+  --type-label-size:13px;    --type-label-weight:700; --type-label-lh:1.2; --type-label-ls:0.18em;
+
+  /* Escala observada nas pranchas */
+  --type-hero-size:120px;          /* títulos de capítulo */
+  --type-heading-size:28px;        /* título de card · Baloo 2 Bold 28/1.1 */
+  --type-heading-lh:1.1;
+  --type-swatch-size:32px;         /* nome de cor · Baloo 2 Bold 32/1.1 */
+  --type-quote-size:17px;          /* exemplo editorial · Archivo Medium 17/1.55 */
+  --type-quote-lh:1.55;
+  --type-small-size:15px;          /* corpo de card · Archivo 15/1.58 */
+  --type-small-lh:1.58;
+  --type-eyebrow-size:12px;        /* "01 · ESTRATÉGIA" · Archivo Bold 12/1.4 +18% */
+  --type-eyebrow-lh:1.4;
+  --type-eyebrow-ls:0.18em;
+  --type-micro-size:9px;           /* micro-rótulos · Archivo Bold */
+
+  /* Lettering (referência — use sempre o SVG da assinatura) */
+  --type-logo-weight:600; --type-logo-lh:1; --type-logo-ls:-0.02em;
+
+  /* Semantic */
+  --type-title:var(--type-title-weight) var(--type-title-size)/var(--type-title-lh) var(--font-display);
+  --type-subtitle:var(--type-subtitle-weight) var(--type-subtitle-size)/var(--type-subtitle-lh) var(--font-display);
+  --type-body:var(--type-body-weight) var(--type-body-size)/var(--type-body-lh) var(--font-body);
+  --type-label:var(--type-label-weight) var(--type-label-size)/var(--type-label-lh) var(--font-body);
+}

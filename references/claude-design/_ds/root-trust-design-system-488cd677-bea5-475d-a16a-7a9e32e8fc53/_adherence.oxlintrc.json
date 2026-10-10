@@ -1,0 +1,388 @@
+{
+  "plugins": [
+    "react",
+    "import"
+  ],
+  "rules": {
+    "react/forbid-elements": [
+      "warn",
+      {
+        "forbid": []
+      }
+    ],
+    "no-restricted-imports": [
+      "warn",
+      {
+        "patterns": [
+          {
+            "group": [
+              "components/pecas-digitais/**",
+              "components/selos/**",
+              "components/simbolo/**",
+              "ui_kits/manual-de-marca/**",
+              "ui_kits/pecas-digitais/**"
+            ],
+            "message": "Import design-system components from 'index.js', not component internals."
+          }
+        ]
+      }
+    ],
+    "no-restricted-syntax": [
+      "warn",
+      {
+        "selector": "Literal[value=/#[0-9a-fA-F]{3,8}\\b/]",
+        "message": "Raw hex color — use a design-system color token via var()."
+      },
+      {
+        "selector": "Literal[value=/\\b\\d+px\\b/]",
+        "message": "Raw px value — use a design-system spacing token via var()."
+      },
+      {
+        "selector": "Literal[value=/font-family\\s*:\\s*(?!['\\\"]?(?:Baloo 2|Archivo))/i]",
+        "message": "Font not provided by the design system. Available: Baloo 2, Archivo."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='AssinaturaDeEMail600px'] > JSXAttribute > JSXIdentifier[name!=/^(?:className|style|text1|text2|text3|text4|key|ref|className|style|children)$/]",
+        "message": "<AssinaturaDeEMail600px> doesn't accept that prop. Declared props: className, style, text1, text2, text3, text4."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='AssinaturaFaixa'] > JSXAttribute > JSXIdentifier[name!=/^(?:className|style|text1|key|ref|className|style|children)$/]",
+        "message": "<AssinaturaFaixa> doesn't accept that prop. Declared props: className, style, text1."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='AssinaturaSimbolo'] > JSXAttribute > JSXIdentifier[name!=/^(?:className|style|icon1|key|ref|className|style|children)$/]",
+        "message": "<AssinaturaSimbolo> doesn't accept that prop. Declared props: className, style, icon1."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='LinkedInBannerDaPGina'] > JSXAttribute > JSXIdentifier[name!=/^(?:className|style|text1|text2|text3|text4|icon1|icon2|icon3|key|ref|className|style|children)$/]",
+        "message": "<LinkedInBannerDaPGina> doesn't accept that prop. Declared props: className, style, text1, text2, text3, text4, icon1, icon2, icon3."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='LinkedInBannerPessoal1584x396'] > JSXAttribute > JSXIdentifier[name!=/^(?:className|style|text1|text2|text3|key|ref|className|style|children)$/]",
+        "message": "<LinkedInBannerPessoal1584x396> doesn't accept that prop. Declared props: className, style, text1, text2, text3."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='SeloRoottrustCompactoClaro'] > JSXAttribute > JSXIdentifier[name!=/^(?:className|style|text1|icon1|key|ref|className|style|children)$/]",
+        "message": "<SeloRoottrustCompactoClaro> doesn't accept that prop. Declared props: className, style, text1, icon1."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='SeloRoottrustCompactoEscuro'] > JSXAttribute > JSXIdentifier[name!=/^(?:className|style|text1|icon1|key|ref|className|style|children)$/]",
+        "message": "<SeloRoottrustCompactoEscuro> doesn't accept that prop. Declared props: className, style, text1, icon1."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='SeloRoottrustHorizontalClaro'] > JSXAttribute > JSXIdentifier[name!=/^(?:className|style|text1|text2|icon1|key|ref|className|style|children)$/]",
+        "message": "<SeloRoottrustHorizontalClaro> doesn't accept that prop. Declared props: className, style, text1, text2, icon1."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='SeloRoottrustHorizontalEscuro'] > JSXAttribute > JSXIdentifier[name!=/^(?:className|style|text1|text2|icon1|key|ref|className|style|children)$/]",
+        "message": "<SeloRoottrustHorizontalEscuro> doesn't accept that prop. Declared props: className, style, text1, text2, icon1."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='SeloRoottrustRedondoClaro'] > JSXAttribute > JSXIdentifier[name!=/^(?:className|style|text1|text2|text3|text4|icon1|key|ref|className|style|children)$/]",
+        "message": "<SeloRoottrustRedondoClaro> doesn't accept that prop. Declared props: className, style, text1, text2, text3, text4, icon1."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='SeloRoottrustRedondoEscuro'] > JSXAttribute > JSXIdentifier[name!=/^(?:className|style|text1|text2|text3|text4|icon1|key|ref|className|style|children)$/]",
+        "message": "<SeloRoottrustRedondoEscuro> doesn't accept that prop. Declared props: className, style, text1, text2, text3, text4, icon1."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='SMboloRaiz'] > JSXAttribute > JSXIdentifier[name!=/^(?:className|style|key|ref|className|style|children)$/]",
+        "message": "<SMboloRaiz> doesn't accept that prop. Declared props: className, style."
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/index.js"
+      ],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    }
+  ],
+  "x-omelette": {
+    "components": {
+      "AssinaturaDeEMail600px": {
+        "replaces": []
+      },
+      "AssinaturaFaixa": {
+        "replaces": []
+      },
+      "AssinaturaSimbolo": {
+        "replaces": []
+      },
+      "LinkedInBannerDaPGina": {
+        "replaces": []
+      },
+      "LinkedInBannerPessoal1584x396": {
+        "replaces": []
+      },
+      "SeloRoottrustCompactoClaro": {
+        "replaces": []
+      },
+      "SeloRoottrustCompactoEscuro": {
+        "replaces": []
+      },
+      "SeloRoottrustHorizontalClaro": {
+        "replaces": []
+      },
+      "SeloRoottrustHorizontalEscuro": {
+        "replaces": []
+      },
+      "SeloRoottrustRedondoClaro": {
+        "replaces": []
+      },
+      "SeloRoottrustRedondoEscuro": {
+        "replaces": []
+      },
+      "SMboloRaiz": {
+        "replaces": []
+      }
+    },
+    "tokens": [
+      "--accent-data",
+      "--accent-signal",
+      "--accent-warm",
+      "--apoio-verde-n-voa",
+      "--apoio-verde-superf-cie",
+      "--bg-inverse",
+      "--bg-moss",
+      "--bg-page",
+      "--bg-rock",
+      "--bg-warm",
+      "--border-inverse",
+      "--border-strong",
+      "--border-subtle",
+      "--font-body",
+      "--font-display",
+      "--funcional-alerta",
+      "--funcional-erro",
+      "--funcional-informa-o",
+      "--neutro-100",
+      "--neutro-300",
+      "--neutro-500",
+      "--neutro-700",
+      "--neutro-900",
+      "--neutro-branco",
+      "--neutro-superf-cie",
+      "--page-gutter",
+      "--page-gutter-lg",
+      "--page-margin",
+      "--prim-ria-grafite-root",
+      "--prim-ria-verde-raiz",
+      "--prim-ria-verde-root",
+      "--radius-band",
+      "--radius-card",
+      "--radius-pill",
+      "--radius-round",
+      "--radius-seal",
+      "--radius-tile",
+      "--ring-seal",
+      "--ring-subtle",
+      "--rt-anotacao-incorreto",
+      "--rt-areia",
+      "--rt-areia-clara",
+      "--rt-azul-dados",
+      "--rt-branco",
+      "--rt-floresta",
+      "--rt-folha",
+      "--rt-menta",
+      "--rt-musgo",
+      "--rt-rocha",
+      "--rt-sinal",
+      "--rt-superficie",
+      "--rt-terracota",
+      "--rt-tom-claro",
+      "--rt-tom-escuro",
+      "--rt-tom-escuro-2",
+      "--rt-tom-musgo",
+      "--rt-tom-quente",
+      "--rt-tom-rocha",
+      "--rt-verde-raiz",
+      "--seal-min-compact",
+      "--seal-min-horizontal",
+      "--seal-min-round",
+      "--shadow-none",
+      "--space-12",
+      "--space-120",
+      "--space-16",
+      "--space-20",
+      "--space-28",
+      "--space-32",
+      "--space-4",
+      "--space-40",
+      "--space-60",
+      "--space-8",
+      "--stroke-accent",
+      "--stroke-hairline",
+      "--stroke-seal",
+      "--surface-card",
+      "--surface-card-inverse",
+      "--symbol-min-digital",
+      "--text-body",
+      "--text-inverse",
+      "--text-inverse-muted",
+      "--text-label",
+      "--text-strong",
+      "--type-body",
+      "--type-body-lh",
+      "--type-body-size",
+      "--type-body-weight",
+      "--type-eyebrow-lh",
+      "--type-eyebrow-ls",
+      "--type-eyebrow-size",
+      "--type-heading-lh",
+      "--type-heading-size",
+      "--type-hero-size",
+      "--type-label",
+      "--type-label-lh",
+      "--type-label-ls",
+      "--type-label-size",
+      "--type-label-weight",
+      "--type-logo-lh",
+      "--type-logo-ls",
+      "--type-logo-weight",
+      "--type-micro-size",
+      "--type-quote-lh",
+      "--type-quote-size",
+      "--type-small-lh",
+      "--type-small-size",
+      "--type-subtitle",
+      "--type-subtitle-lh",
+      "--type-subtitle-ls",
+      "--type-subtitle-size",
+      "--type-subtitle-weight",
+      "--type-swatch-size",
+      "--type-title",
+      "--type-title-lh",
+      "--type-title-ls",
+      "--type-title-size",
+      "--type-title-weight"
+    ],
+    "tokenKinds": {
+      "--rt-verde-raiz": "color",
+      "--rt-superficie": "color",
+      "--rt-rocha": "color",
+      "--rt-musgo": "color",
+      "--rt-floresta": "color",
+      "--rt-folha": "color",
+      "--rt-menta": "color",
+      "--rt-terracota": "color",
+      "--rt-areia": "color",
+      "--rt-areia-clara": "color",
+      "--rt-azul-dados": "color",
+      "--rt-sinal": "color",
+      "--rt-branco": "color",
+      "--rt-tom-escuro": "color",
+      "--rt-tom-escuro-2": "color",
+      "--rt-tom-claro": "color",
+      "--rt-tom-quente": "color",
+      "--rt-tom-musgo": "color",
+      "--rt-tom-rocha": "color",
+      "--rt-anotacao-incorreto": "color",
+      "--bg-page": "color",
+      "--bg-inverse": "color",
+      "--bg-warm": "color",
+      "--bg-moss": "color",
+      "--bg-rock": "color",
+      "--surface-card": "color",
+      "--surface-card-inverse": "color",
+      "--text-strong": "font",
+      "--text-body": "font",
+      "--text-label": "font",
+      "--text-inverse": "font",
+      "--text-inverse-muted": "font",
+      "--border-subtle": "color",
+      "--border-strong": "color",
+      "--border-inverse": "color",
+      "--accent-warm": "color",
+      "--accent-data": "color",
+      "--accent-signal": "color",
+      "--font-display": "font",
+      "--font-body": "font",
+      "--type-title-size": "font",
+      "--type-title-weight": "font",
+      "--type-title-lh": "font",
+      "--type-title-ls": "font",
+      "--type-subtitle-size": "font",
+      "--type-subtitle-weight": "font",
+      "--type-subtitle-lh": "font",
+      "--type-subtitle-ls": "font",
+      "--type-body-size": "font",
+      "--type-body-weight": "font",
+      "--type-body-lh": "font",
+      "--type-label-size": "font",
+      "--type-label-weight": "font",
+      "--type-label-lh": "font",
+      "--type-label-ls": "font",
+      "--type-hero-size": "font",
+      "--type-heading-size": "font",
+      "--type-heading-lh": "font",
+      "--type-swatch-size": "font",
+      "--type-quote-size": "font",
+      "--type-quote-lh": "font",
+      "--type-small-size": "font",
+      "--type-small-lh": "font",
+      "--type-eyebrow-size": "font",
+      "--type-eyebrow-lh": "font",
+      "--type-eyebrow-ls": "font",
+      "--type-micro-size": "font",
+      "--type-logo-weight": "font",
+      "--type-logo-lh": "font",
+      "--type-logo-ls": "font",
+      "--type-title": "font",
+      "--type-subtitle": "font",
+      "--type-body": "font",
+      "--type-label": "font",
+      "--page-margin": "spacing",
+      "--page-gutter": "spacing",
+      "--page-gutter-lg": "spacing",
+      "--space-4": "spacing",
+      "--space-8": "spacing",
+      "--space-12": "spacing",
+      "--space-16": "spacing",
+      "--space-20": "spacing",
+      "--space-28": "spacing",
+      "--space-32": "spacing",
+      "--space-40": "spacing",
+      "--space-60": "spacing",
+      "--space-120": "spacing",
+      "--radius-pill": "radius",
+      "--radius-band": "radius",
+      "--radius-card": "radius",
+      "--radius-seal": "radius",
+      "--radius-tile": "radius",
+      "--radius-round": "radius",
+      "--stroke-hairline": "color",
+      "--stroke-seal": "color",
+      "--stroke-accent": "color",
+      "--symbol-min-digital": "spacing",
+      "--seal-min-horizontal": "spacing",
+      "--seal-min-compact": "spacing",
+      "--seal-min-round": "radius",
+      "--shadow-none": "shadow",
+      "--ring-subtle": "color",
+      "--ring-seal": "color",
+      "--apoio-verde-n-voa": "color",
+      "--apoio-verde-superf-cie": "color",
+      "--funcional-alerta": "color",
+      "--funcional-erro": "color",
+      "--funcional-informa-o": "color",
+      "--neutro-100": "color",
+      "--neutro-300": "color",
+      "--neutro-500": "color",
+      "--neutro-700": "color",
+      "--neutro-900": "color",
+      "--neutro-branco": "color",
+      "--neutro-superf-cie": "color",
+      "--prim-ria-grafite-root": "color",
+      "--prim-ria-verde-raiz": "color",
+      "--prim-ria-verde-root": "color"
+    },
+    "fontFamilies": [
+      "Archivo",
+      "Baloo 2"
+    ]
+  }
+}

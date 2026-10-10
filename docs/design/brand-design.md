@@ -1,5 +1,7 @@
 # Root Trust — guia da nova identidade de marca
 
+**Nota de aplicação web — 04/10/2026:** o proprietário aprovou visual, textos e regras de [Home.dc.html](../../references/claude-design/Home.dc.html). A combinação G2/G3/G4, ASCII, fundos de UI e cadeado ilustrativo é [adaptação específica da Home](../web/design.md#1-autoridade-e-adaptações-aprovadas). As regras oficiais deste guia continuam fiéis ao Figma; não apresentá-las como alteradas pelo export nem generalizar essas adaptações para outras peças. Para desenvolver páginas, comece pelo [contexto web](../web/README.md).
+
 ## Fonte, abrangência e leitura
 
 **Fonte:** [Manual de Marca — New, página Manual de Marca · Raiz](https://www.figma.com/design/fZrFBBmDE3gQK3MHYIqiho/Manual-de-Marca---New?node-id=112-2). Extração pelo Figwright em **02/10/2026**. O documento se identifica como **versão 2 · 2026**, um documento vivo.
@@ -446,3 +448,4 @@ A prancha 36 mostra aplicação em ambientes, vestuário, materiais de trabalho 
 3. Mantenha tipografia editorial e exemplos de camada separados; a adaptação para web exige projeto próprio e não deve converter pt em px silenciosamente.
 4. Não publique fotografias sem direitos, métricas demonstrativas, contatos de mockups ou selos sem verificação real.
 5. Antes de criar tokens, componentes ou temas, leia as divergências e decisões da auditoria. Este guia entrega a identidade; não especifica interface ou funcionalidades do website.
+

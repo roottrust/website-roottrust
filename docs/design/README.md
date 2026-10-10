@@ -1,5 +1,7 @@
 # Root Trust — contexto da nova marca
 
+**Integração com o website — 04/10/2026:** a [Home exportada do Claude Design](../../references/claude-design/Home.dc.html) foi aprovada em visual, textos e regras. Consulte [docs/web](../web/README.md) para UI e as [adaptações delimitadas da Home](../web/design.md#1-autoridade-e-adaptações-aprovadas), incluindo G2/G3/G4, ASCII e objetos 3D. Esta aprovação não altera as regras oficiais extraídas abaixo, nem os originais/catalogação; não usar exemplos do manual para substituir retroativamente a Home aprovada.
+
 Pacote da **versão 2 · 2026** do [Manual de Marca — New](https://www.figma.com/design/fZrFBBmDE3gQK3MHYIqiho/Manual-de-Marca---New?node-id=112-2), extraído pelo **Figwright em 02/10/2026**, com os arquivos de branding fornecidos pelo usuário integrados à mesma estrutura.
 
 ## Ordem de leitura
@@ -41,3 +43,4 @@ Este pacote documenta a identidade de marca. As aplicações do manual não defi
 O usuário determinou que a identidade anterior fosse desconsiderada. Não reutilize a documentação em `temp/OldDesign` para completar decisões da nova marca. Estilos e variáveis locais incompatíveis do Figma também não prevalecem sobre o novo manual.
 
 Dados de exemplo, números de disponibilidade, nomes, contatos e selos em mockups não comprovam alegações comerciais ou autorizações. As pendências reais estão identificadas na auditoria; não as preencha por suposição.
+

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<title>Página não encontrada — Root Trust</title>
+<link rel="stylesheet" href="_ds/root-trust-design-system-488cd677-bea5-475d-a16a-7a9e32e8fc53/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/root-trust-design-system-488cd677-bea5-475d-a16a-7a9e32e8fc53/tokens/colors.css">
+<link rel="stylesheet" href="_ds/root-trust-design-system-488cd677-bea5-475d-a16a-7a9e32e8fc53/tokens/typography.css">
+<link rel="stylesheet" href="_ds/root-trust-design-system-488cd677-bea5-475d-a16a-7a9e32e8fc53/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/root-trust-design-system-488cd677-bea5-475d-a16a-7a9e32e8fc53/tokens/fig-variables.css">
+<link rel="stylesheet" href="_ds/root-trust-design-system-488cd677-bea5-475d-a16a-7a9e32e8fc53/tokens/fig-typography.css">
+<link rel="stylesheet" href="_ds/root-trust-design-system-488cd677-bea5-475d-a16a-7a9e32e8fc53/styles.css">
+<script src="_ds/root-trust-design-system-488cd677-bea5-475d-a16a-7a9e32e8fc53/_ds_bundle.js"></script>
+<link rel="icon" href="assets/simbolo-negativo.svg">
+<style>
+html,body{margin:0;background:#171717;}
+a{color:var(--rt-menta);}
+a:hover{color:var(--rt-folha);}
+input::placeholder{color:#9DB3A8;}
+input:focus{outline:none;}
+a:focus-visible,button:focus-visible{outline:2px solid var(--rt-folha);outline-offset:3px;}
+summary{cursor:pointer;}
+summary::marker{color:var(--rt-folha);}
+summary:focus-visible,select:focus-visible,input[type=radio]:focus-visible,input[type=checkbox]:focus-visible{outline:2px solid var(--rt-folha);outline-offset:3px;}
+input[type=radio],input[type=checkbox]{accent-color:var(--rt-folha);}
+select{appearance:none;-webkit-appearance:none;}
+button:disabled{cursor:not-allowed;}
+button[aria-disabled=true]{cursor:not-allowed;}
+details>summary{list-style:none;}
+details>summary::-webkit-details-marker{display:none;}
+</style>
+</helmet>
+
+<div ref="{{ setRoot }}" style="position:relative;overflow:clip;background:#171717;color:var(--rt-superficie);font:400 18px/1.55 var(--font-body);min-height:100vh;display:flex;flex-direction:column;">
+<canvas ref="{{ setFrame }}" aria-hidden="true" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:3;pointer-events:none;display:block;"></canvas>
+<header style="position:fixed;top:0;left:0;right:0;z-index:50;background:#171717;box-shadow:inset 0 -1px 0 {{ hdrLine }};transition:box-shadow 200ms ease;">
+  <nav aria-label="Principal" style="max-width:1320px;margin:0 auto;padding:0 clamp(20px,4vw,60px);box-sizing:border-box;height:76px;display:flex;align-items:center;justify-content:space-between;gap:24px;">
+    <a href="Home.dc.html" aria-label="Root Trust, início" style="display:flex;text-decoration:none;">
+      <img src="assets/roottrust-horizontal-negativo.svg" alt="roottrust" style="height:34px;width:auto;display:block;">
+    </a>
+    <sc-if value="{{ wide }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;gap:40px;align-items:center;">
+      <a href="Home.dc.html#servicos" style="color:var(--rt-superficie);text-decoration:none;font:500 15px/1 var(--font-body);transition:color 160ms ease-out;" style-hover="color:var(--rt-folha);">Serviços</a>
+      <a href="Home.dc.html#ferramentas" style="color:var(--rt-superficie);text-decoration:none;font:500 15px/1 var(--font-body);transition:color 160ms ease-out;" style-hover="color:var(--rt-folha);">Ferramentas</a>
+      <a href="Newsletter.dc.html"  style="color:var(--rt-folha);text-decoration:none;font:500 15px/1 var(--font-body);">Newsletter</a>
+    </div>
+    </sc-if>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <sc-if value="{{ showHdrCta }}" hint-placeholder-val="{{ true }}">
+    <a href="Home.dc.html#contato" style="display:inline-flex;align-items:center;gap:10px;height:42px;padding:0 20px;border-radius:999px;white-space:nowrap;background:var(--rt-superficie);color:var(--rt-verde-raiz);font:600 14px/1 var(--font-body);text-decoration:none;transition:background-color 160ms ease-out;" style-hover="background:var(--rt-menta);color:var(--rt-verde-raiz);">Solicitar diagnóstico<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></a>
+      </sc-if>
+      <sc-if value="{{ narrow }}" hint-placeholder-val="{{ false }}">
+        <button type="button" onClick="{{ toggleMenu }}" aria-expanded="{{ menuOpen }}" aria-controls="menu-mobile" aria-label="{{ menuLabel }}" style="width:44px;height:44px;display:grid;place-items:center;border:0;border-radius:999px;background:transparent;box-shadow:inset 0 0 0 1px var(--rt-rocha);color:var(--rt-superficie);cursor:pointer;transition:box-shadow 160ms ease;" style-hover="box-shadow:inset 0 0 0 1px var(--rt-folha);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16" style="transform-origin:12px 7px;transform:{{ m1 }};transition:transform 200ms cubic-bezier(0.23,1,0.32,1);"></path><path d="M4 17h16" style="transform-origin:12px 17px;transform:{{ m2 }};transition:transform 200ms cubic-bezier(0.23,1,0.32,1);"></path></svg>
+        </button>
+      </sc-if>
+    </div>
+  </nav>
+  <sc-if value="{{ menuShow }}" hint-placeholder-val="{{ false }}">
+    <div id="menu-mobile" style="border-top:1px solid var(--rt-rocha);background:#171717;opacity:{{ menuOp }};transform:translateY({{ menuTy }});transition:opacity 200ms cubic-bezier(0.23,1,0.32,1), transform 200ms cubic-bezier(0.23,1,0.32,1);">
+      <div style="max-width:1320px;margin:0 auto;padding:8px clamp(20px,4vw,60px) 24px;box-sizing:border-box;display:flex;flex-direction:column;">
+        <sc-for list="{{ menuLinks }}" as="m" hint-placeholder-count="3">
+          <a href="{{ m.href }}" onClick="{{ closeMenu }}" style="display:flex;align-items:center;min-height:56px;border-bottom:1px solid var(--rt-rocha);color:var(--rt-superficie);text-decoration:none;font:600 22px/1.2 var(--font-display);">{{ m.label }}</a>
+        </sc-for>
+        <sc-if value="{{ tiny }}" hint-placeholder-val="{{ false }}">
+          <a href="Home.dc.html#contato" onClick="{{ closeMenu }}" style="margin-top:20px;align-self:flex-start;display:inline-flex;align-items:center;gap:10px;height:48px;padding:0 24px;border-radius:999px;background:var(--rt-superficie);color:var(--rt-verde-raiz);font:600 15px/1 var(--font-body);text-decoration:none;">Solicitar diagnóstico</a>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+</header>
+<div style="position:relative;z-index:1;flex:1;display:flex;flex-direction:column;">
+<main style="flex:1 0 auto;display:flex;flex-direction:column;">
+<section id="nao-encontrada" data-sec="nao-encontrada" data-screen-label="404" style="flex:1 0 auto;display:flex;flex-direction:column;max-width:1320px;width:100%;margin:0 auto;padding:136px clamp(20px,4vw,60px) 64px;box-sizing:border-box;"><div style="flex:none;display:flex;flex-direction:column;gap:48px;width:100%;max-width:1200px;margin:0 auto;"><div style="flex:none;display:flex;flex-direction:column;align-items:flex-start;gap:24px;width:100%;"><div style="display:flex;align-items:center;gap:16px;"><span style="font:700 12px/1.4 var(--font-body);letter-spacing:0.18em;text-transform:uppercase;color:var(--rt-menta);white-space:nowrap;">Erro 404</span><span aria-hidden="true" style="width:40px;height:1px;background:var(--rt-musgo);flex:none;"></span></div><h1 style="flex:none;width:100%;margin:0;font:700 clamp(38px,4.6vw,64px)/1.04 var(--font-display);letter-spacing:-0.02em;">Página <span style="color:var(--rt-folha);">não encontrada.</span></h1><p style="flex:none;width:100%;margin:0;max-width:none;font:400 18px/1.55 var(--font-body);color:var(--rt-superficie);text-wrap:pretty;">O endereço pode estar incorreto ou a página pode não estar disponível.</p><button type="button" onClick="{{ goBack }}" style="display:inline-flex;align-items:center;gap:10px;height:48px;padding:0 24px;border:0;border-radius:999px;background:var(--rt-superficie);color:var(--rt-verde-raiz);font:600 15px/1 var(--font-body);white-space:nowrap;cursor:pointer;transition:background-color 160ms ease-out, transform 120ms ease-out;" style-hover="background:var(--rt-menta);" style-active="transform:scale(0.98);"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><path d="m12 19-7-7 7-7"></path></svg>Voltar para a página anterior</button></div><div style="flex:none;width:100%;max-width:1200px;"><canvas ref="{{ artRef }}" aria-hidden="true" style="display:block;width:100%;aspect-ratio:1200 / 380;pointer-events:none;"></canvas></div></div></div></section>
+</main>
+
+<footer data-frame-cut="1" style="width:100%;max-width:1320px;margin:0 auto;padding:36px clamp(20px,4vw,60px);box-sizing:border-box;background:#171717;">
+  <div style="max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:24px 40px;flex-wrap:wrap;">
+    <img src="assets/roottrust-horizontal-negativo.svg" alt="roottrust" style="height:28px;width:auto;display:block;">
+    <span style="font:600 16px/1.2 var(--font-display);color:var(--rt-menta);white-space:nowrap;">A base que sustenta o crescimento!</span>
+    <span style="width:1px;height:20px;background:var(--rt-rocha);"></span>
+    <div style="display:flex;gap:32px;flex-wrap:wrap;">
+      <a href="Home.dc.html#servicos" style="font:400 13px/1.4 var(--font-body);color:var(--rt-menta);text-decoration:none;" style-hover="color:var(--rt-folha);">Serviços</a>
+      <a href="Home.dc.html#ferramentas" style="font:400 13px/1.4 var(--font-body);color:var(--rt-menta);text-decoration:none;" style-hover="color:var(--rt-folha);">Ferramentas</a>
+      <a href="Newsletter.dc.html"  style="font:400 13px/1.4 var(--font-body);color:var(--rt-menta);text-decoration:none;" style-hover="color:var(--rt-folha);">Newsletter</a>
+      <a href="#" style="font:400 13px/1.4 var(--font-body);color:var(--rt-menta);text-decoration:none;" style-hover="color:var(--rt-folha);">Privacidade</a>
+    </div>
+    <span style="margin-left:auto;font:400 13px/1.4 var(--font-body);color:#9DB3A8;">© 2026 Root Trust. Todos os direitos reservados.</span>
+  </div>
+</footer>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+class Component extends DCLogic {
+  state = { wide: true, tiny: false, menuOpen: false, menuMounted: false, reviewOpen: false };
+
+  artRef = el => { this.art = el || null; if (el) this.buildArt(); };
+  buildArt() {
+    const w = this.art ? this.art.getBoundingClientRect().width : 1200, COLS = w >= 760 ? 120 : w >= 480 ? 80 : 56, ROWS = Math.round(COLS * 380 / 1200 / 1.9);
+    const cw = 1200 / COLS, ch = 380 / ROWS, o = document.createElement('canvas'); o.width = 1200; o.height = 380;
+    const x = o.getContext('2d');
+    x.fillStyle = '#ff0000'; x.font = '700 410px "Baloo 2", system-ui, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'alphabetic';
+    x.fillText('4', 215, 345); x.fillText('4', 985, 345);
+    x.save(); x.translate(437, 48); x.scale(0.2, 0.2); x.strokeStyle = '#00ff00'; x.fillStyle = '#00ff00'; x.lineWidth = 170; x.lineCap = 'round'; x.lineJoin = 'round';
+    x.beginPath(); [[85, 780], [250, 690], [548, 1360], [905, 85], [1545, 85]].forEach(([a, b], k) => k ? x.lineTo(a, b) : x.moveTo(a, b)); x.stroke();
+    x.beginPath(); x.arc(1225, 610, 235, 0, Math.PI * 2); x.fill(); x.restore();
+    const d = x.getImageData(0, 0, 1200, 380).data, dens = new Float32Array(COLS * ROWS), kind = new Uint8Array(COLS * ROWS), seed = new Float32Array(COLS * ROWS);
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+      let sr = 0, sg = 0, n = 0;
+      for (let y = Math.floor(r * ch); y < Math.floor((r + 1) * ch); y += 2) for (let xx = Math.floor(c * cw); xx < Math.floor((c + 1) * cw); xx += 2) { const k = (y * 1200 + xx) * 4; sr += d[k] * d[k + 3] / 255; sg += d[k + 1] * d[k + 3] / 255; n++; }
+      const i = r * COLS + c, a = sr / (n * 255), b = sg / (n * 255);
+      dens[i] = Math.max(a, b); kind[i] = b > a ? 1 : 0; seed[i] = Math.abs((Math.sin((r * 97 + c * 57) * 12.9898) * 43758.5453) % 1);
+    }
+    this.grid = { COLS, ROWS, dens, kind, seed };
+    const mix = (p, q, f) => '#' + [0, 2, 4].map(k => Math.round(parseInt(p.substr(1 + k, 2), 16) * (1 - f) + parseInt(q.substr(1 + k, 2), 16) * f).toString(16).padStart(2, '0')).join('');
+    this.palG = Array.from({ length: 8 }, (_, k) => mix('#2A2A2A', '#4A4A4A', k / 7));
+    this.palV = Array.from({ length: 12 }, (_, k) => k < 8 ? mix('#2A4A3E', '#62AF96', k / 7) : mix('#62AF96', '#CCE9DC', (k - 7) / 4));
+    this.artT0 = 0; this.artDirty = true; if (this.art) this.drawArt(performance.now(), true);
+  }
+  drawArt(now, force) {
+    const c = this.art, g = this.grid; if (!c || !g) return;
+    const stat = this.reduce || document.hidden || force === true;
+    if (document.hidden && !force && c.width > 1) return;
+    const r = c.getBoundingClientRect(); if (r.width < 2) return;
+    if (!this.artT0) this.artT0 = now;
+    const prog = this.reduce || document.hidden ? 2 : (now - this.artT0) / 1500;
+    if (this.reduce && !this.artDirty && c.width > 1) return;
+    if (!this.reduce && !force && now - (this.artLast || 0) < 32) return;
+    this.artLast = now; this.artDirty = false;
+    const dpr = Math.min(2, window.devicePixelRatio || 1), w = Math.round(r.width * dpr), h = Math.round(r.height * dpr);
+    if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
+    const x = c.getContext('2d'); x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, r.width, r.height);
+    const cw = r.width / g.COLS, ch = r.height / g.ROWS, mx = this.reduce ? -1e5 : this.cx - r.left, my = this.reduce ? -1e5 : this.cy - r.top, RAMP = '.:-=+*#%@', rad = Math.max(48, r.width * 0.06);
+    x.font = '500 ' + Math.max(7, ch * 0.95).toFixed(1) + 'px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace'; x.textAlign = 'center'; x.textBaseline = 'middle';
+    const tick = Math.floor(now / 140);
+    for (let rr = 0; rr < g.ROWS; rr++) for (let cc = 0; cc < g.COLS; cc++) {
+      const i = rr * g.COLS + cc, dn = g.dens[i]; if (dn < 0.1) continue;
+      const t = (cc / g.COLS) * 0.7 + g.seed[i] * 0.3; if (prog < t) continue;
+      const px = (cc + 0.5) * cw, py = (rr + 0.5) * ch, v = g.kind[i] === 1;
+      const pulse = this.reduce ? 0 : 0.16 * Math.sin(now / 1500 - (cc + rr) * 0.28);
+      const dd = Math.hypot(px - mx, py - my), boost = dd < rad ? 1 - dd / rad : 0, lvl = Math.max(0, Math.min(1, dn + pulse));
+      let ci = Math.min(7, Math.round(lvl * 7)), col = v ? this.palV[ci] : this.palG[ci]; if (boost > 0.05) col = this.palV[Math.min(11, 8 + Math.floor(boost * 4))];
+      let k = Math.min(RAMP.length - 1, Math.floor(lvl * RAMP.length)); if (boost > 0.3) k = (Math.abs((Math.sin(i * 12.9898 + tick * 7.13) * 43758.5453) % 1) * RAMP.length) | 0;
+      x.fillStyle = col; x.fillText(RAMP[k], px, py);
+    }
+  }
+  onMove = e => { this.cx = e.clientX; this.cy = e.clientY; };
+  onLeave = () => { this.cx = this.cy = -1e5; };
+  onArtResize = () => { this.buildArt(); };
+  goBack = () => { if (document.referrer || history.length > 1) history.back(); else location.href = 'Home.dc.html'; };
+  HDR = 76;
+  // cubic-bezier(0.77, 0, 0.175, 1) — ease-in-out forte para movimento na tela
+  ease = (() => { const x1 = 0.77, y1 = 0, x2 = 0.175, y2 = 1, B = (t, a, b) => 3 * a * t * (1 - t) ** 2 + 3 * b * t * t * (1 - t) + t ** 3, D = (t, a, b) => 3 * a * (1 - t) ** 2 + 6 * (b - a) * t * (1 - t) + 3 * (1 - b) * t * t;
+    return x => { if (x <= 0) return 0; if (x >= 1) return 1; let t = x; for (let i = 0; i < 8; i++) { const d = D(t, x1, x2); if (Math.abs(d) < 1e-6) break; t -= (B(t, x1, x2) - x) / d; t = Math.min(1, Math.max(0, t)); } return B(t, y1, y2); }; })();
+  stopScroll = () => { cancelAnimationFrame(this.sraf); this.sraf = 0; };
+  smoothTo = y => {
+    this.stopScroll();
+    const max = document.documentElement.scrollHeight - innerHeight, to = Math.max(0, Math.min(max, y)), from = scrollY, dist = to - from;
+    if (this.reduce || Math.abs(dist) < 2) { window.scrollTo(0, to); return; }
+    const dur = Math.min(1100, Math.max(480, 300 + Math.abs(dist) * 0.1)), t0 = performance.now();
+    const step = now => { const u = Math.min(1, (now - t0) / dur); window.scrollTo(0, from + dist * this.ease(u)); this.sraf = u < 1 ? requestAnimationFrame(step) : 0; };
+    this.sraf = requestAnimationFrame(step);
+  };
+  onAnchor = e => {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    const a = e.target.closest && e.target.closest('a[href^="#"]'); if (!a) return;
+    const id = a.getAttribute('href').slice(1), el = id ? document.getElementById(id) : null;
+    e.preventDefault();
+    this.smoothTo(el ? el.getBoundingClientRect().top + scrollY - this.HDR : 0);
+    if (el) { el.setAttribute('tabindex', '-1'); el.focus({ preventScroll: true }); }
+  };
+  toggleMenu = () => {
+    clearTimeout(this.menuT);
+    if (this.state.menuOpen) { this.setState({ menuOpen: false }); this.menuT = setTimeout(() => this.setState({ menuMounted: false }), 200); }
+    else { this.setState({ menuMounted: true }); requestAnimationFrame(() => requestAnimationFrame(() => this.setState({ menuOpen: true }))); }
+  };
+  closeMenu = () => { if (this.state.menuOpen) this.toggleMenu(); };
+  // Moldura + G3 (Campo de verificação) nas laterais, revelado perto do cursor. ≥ 960px.
+  setFrame = el => { this.fcv = el; };
+  frameSprites(dpr) {
+    if (this.fsp && this.fsp.dpr === dpr) return this.fsp;
+    const S = 12, L = 8, k = 8 / 1630, px = S * dpr;
+    const P = [[85, 780], [250, 690], [548, 1360], [905, 85], [1545, 85]];
+    const mix = (a, b, f) => '#' + [0, 2, 4].map(i => Math.round(parseInt(a.substr(1 + i, 2), 16) * (1 - f) + parseInt(b.substr(1 + i, 2), 16) * f).toString(16).padStart(2, '0')).join('');
+    const TH = [{ base: '#262626', hi: '#4C6B58', ring: '#62AF96' }, { base: '#0E4A3A', hi: '#62AF96', ring: '#CCE9DC' }];
+    const out = TH.map(t => Array.from({ length: L }, (_, l) => [0, 1].map(ringOn => {
+      const c = document.createElement('canvas'); c.width = c.height = px; const x = c.getContext('2d');
+      x.setTransform(dpr, 0, 0, dpr, (S - 1630 * k) / 2 * dpr, (S - 1450 * k) / 2 * dpr);
+      const col = mix(t.base, t.hi, l / (L - 1));
+      x.strokeStyle = col; x.lineWidth = Math.max(0.9, 170 * k); x.lineCap = 'round'; x.lineJoin = 'round';
+      x.beginPath(); P.forEach(([a, b], i) => i ? x.lineTo(a * k, b * k) : x.moveTo(a * k, b * k)); x.stroke();
+      x.fillStyle = ringOn ? mix(col, t.ring, l / (L - 1)) : col; x.beginPath(); x.arc(1225 * k, 610 * k, Math.max(1.1, 235 * k), 0, Math.PI * 2); x.fill();
+      return c;
+    })));
+    this.fsp = { dpr, S, L, out };
+    return this.fsp;
+  }
+  drawFrame(now) {
+    const c = this.fcv, root = this.rootEl; if (!c || !root) return;
+    const vw = document.documentElement.clientWidth, vh = innerHeight, sy = scrollY, on = vw >= 960;
+    const mx = this.mx | 0, my = this.my | 0, key = [vw, vh, sy, on ? mx : 0, on ? my : 0].join(':');
+    if (key === this.fKey) return;
+    this.fKey = key; this.fT = now;
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    if (c.width !== Math.round(vw * dpr) || c.height !== Math.round(vh * dpr)) { c.width = Math.round(vw * dpr); c.height = Math.round(vh * dpr); c.style.width = vw + 'px'; }
+    const x = c.getContext('2d'); x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, vw, vh);
+    if (!on) return;
+    const rt = root.getBoundingClientRect().top;
+    const bands = [...root.querySelectorAll('[data-band]')].map(e => { const r = e.getBoundingClientRect(); return [r.top - rt, r.bottom - rt]; });
+    const cuts = new Set();
+    root.querySelectorAll('[data-sec="pilares"],[data-sec="servicos"],[data-sec="como"],[data-sec="ferramentas"],[data-sec="newsletter"],[data-frame-cut]').forEach(e => { const r = e.getBoundingClientRect(); cuts.add(Math.round(r.top - rt)); });
+    const py = sy + rt + sy - sy; // page y of viewport top relative to root
+    const top = -rt; // root-relative y at viewport top
+    const theme = y => bands.some(([a, b]) => y >= a && y < b) ? 1 : 0;
+    const F = Math.min(vw - 48, 1360), fl = Math.round((vw - F) / 2) + 0.5, fr = Math.round((vw + F) / 2) - 0.5;
+    // G3 nas laterais
+    const sp = this.frameSprites(dpr), S = sp.S, P = 20, Rr = 120, reveal = false;
+    const j0 = Math.floor(top / P), j1 = Math.ceil((top + vh) / P);
+    const cols = [];
+    const nC = Math.max(0, Math.min(6, Math.floor((fl - 24) / P) + 1));
+    for (let k = 0; k < nC; k++) cols.push(fl - 12 - k * P, fr + 12 + k * P);
+    const ol = nC ? Math.round(fl - 24 - (nC - 1) * P) + 0.5 : fl, orr = nC ? Math.round(fr + 24 + (nC - 1) * P) - 0.5 : fr;
+    const hash = (a, b) => { const s = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return s - Math.floor(s); };
+    for (let j = j0; j <= j1; j++) {
+      const y = j * P + P / 2, th = theme(y), row = sp.out[th], vy = y - top;
+      if (th) continue;
+      for (const cx of cols) {
+        let l = 0, ring = 0;
+        if (reveal) { const dx = cx - mx, dy = y - my, d2 = dx * dx + dy * dy; if (d2 < Rr * Rr) { const f = 1 - Math.sqrt(d2) / Rr; l = Math.round(f * f * (sp.L - 1)); ring = f > 0.35 && hash(Math.round(cx / P), j) < 0.4 ? 1 : 0; } }
+        x.drawImage(row[l][ring], cx - S / 2, vy - S / 2, S, S);
+      }
+    }
+    // linhas verticais da coluna
+    const LC = ['#2E2E2E', '#175B4B'], BG = ['#171717', '#003428'];
+    x.lineWidth = 1;
+    x.save(); x.beginPath(); x.rect(0, 0, vw, vh); bands.forEach(([a, b]) => x.rect(0, a - top, vw, b - a)); x.clip('evenodd');
+    const vseg = (X) => { x.strokeStyle = LC[0]; x.beginPath(); x.moveTo(X, 0); x.lineTo(X, vh); x.stroke(); };
+    vseg(fl); vseg(fr); if (nC) { vseg(ol); vseg(orr); }
+    // cortes horizontais + cantoneiras
+    cuts.forEach(y => {
+      const vy = y - top; if (vy < -8 || vy > vh + 8) return;
+      const th = theme(y + 1), Y = Math.round(vy) + 0.5; if (th) return;
+      x.strokeStyle = LC[th]; x.beginPath(); x.moveTo(ol, Y); x.lineTo(orr, Y); x.stroke();
+      (nC ? [ol, fl, fr, orr] : [fl, fr]).forEach(X => { x.fillStyle = BG[th]; x.fillRect(X - 3.5, Y - 3.5, 7, 7); x.strokeStyle = th ? '#4C6B58' : '#3C3C3C'; x.strokeRect(X - 3.5, Y - 3.5, 7, 7); });
+    });
+    x.restore();
+  }
+
+
+
+  schedFrame = () => { if (this.fq || document.hidden) return; this.fq = requestAnimationFrame(() => { this.fq = 0; if (!document.hidden) { this.fKey = ''; this.drawFrame(performance.now()); } }); };
+  onResize = () => { const wide = innerWidth >= 960, tiny = innerWidth < 560, up = {}; if (wide !== this.state.wide) { up.wide = wide; if (wide) { up.menuOpen = false; up.menuMounted = false; } } if (tiny !== this.state.tiny) up.tiny = tiny; if (Object.keys(up).length) this.setState(up); this.schedFrame(); };
+  onKey = e => {
+    if (e.key !== 'Escape') return;
+    if (this.state.menuOpen) { this.closeMenu(); const b = document.querySelector('header button[aria-expanded]'); if (b) b.focus(); return; }
+    if (this.state.reviewOpen) this.setState({ reviewOpen: false }, () => { const b = document.getElementById('btn-revisao'); if (b) b.focus(); });
+  };
+  toggleReview = () => this.setState(s => ({ reviewOpen: !s.reviewOpen }), () => { if (this.state.reviewOpen) { const p = document.getElementById('painel-revisao'); if (p) p.focus({ preventScroll: true }); } });
+  setRoot = el => { if (el) this.rootEl = el; };
+  componentDidMount() {
+    this.cx = this.cy = -1e5;
+    this.mq = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)'); this.reduce = !!(this.mq && this.mq.matches);
+    this.onMq = e => { this.reduce = e.matches; this.artDirty = true; };
+    if (this.mq && this.mq.addEventListener) this.mq.addEventListener('change', this.onMq);
+    window.addEventListener('pointermove', this.onMove, { passive: true }); document.documentElement.addEventListener('pointerleave', this.onLeave); window.addEventListener('resize', this.onArtResize);
+    if (document.fonts && document.fonts.load) document.fonts.load('700 410px "Baloo 2"').then(() => { this.buildArt(); });
+    const loop = now => { this.raf = requestAnimationFrame(loop); this.drawArt(now); }; this.raf = requestAnimationFrame(loop);
+    this.onResize();
+    window.addEventListener('resize', this.onResize);
+    window.addEventListener('scroll', this.schedFrame, { passive: true });
+    window.addEventListener('keydown', this.onKey);
+    document.addEventListener('click', this.onAnchor);
+    document.addEventListener('visibilitychange', this.schedFrame);
+    ['wheel', 'touchstart', 'keydown'].forEach(ev => window.addEventListener(ev, this.stopScroll, { passive: true }));
+    if (window.ResizeObserver && this.rootEl) { this.ro = new ResizeObserver(this.schedFrame); this.ro.observe(this.rootEl); }
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(this.schedFrame);
+    this.schedFrame(); this.t0 = setTimeout(this.schedFrame, 300);
+  }
+  componentDidUpdate() { this.schedFrame(); }
+  componentWillUnmount() {
+    cancelAnimationFrame(this.raf); window.removeEventListener('pointermove', this.onMove); document.documentElement.removeEventListener('pointerleave', this.onLeave); window.removeEventListener('resize', this.onArtResize);
+    if (this.mq && this.mq.removeEventListener) this.mq.removeEventListener('change', this.onMq);
+    cancelAnimationFrame(this.fq); clearTimeout(this.t0); clearTimeout(this.menuT); clearTimeout(this.nlT); this.stopScroll();
+    if (this.ro) this.ro.disconnect();
+    window.removeEventListener('resize', this.onResize); window.removeEventListener('scroll', this.schedFrame); window.removeEventListener('keydown', this.onKey);
+    document.removeEventListener('click', this.onAnchor); document.removeEventListener('visibilitychange', this.schedFrame);
+    ['wheel', 'touchstart', 'keydown'].forEach(ev => window.removeEventListener(ev, this.stopScroll));
+  }
+  chrome() {
+    const st = this.state, wide = st.wide;
+    return {
+      wide: st.wide, narrow: !st.wide, tiny: !!st.tiny, showHdrCta: !st.tiny, hdrLine: 'var(--rt-rocha)',
+      toggleMenu: this.toggleMenu, closeMenu: this.closeMenu, menuOpen: !!st.menuOpen, menuShow: !!st.menuMounted && !st.wide, menuLabel: st.menuOpen ? 'Fechar menu' : 'Abrir menu',
+      menuOp: st.menuOpen ? 1 : 0, menuTy: st.menuOpen ? '0px' : '-8px', m1: st.menuOpen ? 'translateY(5px) rotate(45deg)' : 'none', m2: st.menuOpen ? 'translateY(-5px) rotate(-45deg)' : 'none',
+      menuLinks: [{ href: 'Home.dc.html#servicos', label: 'Serviços' }, { href: 'Home.dc.html#ferramentas', label: 'Ferramentas' }, { href: 'Newsletter.dc.html', label: 'Newsletter' }],
+      setRoot: this.setRoot, setFrame: this.setFrame, toggleReview: this.toggleReview, reviewOpen: st.reviewOpen, reviewLabel: st.reviewOpen ? 'Fechar revisão' : 'Revisão: estados',
+      revSide: wide ? '20px' : '12px', revLeft: wide ? 'auto' : '12px', revW: wide ? '340px' : '100%'
+    };
+  }
+
+  renderVals() {
+    return Object.assign(this.chrome(), { goBack: this.goBack, artRef: this.artRef });
+  }
+}
+</script>
+</body>
+</html>

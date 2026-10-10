@@ -1,5 +1,7 @@
 # Root Trust — auditoria da extração da nova identidade
 
+**Etapa posterior — 04/10/2026:** a extração permanece concluída com os mesmos originais e limites. A [auditoria do export da Home](../../references/audits/home-export-audit.md) é uma avaliação separada, de código/UI e execução no navegador; não estende os testes de extração abaixo para certificação do website. Visual/textos/regras do export foram aprovados; adaptações específicas estão no [design web](../web/design.md#1-autoridade-e-adaptações-aprovadas).
+
 ## Resultado e escopo
 
 **Data:** 02/10/2026. **Fonte principal:** [Manual de Marca — New, página Manual de Marca · Raiz](https://www.figma.com/design/fZrFBBmDE3gQK3MHYIqiho/Manual-de-Marca---New?node-id=112-2), versão 2 · 2026. O acesso e os exports do Figma foram feitos exclusivamente pelo **Figwright**, sem editar o documento.
@@ -175,3 +177,4 @@ O carregamento dos SVGs detecta falhas de leitura/renderização, mas não prova
 ### Informações não definidas pela fonte
 
 Persistem somente limites explícitos do material: eixo da redução mínima, mínimo próprio da assinatura completa, direitos das fotografias, versão das fontes instalada no Figma e condições operacionais de verificação dos selos. Esses pontos não foram preenchidos por suposição. A documentação permite uso da identidade respeitando suas restrições; decisões de frontend, adaptação responsiva, desempenho, acessibilidade da interface e funcionalidades exigem trabalho posterior.
+

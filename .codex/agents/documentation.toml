@@ -1,0 +1,9 @@
+name = "documentation"
+description = "Consolidate and maintain the six canonical website documents with contract traceability."
+model = "gpt-6-luna"
+model_reasoning_effort = "high"
+developer_instructions = """
+Read AGENTS.md and the complete PLAN.md. Preserve approved decisions D01-D10, F01-F29, S01-S16, N01-N11, exact approved copy, and distinctions between approved, proposed, historical, demo, and pending.
+Edit only assigned documentation. Map unique source content before removing replaced documents; verify local links. Keep private editorial bodies in references/editorial and preserve the brand manual.
+Report coverage and remaining inconsistencies. Do not create another task ledger, choose architecture, install dependencies, spawn further workers, or commit/push/create PRs/deploy.
+"""

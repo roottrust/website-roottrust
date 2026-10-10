@@ -1,0 +1,386 @@
+# Desenvolvimento do frontend Root Trust em Next.js
+
+**Aprovado pelo usuário:** “Aplique o plano”, 10/10/2026. **Estado:** execução. Este arquivo é a fonte única de tarefas e evidências. A aprovação visual da Home é obrigatória antes das páginas internas.
+
+## 1. Problema e objetivo
+
+Converter os 12 exports aprovados do Claude Design em frontend Next.js executável, fiel ao visual, conteúdo e comportamento, corrigindo as lacunas auditadas. Consolidar documentação sem perder contratos. Backend, CMS, e-mail, recebimento real de contatos, relatórios operacionais, hospedagem e deploy ficam para outra etapa.
+
+## 2. Pesquisa e evidências
+
+O repositório contém marca v2, contratos F01–F29, S01–S16 e N01–N11 e auditorias dos exports. No levantamento inicial ainda não havia aplicação npm ou testes; a fundação e a Home agora estão implementadas, com revisão P3.4 pendente. Node observado: 24.13.1; npm: 11.8.0. O runtime DC interpreta templates dinamicamente; sua substituição por JSX integra a migração. Three.js direto produz objetos; Canvas 2D produz hero/moldura/símbolos. A Home original tem `s.href`/`s.title` indevidos em `ETAPAS.map`; preservar original e corrigir somente cópia de comparação.
+
+Fontes: [Server/Client Components](https://nextjs.org/docs/app/getting-started/server-and-client-components), [hidratação](https://nextjs.org/docs/messages/react-hydration-error), [instalação](https://nextjs.org/docs/app/getting-started/installation), [suporte](https://nextjs.org/support-policy), [React effects](https://react.dev/reference/react/useEffect), [Three cleanup](https://threejs.org/manual/pages/cleanup.html), [Vitest](https://nextjs.org/docs/app/guides/testing/vitest), [Playwright](https://nextjs.org/docs/app/guides/testing/playwright), [snapshots](https://playwright.dev/docs/test-snapshots), [Web Vitals](https://web.dev/articles/vitals), [agentes](https://learn.chatgpt.com/docs/agent-configuration/subagents).
+
+A pesquisa observou Next 16.4.0/React 19.3, Three 0.184.0, Vitest 5.0.3 e Playwright 1.64.0. Revalidar registry, compatibilidade e advisories na instalação: versões pesquisadas não substituem a verificação. TypeScript 5.9.3 evita incompatibilidade observada entre TS 7 e parser ESLint. Firecrawl retornou falta de créditos; documentação oficial foi pesquisada pela web, sem alegar consulta Firecrawl bem-sucedida.
+
+## 3. Decisões aprovadas
+
+| ID | Decisão |
+|---|---|
+| D01 | Frontend completo primeiro; integrações e publicação adiadas. |
+| D02 | Preservar 12 exports aprovados; corrigir bugs, contratos e acessibilidade auditados, sem redesenho. |
+| D03 | Somente tema escuro nesta entrega. |
+| D04 | Aplicação em `web/`; exports preservados em `references/claude-design/`. |
+| D05 | Exatamente seis documentos canônicos em `docs/web`; excluir substituídos após migrar informação única. Preservar marca/assets. |
+| D06 | GPT-6.1 Sol XHigh orquestra, mantém PLAN e decide escopo/arquitetura; todo desenvolvimento restante ocorre pelo MCP `claude-agent`, com Sonnet ou Haiku explícitos. Opus somente consulta complexa. Uma escrita ativa por vez; revisor independente. Atualizado pelo usuário em 10/10/2026; Fable excluído por indisponibilidade no plano Pro. |
+| D07 | Aprovação humana da Home antes das internas; aceite humano final do conjunto. |
+| D08 | `/privacidade` temporária, descrevendo honestamente a operação local. |
+| D09 | Campos ativos, validação completa, preparados para futura integração. |
+| D10 | Simulação local identificada de carregamento/sucesso/erro em modo demo/testes; nenhum envio real. |
+
+## 4. Arquitetura, contratos e propriedade
+
+Next App Router, React, TypeScript estrito, npm, CSS Modules e tokens CSS; Three.js direto. Sem R3F, Tailwind, runtime DC/CDN ou Cache Components. Conteúdo essencial em Server Components; fronteiras cliente pequenas para interação/gráficos. Primeiro render determinístico. Baloo 2 e Archivo via `next/font/local`, preservando OFL. Dependências e builds têm um único proprietário.
+
+```text
+PLAN.md
+AGENTS.md
+.codex/config.toml
+.codex/agents/
+.claude/settings.json
+docs/design/
+docs/web/{README,product,design,tools,newsletter,development}.md
+references/{claude-design,audits,editorial}/
+web/{src/app,src/components,src/features,src/lib,src/styles,public,tests}/
+web/{package.json,package-lock.json}
+.github/workflows/
+```
+
+### Rotas
+
+`/`; `/servicos/ciberseguranca`; `/servicos/infraestrutura-em-nuvem`; `/servicos/desenvolvimento-de-software` (rótulo Software); `/ferramentas/rosi`; `/ferramentas/shadow-ai`; `/ferramentas/divida-tecnica`; `/ferramentas/migracao-para-nuvem`; `/newsletter`; `/newsletter/edicoes`; `/newsletter/edicoes/[slug]`; `/privacidade`; 404 nativa. Sem Sobre, hub de ferramentas ou diagnóstico dedicado.
+
+### Formulários
+
+`FORM_MODE=demo` ativa explicitamente simulação local em ambiente de revisão/testes. Sem configuração, nunca produzir sucesso simulado. Campos permanecem ativos, com validação, foco/erros associados, guarda contra envio duplicado e preservação após erro. Adaptador interno único separa UI da submissão futura. Diagnóstico exige Nome, Empresa e WhatsApp. Aviso junto ao formulário e confirmação informa “nenhum dado foi enviado”. Newsletter aceita solicitação de confirmação, sem declarar inscrição confirmada/endereço verificado/e-mail entregue. Relatório recebe contato e ID da ferramenta, nunca respostas/resultados. Nenhum endpoint operacional, persistência ou analytics nesta fase.
+
+### Ferramentas, newsletter e gráficos
+
+Modelos puros TS preservam F01–F29. Estado local descartado ao sair e limpo no retorno; sem URL/storage/logs/associação ao e-mail. Edição invalida resultado; troca 12/36 meses exige revisão, sem multiplicação automática. Shadow AI sem score. Vazio/desconhecido não são zero; preservar resultados negativos; tratar denominador zero e overflow explicitamente.
+
+Newsletter: três amostras públicas, metadados/fontes/primeiro parágrafo completo; arquivo com dois itens por página e filtro reiniciando página 1. Preservar edição escolhida; inscrição geral escolhe mais recente. Slug inválido retorna HTTP 404 antes de streaming. Corpos completos ficam fora de HTML/RSC/JS/maps/assets; demos sem indexação.
+
+Pausa global acessível durante a sessão SPA; redução de movimento dinâmica. Animar somente quando não reduzido, não pausado, aba visível e elemento relevante. Pausa/redução mantêm apresentação estática. Aba oculta suspende desenho e timers. Fallback usa asset aprovado sem reconstruir logo. Descarte explícito de GPU/listeners/loops e guarda contra inicialização assíncrona após desmontagem.
+
+### Consolidação documental
+
+`README`: índice/estado; `product`: brief/conteúdo/fluxos/serviços; `design`: visual/componentes/responsivo/movimento/a11y; `tools`: F01–F29/modelos/fixtures; `newsletter`: N01–N11/limites públicos; `development`: arquitetura/comandos/testes/agentes/integrações pendentes. Audits → `references/audits`; edições completas → `references/editorial`. Manter rastreabilidade F/S/N e distinção aprovado/proposta/demo/pendência/histórico. Excluir briefings/prompts/planos antigos após conferir cobertura. Atualizar links de AGENTS e marca sem reescrever o manual. Nenhuma limpeza ampla de `temp`.
+
+### Agentes, modelos e operação da ponte Claude
+
+Distribuição atual substitui Luna/Sol como executores futuros; nomes nas evidências concluídas permanecem históricos. Os perfis em `.codex/agents/` ficam preservados, sem uso para implementação nesta etapa. Não alterar modelos/permissões globais ou a assinatura do usuário.
+
+| Responsabilidade | Modelo / permissão | Motivo |
+|---|---|---|
+| Orquestração, PLAN, despacho, critérios e decisões | GPT-6.1 Sol XHigh; `[codex]` | Coordenação e validação de evidências; não implementa código do site. |
+| Inventário, cópias com hash, catálogo por allowlist, documentação factual | `haiku`; `[claude:escreve]` | Trabalho delimitado e verificável, sem criar regras de negócio. |
+| Next/React, CSS, gráficos, modelos, testes, CI e correções | `sonnet`; `[claude:escreve]` | Trabalho com dependências, estado, matemática e lifecycle. |
+| Revisão funcional, visual, matemática, privacidade e acessibilidade | `sonnet`; `[claude:consulta]`, sessão independente | Verificar contratos e diff com contexto suficiente, sem autorrevisão como aceite. |
+| Impasse arquitetural/matemático ou falha crítica persistente | `opus`; `[claude:consulta]`, condicional | Segunda opinião pontual; GPT decide e Sonnet implementa. |
+
+**Capacidade verificada em 10/10/2026:** o schema MCP aceita os aliases `haiku`, `sonnet`, `opus` e `fable`; **Fable é proibido neste plano**, pois o usuário não tem acesso no Pro. O schema não permite IDs arbitrários, `opusplan`, ajuste de esforço ou orçamento de tokens. Não inventar parâmetros low/high/XHigh para Claude. Modelos observados nesta conversa: Haiku `claude-haiku-4-5-20251001` e Sonnet `claude-sonnet-5`; registrar o `model` efetivo de cada chamada. Opus ainda não foi chamado; sua resolução/autorização local permanece não verificada. Alias aceito no schema não comprova acesso. Não gastar rodadas apenas para testar modelos; validar na primeira tarefa útil. Modelo inesperado: interromper antes de continuar a tarefa, registrar e informar; nunca fazer fallback silencioso.
+
+Servidor denominado `claude-agent` nas instruções do usuário; ferramentas reais expostas neste ambiente: `mcp__claude_agent__claude`, `mcp__claude_agent__claude_reply`, `mcp__claude_agent__claude_result` e `mcp__claude_agent__claude_cancel`. Os nomes curtos `claude-reply`/`claude-result`/`claude-cancel` neste protocolo se referem a essas ferramentas; não são servidores adicionais.
+
+**Atualização solicitada pelo usuário — versões atuais:** em 10/10/2026, a documentação oficial de configuração lista Sonnet 5.5, Haiku 5.5 e Opus 5.5; a CLI instalada é 2.1.296, acima dos mínimos publicados (2.1.284 / 2.1.293 / 2.1.280, respectivamente). Como a ponte só aceita aliases e anteriormente resolveu modelos mais antigos, `.claude/settings.json` define apenas os mapeamentos de família `ANTHROPIC_DEFAULT_*_MODEL` para `claude-sonnet-5-5`, `claude-haiku-5-5` e `claude-opus-5-5`, restritos a este projeto. Sem alterar permissões/configurações globais ou instalar/atualizar ferramentas. Esta configuração expressa o modelo solicitado, não comprova acesso: confirmar `model` efetivo no início de cada sessão; rejeição ou versão divergente exige cancelamento/registro e consulta ao usuário, sem fallback. Revalidar versões oficiais e acesso ao retomar outra fase, evitando manter pins antigos por inércia. Fable continua excluído.
+
+Fontes oficiais: [configuração e resolução de aliases](https://code.claude.com/docs/en/model-config), [Sonnet](https://www.anthropic.com/claude/sonnet), [Haiku](https://www.anthropic.com/claude/haiku), [Opus](https://www.anthropic.com/claude/opus). A escolha acima é uma avaliação para este repositório; descrições comerciais e preço por token de API não estimam a cota Pro. A ponte informa `contextTokens`, não gasto total nem saldo do plano.
+
+#### Protocolo obrigatório por tarefa
+
+1. `[codex]` confirmar raiz com `git rev-parse --show-toplevel`, verificar dependência/estado e atribuir dono/arquivos. Nenhuma página interna antes do aceite P3.4. Preservar árvore suja e evidências existentes; não refazer P1/P2.
+2. Antes de cada `[claude:escreve]`: executar `git add -A --dry-run` e inspecionar arquivos para segredos/gerados, sem imprimir conteúdo sensível. Se houver suspeita, parar e informar. Aplicar exclusões já previstas para builds/caches; não descartar trabalho anterior.
+3. Criar ponto de restauração LOCAL: `git add -A` e `git commit -m "wip: pre-claude <passo>"` (`--allow-empty` se necessário). Exceção autorizada pelo usuário em 10/10/2026 inclui a árvore suja preexistente, após inspeção. Falha bloqueia escrita; registrar hash neste PLAN antes da chamada. Commit final, push, PR e deploy continuam exigindo autorização específica.
+4. Abrir sessão nova `claude` com `cwd` na raiz e `model` explícito. `writable: true` somente em tarefa `[claude:escreve]` escrita aqui; omitir em consulta. Prompt curto: ID, objetivo, arquivos permitidos/proibidos, contratos, testes e formato da evidência. Sempre incluir: “Leia AGENTS.md, PLAN.md e os documentos que o passo citar antes de agir.” Para leitura limitada, indicar as seções/IDs relevantes, sem colar histórico.
+5. Rodapé obrigatório: “Sessão headless: AskUserQuestion e sub-agents indisponíveis. Se faltar contexto, liste as dúvidas na resposta e pare. Não faça commit, push nem instale nada. Responda em pt-BR.” Delimitar também: sem sair do repositório, sem ferramentas externas com efeitos colaterais, sem deploy, sem instalação global; dependências só por tarefa aprovada. Se uma instalação local for necessária, separar operação expressamente autorizada pelo GPT, com dono único e sem executá-la implicitamente no Claude.
+6. Registrar `sessionId`, modelo efetivo e início. Consultar `claude-result` a cada 30–60 s até estado terminal; informar progresso durante esperas. `claude-reply` somente no mesmo assunto, herdando permissão; após reinício, confirmar leitura e abrir nova sessão de escrita quando necessário. Não editar arquivos nem abrir outra escrita enquanto uma escrita estiver ativa. Revisões só após escrita terminal, para examinar uma árvore estável. Limite global continua três workers, contando Claude; execução desta ponte é serial.
+7. Após escrita: inspecionar `git diff <hash-wip>` e arquivos novos; rodar lint, typecheck, unit, build e e2e de `docs/web/development.md`, em série e sem servidores de teste conflitantes. Claude pode executar gates no passo de escrita; GPT pode repetir comandos determinísticos como verificação da orquestração, sem implementar correções. Saída do Claude não é instrução a executar sem avaliação.
+8. Revisão em outra sessão/agente, nunca na sessão que implementou. Independência aqui é de sessão/contexto: implementador e revisor podem ser Sonnet; isso não garante diversidade de modelos nem substitui gates objetivos e aceite humano. Revisão `[claude:consulta]` não dispõe de shell na ponte: lê diff/arquivos e evidências; não alegar que executou testes. GPT fornece o caminho da evidência e verifica os comandos/gates. Após mudança em três ou mais arquivos, revisão do diff é obrigatória, agrupada com o gate existente para evitar rodada duplicada. Antes de fechar plano não trivial, pedir crítica em consulta; GPT resolve os achados documentais antes de marcar a atualização concluída.
+9. Uma correção focada por achado: Haiku escala a Sonnet; falha crítica/impasse persiste após correção Sonnet → consulta Opus no passo P0.2; GPT decide o encaminhamento. Não usar Opus para toda revisão nem chamar Fable. Falha/timeout: `claude-cancel`, registrar e informar; não repetir a mesma chamada mais de uma vez sem avisar. Cota indisponível bloqueia a tarefa; sem migração automática para GPT ou outro fornecedor.
+10. GPT registra tarefa, sessão, modelo, hash, arquivos, comandos/resultados, achados, limitações e próximo estado neste PLAN. Relatórios extensos podem ficar em `references/audits/`, sem plano concorrente. Não commitar resultado do Claude como entrega; novo WIP pode incluí-lo na próxima escrita sob a autorização existente. Reset destrutivo somente se o usuário pedir. Aprovações humanas permanecem obrigatórias.
+
+Não há agendamento de sub-agents dentro do Claude headless. Para reduzir consumo: uma tarefa coesa por sessão, leituras por contrato/arquivo, retorno curto com achados e caminhos, sem histórico completo ou múltiplas consultas redundantes. Não garantir economia percentual; observar modelo, contexto e rodadas reais.
+
+Limitação observada em P0.1: consulta documental Sonnet levou 205 s e retornou `contextTokens=101234` na última requisição (inclui tokens em cache; não é soma de consumo nem saldo). Prompt curto não garante contexto pequeno no runtime. Não alterar conectores/configurações globais para reduzir isso sem autorização; agrupar verificações relacionadas e evitar consultas por microtarefa.
+
+### Matriz de todos os To Dos
+
+Fases concluídas não serão reexecutadas nem terão autoria histórica reatribuída. As tags abaixo definem a execução restante e futuras correções pertinentes.
+
+| To Do | Executor / tag | Revisor e contexto mínimo |
+|---|---|---|
+| P0.1 Atualizar distribuição e instruções | GPT `[codex]` | Sonnet consulta; PLAN, AGENTS e development. |
+| P0.2 Impasse complexo, somente quando acionado | Opus `[claude:consulta]` | GPT decide; achado reproduzível, contrato e alternativas. Sem escrita. |
+| P0.3 Versões atuais e piloto | GPT `[codex]`; Sonnet `[claude:consulta]` em P3.4-P | Configuração local de aliases; validar modelo efetivo e aguardar decisão do usuário após uma tarefa. |
+| P0.4 Bloqueio de arquivos .env* | GPT `[codex]`, por determinação do usuário | Preservar arquivos locais; excluir todos do versionamento, sem exceção para template. Nenhum Claude nesta correção. |
+| P1.1 Registro do plano (concluído) | GPT `[codex]` | Preservar evidências. |
+| P1.2 Inventário/assets (concluído) | Histórico; correções Haiku `[claude:escreve]` | Sonnet consulta; inventário, hashes e baseline. |
+| P1.3 Consolidação documental (concluído) | Histórico; correções Haiku `[claude:escreve]` | Sonnet consulta; matriz F/S/N/D, sem reinterpretar contratos. |
+| P1.4 Instruções/agentes (concluído) | Histórico; migração atual em P0.1 | Perfis Codex preservados; sem reconfiguração global. |
+| P2.1 Bootstrap (concluído) | Histórico; correções Sonnet `[claude:escreve]` | Sonnet independente; development e fundação. |
+| P2.2 Assets (concluído) | Histórico; correções Haiku `[claude:escreve]` | Sonnet; catálogo, allowlist e hashes. |
+| P2.3 Shell/componentes (concluído) | Histórico; correções Sonnet `[claude:escreve]` | Sonnet; design, D09–D10 e testes afetados. |
+| P2.4 Testes/formulários (concluído) | Histórico; correções Sonnet `[claude:escreve]` | Sonnet; adaptador, validação e provas dos gates. |
+| P3.1 Gráficos em revisão | Sonnet `[claude:escreve]`, se houver correção | Sonnet independente em P3.4; lifecycle, GPU, shaders e baseline. |
+| P3.2 Movimento em revisão | Sonnet `[claude:escreve]`, se houver correção | Sonnet em P3.4; pausa/redução/suspensão/fallback. |
+| P3.3 Home em revisão | Sonnet `[claude:escreve]`, se houver correção | Sonnet em P3.4; design/product, Home e testes. |
+| P3.4 Revisão e aceite Home | Sonnet `[claude:consulta]`; GPT/usuário `[codex]` | Sessão independente; comparação visual, gates e achados. Correções retornam P3.1–P3.3; usuário aprova. |
+| P3.4-P Piloto: movimento/lifecycle | Sonnet `[claude:consulta]`; GPT verifica evidências `[codex]` | Uma tarefa de revisão estática, sem corrigir código ou concluir P3.4. Resultado apresentado antes de continuar. |
+| P3.4-T Testes de movimento/fallback e evidência visual | Sonnet `[claude:escreve]` | Sonnet independente depois da escrita; testes reais Chromium, falhas reproduzíveis e comparação estática com baseline. Sem mudar direção visual. |
+| P4.1 Três serviços | Sonnet `[claude:escreve]` | Sonnet P4.4; product S01–S16, exports e componentes existentes. Conteúdo contratual exclui Haiku como dono. |
+| P4.2 Modelos puros | Sonnet `[claude:escreve]` | Sonnet P4.4; tools F01–F29, fixtures e unidades. Matemática não delegada ao Haiku. |
+| P4.3 Quatro interfaces | Sonnet `[claude:escreve]` | Sonnet P4.4; modelos, estado local, formulários e exports. |
+| P4.4 Revisão S/F | Sonnet `[claude:consulta]` | Sessão independente das implementações; gates e contratos. Correções retornam ao dono P4.1–P4.3. |
+| P5.1 Catálogo público | Haiku `[claude:escreve]` | Sonnet antes de consumo público; newsletter N01–N11, allowlist e aberturas permitidas. |
+| P5.2 Três páginas newsletter | Sonnet `[claude:escreve]` | Sonnet P5.4; newsletter, catálogo revisado, filtros/edição escolhida. |
+| P5.3 Privacidade/metadata/404 | Sonnet `[claude:escreve]` | Sonnet P5.4; development/product, HTTP 404, noindex e privacidade real. |
+| P5.4 Revisão pública | Sonnet `[claude:consulta]` | Sessão independente; HTML/RSC/JS/maps/assets e evidências de inspeção. |
+| P6.1 CI local | Sonnet `[claude:escreve]` | Sonnet independente; scripts, lockfile, Node e workflow sem deploy. |
+| P6.2 QA integral | Sonnet `[claude:consulta]`; GPT executa gates `[codex]` | Revisor distinto; artefatos de browser, visual, matemática e medições. Novos testes/correções via dono de escrita original. |
+| P6.3 Aceite/entrega | GPT + usuário `[codex]` | Haiku escreve apenas documentos/evidências em P6.3-D; Sonnet revisa diff. |
+| P6.3-D Documentação final | Haiku `[claude:escreve]` | Após P6.2, antes do aceite final: seis docs/evidências, sem código nem alteração de escopo. GPT arquiva PLAN somente após aceite. |
+
+## 5. Fases, tarefas e Acceptance Criteria
+
+### Fase 0 — Troca de executores, sem reiniciar desenvolvimento
+
+#### P0.1 Atualizar plano e instruções — [codex]
+Dependência: solicitação atual do usuário. Dono GPT; alterações limitadas a PLAN, AGENTS e development.
+- [x] Modelos por tarefa definidos, Fable excluído e limitações reais da ponte registradas.
+- [x] Preservar tarefas concluídas, contratos, dependências e aprovação humana da Home.
+- [x] Crítica independente Sonnet em somente leitura e revisão dos três documentos; GPT resolveu os quatro achados documentais após o retorno.
+- [x] Modelo efetivo e sessionId da crítica registrados; nenhum código do site alterado.
+
+#### P0.2 Consultoria complexa condicional — [claude:consulta] Opus
+Dependência: impasse documentado após uma correção Sonnet, ou decisão arquitetural complexa levantada pelo GPT.
+- [ ] Quando acionado: registrar problema, alternativas, sessão/modelo e recomendação; GPT decide sem ampliar escopo implicitamente.
+Não é bloqueador obrigatório: permanecer “não acionado” quando não houver impasse; sem chamada só para testar disponibilidade.
+
+#### P0.3 Atualizar versões e validar uma tarefa — [codex]
+Dependência: solicitação do usuário para modelos atuais e um piloto antes da continuação completa.
+- [x] Fonte oficial e CLI local verificadas; mapeamento de família restrito a `.claude/settings.json`, sem Fable/permissões novas.
+- [x] Modelo efetivo Sonnet 5.5 confirmado pelo MCP na tarefa piloto; Haiku/Opus 5.5 ainda sem chamada.
+- [x] Resultado, limites e próximos passos registrados em `references/audits/claude-home-motion-pilot.md`.
+- [x] Usuário validou piloto: “Pela minha análise tudo correu bem. Siga com o resto das outras tasks.” (10/10/2026). Isso não aprova visualmente a Home.
+
+#### P0.4 Resolver arquivos .env* mantendo o bloqueio — [codex]
+Dependência: instrução do usuário “Mantenha esse bloqueio por agora, resolva essas questões relacionadas a .env* com os modelos do GPT”. Esta correção é exclusiva do GPT; não autoriza Claude a ler/editar esses arquivos.
+- [x] Confirmado: nenhum `.env*` já versionado; único template identificado é `web/.env.example`, sem dependência/referência obrigatória no código ou docs.
+- [x] `.gitignore` usa `.env*`, sem exceção. Template preservado no disco, ignorado por Git; nenhum conteúdo/configuração local removido ou enviado ao Claude.
+- [x] Oito verificações de ignore passaram; arquivo normal da aplicação continua versionável. Template preservado; nenhum `.env*` já rastreado. Dry-run: 243 entradas, zero caminhos sensíveis/gerados detectados; busca de padrões de chaves/tokens sem correspondências.
+- [x] Resultado registrado; regra de parada mantida caso um arquivo sensível volte a aparecer no checkpoint. Git ignore controla versionamento, não é sandbox de acesso; Claude continua fora do escopo `.env*`.
+
+### Fase 1 — Referências e documentação
+
+#### P1.1 Registrar plano e estado — orquestrador
+Dependência: aprovação do usuário. Registrar plano aprovado e alterações anteriores.
+- [x] Decisões, tarefas, dependências e critérios persistidos.
+- [x] Estado Git anterior identificado; nenhuma alteração preexistente descartada.
+
+#### P1.2 Preservar exports e baseline — Luna Low; correção técnica Sol Medium
+Dependência: P1.1. Mover exports com inventário e criar cópia de comparação.
+- [x] Doze HTML e dependências preservados com hashes antes/depois e caminhos relativos funcionais.
+- [x] Home original intacta; cópia de comparação corrige somente `s` indefinido, com diff registrado.
+- [x] Cópia executa sem erro `Home.renderVals` conhecido.
+
+#### P1.3 Consolidar seis documentos — Luna High
+Dependência: P1.2. Migrar contratos e eliminar redundâncias.
+- [x] Exatamente seis docs; F/S/N, copy, fluxos e auditorias com origem/destino verificáveis.
+- [x] Exclusões somente após cobertura de requisitos únicos; links válidos, inclusive marca.
+
+#### P1.4 Configurar agentes e revisar contexto — Sol Medium; revisor Sol High
+Dependência: P1.3. Atualizar instruções/propriedade e verificar consolidação.
+- [x] Perfis explícitos, máximo três workers, AGENTS atualizado e regras de autorização preservadas.
+- [x] Revisão independente sem perda de contratos ou conflito de autoridade.
+
+### Fase 2 — Fundação Next
+
+#### P2.1 Bootstrap — Sol Medium integrador
+Dependência: P1.4. Inicializar aplicação mínima na stack aprovada.
+- [x] Compatibilidade/advisories/Node verificados; lockfile, TS estrito e ESLint presentes.
+- [x] Scripts reais dev/build/start/typecheck/lint; sem sobrescrever instruções ou adicionar tecnologias não aprovadas.
+
+#### P2.2 Assets — Luna Low e integrador
+Dependência: P2.1. Publicar apenas cópias necessárias com proveniência.
+- [x] Fontes/assinaturas/grafismos corretos locais, OFL incluídas e allowlist pública registrada.
+- [x] Sem uploads privados, identidade antiga ou alteração de assets originais.
+
+#### P2.3 Shell e componentes — Sol Medium
+Dependência: P2.2. Estrutura SSR, navegação e fundamentos de interface.
+- [x] Destinos corretos; menu teclado/Escape/devolução de foco.
+- [x] Campos semânticos com labels/tipos/autocomplete/erros; 320px sem overflow.
+
+#### P2.4 Testes e formulários demo — Sol Medium + QA
+Dependência: P2.3. Vitest Node e Playwright contra produção; contrato D09–D10.
+- [x] Scripts e smoke executáveis com build/start de produção.
+- [x] Validação/loading/sucesso/erro explícitos, sem rede/persistência; sem configuração não há falso sucesso.
+- [x] Configuração local e testes documentados.
+
+### Fase 3 — Gráficos e Home
+
+#### P3.1 Portar gráficos — [claude:escreve] Sonnet, somente correções restantes
+Dependência: P2.4. Preservar formas, materiais e shaders em lifecycle React.
+- [ ] Sem canvas/listeners/loops duplicados na montagem/desmontagem.
+- [ ] GPU/recursos compartilhados descartados; import/fontes tardios não ressuscitam componente.
+- [ ] Falha de inicialização/perda de contexto exibem fallback.
+
+#### P3.2 Movimento acessível — [claude:escreve] Sonnet, somente correções restantes
+Dependência: P3.1. Completar pausa e suspensão dinâmica.
+- [ ] Pausa visível, redução dinâmica, suspensão de aba oculta/elemento fora de tela.
+- [ ] Conteúdo/CTA utilizáveis sem gráficos; estado estático legível.
+
+#### P3.3 Home nativa — [claude:escreve] Sonnet, somente correções restantes
+Dependência: P3.2. Portar todas as seções e corrigir auditoria.
+- [ ] Desktop/mobile fiéis; seletor/processo/terminal acessíveis por teclado.
+- [x] Links de serviços/ferramentas/arquivo corretos; formulário D09–D10.
+- [x] ROSI descrito como simulador financeiro, sem runtime DC ou erro de hidratação.
+
+#### P3.4 Validar Home e obter aceite — [claude:consulta] Sonnet independente; [codex] GPT + usuário
+Dependência: P3.3.
+- [ ] Build/lint/tipos/testes; comparação visual por seção com diferenças autorizadas.
+- [ ] Desktop/mobile/teclado/pausa/redução/fallback verificados.
+- [ ] **Usuário aprova Home antes de iniciar páginas internas.**
+
+#### P3.4-P Piloto de revisão movimento/lifecycle — [claude:consulta] Sonnet
+Dependência: P0.3 (versões verificadas/configuração solicitada) e implementação P3.1–P3.3 existente. Esta tarefa é um recorte de P3.4, não substitui comparação visual, QA integral ou aceite humano. Nenhuma escrita Claude; nenhum checkpoint WIP necessário.
+- [x] Revisar GraphicsProvider, animation, HomeCanvas, PillarArt, SymbolAscii, pillar-runtime, Terminal e testes relacionados: pausa, redução dinâmica, aba oculta, interseção, inicialização tardia e descarte.
+- [x] Achados com caminho/linha, mecanismo e gravidade; separar fatos do código de hipóteses e cobertura ausente. Nenhum teste de browser declarado executado pelo revisor.
+- [x] GPT confrontou achados e corrigiu afirmação incorreta sobre cobertura: recursos/context-loss já têm testes. Lint/typecheck/unit/build/e2e passaram; nenhuma correção de código nesta rodada.
+- [x] Relatório salvo em `references/audits/claude-home-motion-pilot.md`; sequência bloqueada até validação do usuário.
+- [x] Usuário validou resultado do piloto em 10/10/2026; isso não equivale ao aceite visual da Home.
+
+#### P3.4-T Completar QA de movimento/fallback e evidências visuais — [claude:escreve] Sonnet
+Dependência: piloto aprovado; P3.1–P3.3 implementados. Dono Sonnet; arquivos permitidos: `web/tests/e2e/`, `web/tests/unit/graphics/`, correções mínimas reproduzíveis em `web/src/features/graphics/` e evidência em `references/audits/home-qa.md`/`references/audits/home-qa/`. Sem modificar PLAN, marca, exports, formulários, dependências ou páginas internas. Não ler/editar `.env*`.
+- [ ] Adicionar regressões úteis de redução dinâmica, pausa, fallback de inicialização/perda de contexto e suspensão; distinguir simulações de visibilidade de testes reais de aba.
+- [ ] Corrigir somente bugs reproduzidos nos gráficos, preservando composição e controles; não aplicar propostas opcionais do piloto sem necessidade comprovada.
+- [ ] Executar lint/typecheck/unit/build/e2e em série; capturar evidências de Home desktop/mobile por seção com estado estável e apontar limites/diferenças visuais. Sem alegar comparação pixel a pixel entre runtimes.
+- [ ] Revisão em sessão Sonnet independente; obter aceite humano da Home em P3.4 antes de iniciar P4/P5.
+
+### Fase 4 — Serviços e ferramentas (após aceite da Home)
+
+#### P4.1 Três serviços — [claude:escreve] Sonnet
+Dependência: P3.4. Portar três rotas, seis seções, quatro frentes.
+- [ ] Restaurar vulnerabilidades/Red Team/compliance; preservar limites contratuais de Pentest/reteste/suporte.
+- [ ] Sem novos pilares, provas ou promessas; usar componentes/formulários/gráficos comuns.
+
+#### P4.2 Modelos puros — [claude:escreve] Sonnet
+Dependência: P3.4. Extrair modelos F e fixtures independentes.
+- [ ] Vazio/desconhecido/zero diferenciados, divisão zero/não finitos tratados; Shadow sem score.
+- [ ] Testes de resultados e limites contratuais passando.
+
+#### P4.3 Quatro interfaces — [claude:escreve] Sonnet
+Dependência: P4.2. Entradas/resultados compactos e revisão.
+- [ ] Calcular/editar/limpar; horizonte invalida; sair/retornar limpa respostas.
+- [ ] Nenhuma resposta em URL/storage/logs/submissão; relatório e newsletter independentes.
+
+#### P4.4 Revisão — [claude:consulta] Sonnet independente
+Dependências: P4.1 e P4.3.
+- [ ] Contratos S/F, fixtures independentes e jornadas conferidos.
+- [ ] Nenhum envio/persistência de respostas.
+
+### Fase 5 — Newsletter e rotas (após aceite da Home; independente da fase 4 até P5.2, execução Claude serial)
+
+#### P5.1 Catálogo público — [claude:escreve] Haiku
+Dependência: P3.4.
+- [ ] Slugs/datas/pilares/fontes/abertura e links preservados; nenhum corpo completo.
+- [ ] Edições extras somente em fixtures de teste.
+- [ ] Revisão Sonnet independente da allowlist antes de P5.2, sem expor corpos completos.
+
+#### P5.2 Três páginas — [claude:escreve] Sonnet
+Dependência: P5.1.
+- [ ] Apresentação completa; filtro reinicia paginação, dois itens/página.
+- [ ] Prévia/retorno/edição escolhida corretos; demos identificadas; aceito não significa confirmado.
+
+#### P5.3 Privacidade, metadata e 404 — [claude:escreve] Sonnet
+Dependências: P4.3 e P5.2.
+- [ ] Privacidade provisória verdadeira; títulos/descrições; HTTP 404 real; saída para Home.
+- [ ] Sem links vazios; demos sem indexação.
+
+#### P5.4 Revisão pública — [claude:consulta] Sonnet independente
+Dependência: P5.3.
+- [ ] Jornadas N verificadas; HTML/RSC/JS/maps/assets sem completas ou referências privadas.
+- [ ] Nenhuma alegação de inscrição/envio operacional.
+
+### Fase 6 — Validação final
+
+#### P6.1 CI GitHub — [claude:escreve] Sonnet
+Dependências: P4.4 e P5.4.
+- [ ] npm ci/lint/typecheck/unit/build/e2e, Node consistente, falhas vermelhas, sem segredo/deploy.
+- [ ] Equivalente local validado; CI remota só declarada após push autorizado e execução real.
+
+#### P6.2 QA integral — [claude:consulta] Sonnet independente; [codex] gates determinísticos
+Dependência: P6.1.
+- [ ] Chromium desktop/mobile completo, Firefox/WebKit smoke; 320px/zoom/foco/teclado/erros.
+- [ ] Sem runtime/hidratação/recursos órfãos; desempenho medido com ambiente/limites e desvios resolvidos ou explicitamente decididos.
+
+#### P6.3 Aceite e entrega — [codex] GPT + usuário
+Dependência: P6.2.
+- [ ] Usuário aprova conjunto; docs registram comandos/versões/limites e futuras integrações.
+- [ ] Todas tarefas com evidência; somente após aceite final arquivar PLAN em docs/plans.
+- [ ] Nenhum commit/push/PR/deploy sem autorização específica.
+
+#### P6.3-D Documentação da entrega — [claude:escreve] Haiku
+Dependência: P6.2; concluir antes do aceite final P6.3. Limitar a documentação e evidências, sem alterar produto ou implementação.
+- [ ] Comandos/versões/limites reais atualizados; nenhum gate não executado declarado como sucesso.
+- [ ] Diff revisado por Sonnet em sessão independente; GPT registra resultado e pede aceite final.
+
+## 6. Testes e validação
+
+Vitest Node para lógica real; Playwright com `next build`/`next start`. Chromium 1440×1000 e 390×844, Firefox/WebKit smoke; 320px e zoom 200%. Rotas diretas/cliente, HTTP404, console/hidratação, formulários, descarte de estado, filtros e ausência de rede/storage. Gráficos: redução inicial/dinâmica, pausa, aba oculta, fora de tela, desmontagem tardia e perda de contexto.
+
+Fixtures: ROSI 200mil × 0,5 × 60% × 9/12 = benefício45mil; custo30mil → líquido15mil, ROSI50%, equilíbrio40%. Custo zero → retorno indefinido; mitigação desconhecida → somente equilíbrio; atraso12 → benefíciozero e ROSI−100% com custo positivo; preservar equilíbrio>100%. Dívida: 8×10000×0,4×0,25 = 8000/mês, 96000/ano. Migração120mil versus90mil+20mil → diferença10mil/8,33%; basezero sem percentual; horizonte requer revisão. Shadow incompleto bloqueado, sem score. Parser pt-BR, vazio/desconhecido/zero, limites, subtotal incompleto e overflow.
+
+Visual: viewport/DPR/fontes/scroll/ponteiro fixos; captura estática ou máscara somente do desenho dinâmico, com inspeção ativa. Desativar CSS não congela Canvas. Comparação por seção, sem exigir igualdade pixel a pixel entre runtimes. Lighthouse local em Home/serviço/ferramenta/newsletter: três rodadas e mediana; LCP/CLS/TBT/tamanho JS e ambiente. Metas orientativas LCP≤2,5s/CLS≤0,1; não certificar INP com TBT nem desempenho real sem campo.
+
+## 7. Riscos e mitigação
+
+Perda documental → matriz de cobertura e revisão antes de excluir. Home quebrada → original imutável e baseline corrigida mínima. Vazamento editorial → allowlist e inspeção de build. Recursos gráficos órfãos → lifecycle/ownership/testes. Falso envio → demo explícita, sem sucesso por default. Conflitos → dono único/instalações serializadas. Dependências → rechecagem de advisories/lockfile. Divergência visual → aceite Home e conjunto. Aparelhos físicos e operações reais não são certificados por testes locais.
+
+**Bootstrap, 10/10:** `npm audit` identificou cinco ocorrências high propagadas por um advisory de `braces <=3.0.3` na cadeia de desenvolvimento ESLint/fast-glob/micromatch. O integrador verificou ausência de patch publicado naquele momento; não aplicar downgrade forçado do Next. Registrar ID, cadeia e resultado `--omit=dev` na auditoria da fundação. Desenvolvimento local continua no escopo aprovado; reavaliar lockfile/advisories antes da publicação futura.
+
+## 8. Progresso e evidências
+
+Estados: pendente, em execução, em revisão, aguardando usuário, concluído. Não marcar fases futuras concluídas por preparação parcial.
+
+| Tarefa | Estado | Evidência / responsável |
+|---|---|---|
+| P0.1 | Concluído | PLAN/AGENTS/development alinhados. Crítica Sonnet independente concluída: sem conflito factual grave; quatro ajustes resolvidos pelo GPT (independência de sessão, Fase 5 serial, nomes completos MCP, fechamento pós-crítica). 26 IDs únicos com referência na matriz/evidências; nenhuma mudança no código do site. |
+| P0.2 | Não acionado | Opus apenas para impasse complexo; sem sessão aberta. |
+| P0.3 | Concluído | CLI 2.1.296; mapeamentos locais 5.5. Sonnet 5.5 efetivo confirmado; Haiku/Opus sem teste. Usuário validou piloto e autorizou continuidade em 10/10/2026. |
+| P0.4 | Concluído | GPT manteve bloqueio, removeu exceção `.env.example` e usou ignore `.env*`. Oito verificações passaram; template local preservado, zero `.env*` rastreados; dry-run 243 entradas sem caminhos sensíveis/gerados detectados. Sem chamada Claude, staging real ou commit nesta correção. |
+| P1.1 | Concluído | PLAN persistido; git status anterior: AGENTS e quatro docs/design alterados, três planos antigos e docs/web/web pendentes; nada descartado. |
+| P1.2 | Concluído | 158 arquivos / 11.176.670 bytes / 12 HTML preservados, hashes iguais em references/audits/export-inventory.json. Baseline com correção única de 53 bytes; Chromium 1440×1000, H1 renderizado, dez canvas e zero pageerror; relatório home-baseline.md. |
+| P1.3 | Concluído | Seis docs; 13 fontes substituídas e três planos removidos após cobertura. Matriz em references/audits/documentation-migration.md; marca/assets preservados. |
+| P1.4 | Concluído | review_frontend_plan (Sol High) confirmou contratos F/S/N/D, nove regras, 158 hashes; 572 links/âncoras em 18 docs sem erro. D06 atualizado para Sol XHigh por instrução do usuário. |
+| P2.1 | Concluído | Next 16.4 / React 19.3 / TS 5.9.3, lockfile e scripts reais; build/lint/typecheck passaram. Audit em references/audits/frontend-foundation.md. |
+| P2.2 | Concluído | Quatro assets necessários + duas fontes/duas OFL; oito cópias com hashes iguais. Allowlist/proveniência em references/audits/public-assets.json. |
+| P2.3 | Concluído | Shell/formulários e menu desktop/mobile; conflito de especificidade no CTA mobile corrigido, teste 320px menu/erros sem overflow (2/2). Home completa será revalidada. |
+| P2.4 | Concluído | Validadores corrigidos após revisão: Vitest 8/8, build final e e2e afetados 6/6; 320px 2/2. Revisor confirmou Enter sem JS não envia dados/não altera URL e guardas de duplicidade/desmontagem. Correção menor de fechar menu pelo logo será integrada à P3.3. |
+| P3.1–P3.2 | Em revisão | Canvas/Three e movimento implementados. Revisão independente corrigiu atuação após dispose; sete testes gráficos passaram, incluindo perda de contexto/troca/descarte com uma geometria criada e descartada, sem recriação. Verificação real no navegador integra P3.4. |
+| P3.3 | Em revisão | Home completa integrada; lint/type/build passaram, Vitest 15/15, foundation e2e 12/12 e Home 4/4. Produção demo em http://127.0.0.1:3100/; padrão em :3101/. |
+| P3.4 | Pendente de retomada | Revisão anterior atribuída a review_frontend_plan (Sol High); a evidência registrada não conclui P3.4. Retomar em sessão Sonnet independente, preservando achados existentes; aprovação humana obrigatória. |
+| P3.4-P | Concluído | Consulta Sonnet 5.5 concluída; parecer conferido, cobertura corrigida pelo GPT. Lint/typecheck/build e 15 unitários/16 e2e passaram. Usuário validou piloto em 10/10/2026. Sem aceite visual P3.4. |
+| P3.4-T | Em preparação | Próxima escrita Sonnet 5.5: regressões movimento/fallback e evidência visual, seguida de revisão independente. |
+| P4.1–P4.4 | Pendente | Após P3.4. |
+| P5.1–P5.4 | Pendente | Após P3.4. |
+| P6.1–P6.3 | Pendente | — |
+| P6.3-D | Pendente | Documentação Haiku após QA; revisão Sonnet antes do aceite. |
+
+### Registro de sessões da ponte
+
+**Pré-checagem de retomada (10/10/2026):** antes da primeira escrita Claude, `git add -A --dry-run` listou 244 entradas e acionou a regra de parada por `web/.env.example`. Leitura local sem expor valores confirmou que o template contém somente `FORM_MODE` no formato aprovado; não é credencial. A regra fornecida pelo usuário menciona `.env*`, sem exceção explícita para esse template. Nenhum WIP/staging real ou sessão de escrita foi iniciado. Naquele momento a execução parou para decisão, registrada abaixo; não afrouxar a detecção de arquivos com credenciais.
+
+**Decisão posterior:** usuário recusou exceção e determinou tratamento `.env*` exclusivamente pelo GPT (P0.4). Preservar o bloqueio; todos esses arquivos ficam fora do checkpoint, inclusive templates. Nenhuma ferramenta Claude foi chamada para essa correção.
+
+**Validação P0.4:** `.gitignore` agora ignora `.env*` em qualquer profundidade, sem exceções. Oito nomes representativos foram verificados com `git check-ignore --no-index`; `web/package.json` continua fora do ignore e o template local permanece no disco. Zero `.env*` rastreados. Novo dry-run listou 243 entradas, sem arquivos sensíveis ou saídas geradas detectados; busca de padrões de chaves privadas/tokens sem correspondências. Isso não é prova universal de ausência de segredos nem restrição de acesso do processo Claude: futuras chamadas continuam proibidas de ler/editar `.env*` por escopo, e a pré-checagem permanece obrigatória antes de cada escrita. Nenhuma escrita Claude foi iniciada nesta rodada.
+
+Cada escrita exige linha com hash WIP antes da chamada. Consultas usam “não aplicável”. Atualizar ao terminar, sem criar controle paralelo.
+
+| Tarefa / tipo | Alias / modelo efetivo | sessionId | Hash WIP | Estado / evidência |
+|---|---|---|---|---|
+| P0.1 crítica e diff / consulta | sonnet / claude-sonnet-5 | 6a09bc16-d705-4ec6-a062-4f4f8de1dd90 | Não aplicável | succeeded; 205 s; última entrada 101234 tokens incluindo cache. Aprovação condicionada aos ajustes 1–2, aplicados; sugestões 3–4 também resolvidas. Sem shell/testes pelo revisor. |
+| P3.4-P piloto / consulta | sonnet / claude-sonnet-5-5 | 11ffc75e-ec74-4196-8377-c11c669a2e2d | Não aplicável | succeeded; 100 s; última entrada 91925 tokens incluindo cache. Quatro observações menores, sem bug crítico comprovado; afirmação de cobertura corrigida na conferência. 15 unitários/16 E2E e demais gates passaram pelo GPT. Aguardando validação do usuário. |
+| P3.4-P revisão dos três arquivos / follow-up mesma tarefa | sonnet / claude-sonnet-5-5 | 11ffc75e-ec74-4196-8377-c11c669a2e2d | Não aplicável | succeeded; 16 s; última entrada 106090 tokens incluindo cache. Configuração, registro e relatório aprovados sem correções factuais obrigatórias; retratação de cobertura reconhecida. 28 IDs únicos e JSON verificados pelo GPT. |
+
+SQL/session-store não disponíveis nesta sessão: este PLAN é o registro único, sem banco artificial ou cópia concorrente.

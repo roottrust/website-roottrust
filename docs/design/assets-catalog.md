@@ -1,5 +1,7 @@
 # Catálogo de assets — Root Trust
 
+**Aplicação web — 04/10/2026:** este inventário continua restrito aos 290 assets oficiais. Os arquivos derivados/referências do export aprovado em `web/` estão documentados na [auditoria da Home](../../references/audits/home-export-audit.md), sem alterar contagens, hashes ou origem deste catálogo. Escolha visual da Home: [design web](../web/design.md); assinaturas oficiais e licenças abaixo permanecem preservadas.
+
 **Atualizado em:** 02/10/2026. **Fonte:** Manual de Marca — New e pacote fornecido “Root Trust - Branding”, aprovado para esta entrega.
 
 O inventário reúne **290 arquivos**: **211 originais fornecidos**, preservados byte a byte, e **79 complementos extraídos pelo Figwright**. Nenhum asset foi redesenhado. As assinaturas e os símbolos fornecidos são as versões a usar no desenvolvimento.
@@ -456,3 +458,4 @@ O manual completo, PDFs por assunto e README fornecidos preservam o pacote origi
 | [references/manual/roottrust-manual-de-marca.pdf](assets/references/manual/roottrust-manual-de-marca.pdf) | — | Página de referência | Pacote: `01_Manual/RootTrust_Manual-de-Marca.pdf` | `4ecb31e0b7bdc4313a294a13d47efae23a6e8e640fc93feb5f5d110b3faa7485` |
 | [references/manual/tipografia-regras.pdf](assets/references/manual/tipografia-regras.pdf) | — | Página de referência | Pacote: `04_Tipografia/RootTrust_Tipografia (paginas do manual).pdf` | `a54cf9991e2bb53324b5c2962934a9d220e4da2cd42967840958259b3e2579fc` |
 | [references/package-readme.txt](assets/references/package-readme.txt) | — | Não se aplica | Pacote: `LEIA-ME.txt` | `2953ca923458ab181407b56b5fe81589fe5ca2d82b24ec80dbad5ce1d59d1912` |
+

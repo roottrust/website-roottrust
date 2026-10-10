@@ -1,0 +1,18 @@
+:root {
+  color-scheme: dark;
+  --rt-verde-raiz: #003428;
+  --rt-superficie: #f5f5f2;
+  --rt-rocha: #2e2e2e;
+  --rt-musgo: #4c6b58;
+  --rt-floresta: #175b4b;
+  --rt-folha: #62af96;
+  --rt-menta: #cce9dc;
+  --rt-terracota: #dcc9a3;
+  --rt-areia: #cfb9a3;
+  --rt-areia-clara: #e6ddc5;
+  --rt-azul-dados: #2e4a5d;
+  --rt-sinal: #00d63d;
+  --page: #171717;
+  --panel: #1d1d1d;
+  --border: #3c3c3c;
+}

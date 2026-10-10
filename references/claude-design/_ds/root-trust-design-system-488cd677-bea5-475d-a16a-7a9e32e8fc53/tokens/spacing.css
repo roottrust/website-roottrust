@@ -1,0 +1,34 @@
+/* Root Trust layout, radius and stroke tokens — values transcribed from manual pages and Peças digitais. */
+:root{
+  /* Grid das pranchas 1920×1080 */
+  --page-margin:120px;
+  --page-gutter:30px;       /* cards 540 + 30 + 540 + 30 + 540 */
+  --page-gutter-lg:40px;
+
+  --space-4:4px;--space-8:8px;--space-12:12px;--space-16:16px;--space-20:20px;
+  --space-28:28px;--space-32:32px;--space-40:40px;--space-60:60px;--space-120:120px;
+
+  /* Raios */
+  --radius-pill:3px;        /* barra Terracota 44×5 */
+  --radius-band:8px;        /* faixa da assinatura de e-mail */
+  --radius-card:12px;       /* cards e amostras das pranchas */
+  --radius-seal:14px;       /* selo horizontal */
+  --radius-tile:16px;       /* selo compacto, assinatura-símbolo */
+  --radius-round:50%;
+
+  /* Traços */
+  --stroke-hairline:1px;    /* divisores Areia clara, borda de card Superfície */
+  --stroke-seal:1.5px;      /* contorno dos selos claros */
+  --stroke-accent:4px;      /* régua vertical Verde Raiz nos blocos de texto */
+
+  /* Construção do símbolo */
+  --symbol-min-digital:16px;
+  --seal-min-horizontal:160px;
+  --seal-min-compact:56px;
+  --seal-min-round:96px;
+
+  /* Sombras — o manual não usa sombras projetadas; apenas contornos internos */
+  --shadow-none:none;
+  --ring-subtle:inset 0 0 0 1px var(--rt-areia-clara);
+  --ring-seal:inset 0 0 0 1.5px var(--rt-verde-raiz);
+}

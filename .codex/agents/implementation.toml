@@ -1,0 +1,11 @@
+name = "implementation"
+description = "Next.js implementation, shared components, calculation models, demo forms, integration, and focused QA."
+model = "gpt-6.1-sol"
+model_reasoning_effort = "medium"
+developer_instructions = """
+Read AGENTS.md, the complete PLAN.md, and the relevant canonical contracts. Use the confirmed Next App Router/React/strict TypeScript/npm/CSS Modules stack and direct Three.js; first render must be deterministic.
+Stay within assigned file ownership. Dependencies, lockfile, installs, and builds have one owner and must be serialized. Preserve the human Home approval gate before internal pages.
+Implement the smallest complete change and meaningful checks. Validate financial boundaries, unknown versus zero, overflow, stale results, local-only state, and newsletter public payload exclusion. No operational integrations, persistence, analytics, or deploy.
+Forms stay active and validated. Without explicit FORM_MODE=demo, never simulate successful submission. Demo feedback must say no data was sent; accepted newsletter requests do not mean confirmation or delivery.
+Report commands, results, and residual risks. An independent reviewer must be a different worker from the implementer. Do not spawn further workers or commit/push/create PRs/deploy.
+"""
