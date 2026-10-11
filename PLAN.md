@@ -238,9 +238,9 @@ Dependência: P3.2. Portar todas as seções e corrigir auditoria.
 
 #### P3.4 Validar Home e obter aceite — [claude:consulta] Sonnet independente; [codex] GPT + usuário
 Dependência: P3.3.
-- [ ] Build/lint/tipos/testes; comparação visual por seção com diferenças autorizadas.
+- [x] Build/lint/tipos/testes; capturas por seção e inspeção amostral desktop/mobile, diferenças e limites em `references/audits/home-qa.md`.
 - [ ] Desktop/mobile/teclado/pausa/redução/fallback verificados.
-- [ ] **Usuário aprova Home antes de iniciar páginas internas.**
+- [x] **Usuário aprovou Home: “Sim, aprovo a home”, 10/10/2026. P4/P5 liberados.**
 
 #### P3.4-P Piloto de revisão movimento/lifecycle — [claude:consulta] Sonnet
 Dependência: P0.3 (versões verificadas/configuração solicitada) e implementação P3.1–P3.3 existente. Esta tarefa é um recorte de P3.4, não substitui comparação visual, QA integral ou aceite humano. Nenhuma escrita Claude; nenhum checkpoint WIP necessário.
@@ -252,10 +252,11 @@ Dependência: P0.3 (versões verificadas/configuração solicitada) e implementa
 
 #### P3.4-T Completar QA de movimento/fallback e evidências visuais — [claude:escreve] Sonnet
 Dependência: piloto aprovado; P3.1–P3.3 implementados. Dono Sonnet; arquivos permitidos: `web/tests/e2e/`, `web/tests/unit/graphics/`, correções mínimas reproduzíveis em `web/src/features/graphics/` e evidência em `references/audits/home-qa.md`/`references/audits/home-qa/`. Sem modificar PLAN, marca, exports, formulários, dependências ou páginas internas. Não ler/editar `.env*`.
-- [ ] Adicionar regressões úteis de redução dinâmica, pausa, fallback de inicialização/perda de contexto e suspensão; distinguir simulações de visibilidade de testes reais de aba.
-- [ ] Corrigir somente bugs reproduzidos nos gráficos, preservando composição e controles; não aplicar propostas opcionais do piloto sem necessidade comprovada.
-- [ ] Executar lint/typecheck/unit/build/e2e em série; capturar evidências de Home desktop/mobile por seção com estado estável e apontar limites/diferenças visuais. Sem alegar comparação pixel a pixel entre runtimes.
-- [ ] Revisão em sessão Sonnet independente; obter aceite humano da Home em P3.4 antes de iniciar P4/P5.
+- [x] Adicionar regressões úteis de redução dinâmica, pausa, fallback de inicialização/perda de contexto e suspensão; distinguir simulações de visibilidade de testes reais de aba.
+- [x] Corrigir somente bugs reproduzidos nos gráficos, preservando composição e controles; nenhum bug de produção confirmado, sem alteração em web/src.
+- [x] Executar lint/typecheck/unit/build/e2e em série; 45 capturas desktop/mobile, limites/diferenças documentados. Sem comparação pixel a pixel.
+- [x] Revisão Sonnet independente aprovada após correção do servidor de capturas.
+- [x] Aceite humano da Home obtido em 10/10/2026; P4/P5 liberados.
 
 ### Fase 4 — Serviços e ferramentas (após aceite da Home)
 
@@ -359,9 +360,9 @@ Estados: pendente, em execução, em revisão, aguardando usuário, concluído. 
 | P2.4 | Concluído | Validadores corrigidos após revisão: Vitest 8/8, build final e e2e afetados 6/6; 320px 2/2. Revisor confirmou Enter sem JS não envia dados/não altera URL e guardas de duplicidade/desmontagem. Correção menor de fechar menu pelo logo será integrada à P3.3. |
 | P3.1–P3.2 | Em revisão | Canvas/Three e movimento implementados. Revisão independente corrigiu atuação após dispose; sete testes gráficos passaram, incluindo perda de contexto/troca/descarte com uma geometria criada e descartada, sem recriação. Verificação real no navegador integra P3.4. |
 | P3.3 | Em revisão | Home completa integrada; lint/type/build passaram, Vitest 15/15, foundation e2e 12/12 e Home 4/4. Produção demo em http://127.0.0.1:3100/; padrão em :3101/. |
-| P3.4 | Pendente de retomada | Revisão anterior atribuída a review_frontend_plan (Sol High); a evidência registrada não conclui P3.4. Retomar em sessão Sonnet independente, preservando achados existentes; aprovação humana obrigatória. |
+| P3.4 | Concluído | Usuário: “Sim, aprovo a home”, 10/10/2026. Revisão Sonnet independente e gates concluídos; P4/P5 liberados. Lacunas navegador real/SPA e QA integral permanecem obrigatórias em P6. |
 | P3.4-P | Concluído | Consulta Sonnet 5.5 concluída; parecer conferido, cobertura corrigida pelo GPT. Lint/typecheck/build e 15 unitários/16 e2e passaram. Usuário validou piloto em 10/10/2026. Sem aceite visual P3.4. |
-| P3.4-T | Em revisão | Sonnet 5.5 concluiu escrita de dois testes e relatório/45 capturas, sem alterar web/src. Gates reportados: lint/typecheck/build, 15 unitários, 32 E2E + 4 skips explícitos. Revisão independente e confirmação local pendentes; sem aceite humano Home. |
+| P3.4-T | Concluído | Dois testes, relatório/45 capturas; sem alteração web/src. Gates originais confirmados GPT: 15 unitários/32 E2E. Correção focada: gates Sonnet 15 unitários/34 E2E+4 skips; novo teste HTTP confirmado GPT 2/2. Revisão independente e aceite Home concluídos. |
 | P4.1–P4.4 | Pendente | Após P3.4. |
 | P5.1–P5.4 | Pendente | Após P3.4. |
 | P6.1–P6.3 | Pendente | — |
@@ -385,3 +386,9 @@ Cada escrita exige linha com hash WIP antes da chamada. Consultas usam “não a
 | P3.4-P revisão dos três arquivos / follow-up mesma tarefa | sonnet / claude-sonnet-5-5 | 11ffc75e-ec74-4196-8377-c11c669a2e2d | Não aplicável | succeeded; 16 s; última entrada 106090 tokens incluindo cache. Configuração, registro e relatório aprovados sem correções factuais obrigatórias; retratação de cobertura reconhecida. 28 IDs únicos e JSON verificados pelo GPT. |
 
 SQL/session-store não disponíveis nesta sessão: este PLAN é o registro único, sem banco artificial ou cópia concorrente.
+
+**Revisão humana local:** Home demo disponível em `http://127.0.0.1:3100/`, processo exec 80151, HTTP 200 confirmado pelo GPT. Formulários não enviam dados. Encerrar esse servidor antes de executar novamente os E2E (porta exclusiva do runner). A disponibilidade depende da sessão local continuar ativa.
+
+**P3.4-T revisão e correção focada:** consulta independente `a430cb46-0458-4b36-b688-86ab2af716e2`, Sonnet 5.5, succeeded (81 s), aprovou com limites e apontou tratamento de URL/contenção/cleanup no servidor de capturas. GPT repetiu lint/typecheck/unit/build/e2e: 15 unitários e 32 E2E passaram, 4 skips explícitos. Checkpoint local antes da correção: `e67d2dbc25889ae506244e39e53b370b4e7ce6d7`; follow-up de escrita restrito aos testes de captura e relatório, sem produção. Aceite humano Home permanece pendente.
+
+**Conclusão técnica da correção:** follow-up escritor `7b343f20-f2db-42c4-8644-7fc5dbb3ca0a`, Sonnet 5.5, succeeded (94 s), no checkpoint e67d2db; lint/typecheck/unit/build/e2e passaram (15 unitários, 34 E2E, 4 skips). Follow-up revisor independente `a430cb46-0458-4b36-b688-86ab2af716e2`, Sonnet 5.5, succeeded (13 s): aprovado sem bug novo. GPT conferiu diff e executou o teste HTTP afetado, 2/2. Capturas não regeneradas; novos campos de requestfailed não existem nas métricas antigas. Sem alteração de produção, push ou commit final; apenas checkpoints WIP locais autorizados. Inspeção visual GPT amostral incluiu hero desktop/baseline/mobile, pilares, serviços, processo, ferramentas mobile, newsletter desktop/baseline e CTA desktop/mobile. P3.4 aguarda aceite humano obrigatório D07.
