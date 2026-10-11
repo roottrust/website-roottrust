@@ -17,6 +17,15 @@
           "baloo Fallback normal",
           "archivo 100 900"
         ],
+        "graphics": [
+          {
+            "index": 0,
+            "kind": "not-found",
+            "status": "ready",
+            "fallback": false
+          }
+        ],
+        "graphicTimeouts": [],
         "pageErrors": []
       },
       "exportPage": {
@@ -30,6 +39,8 @@
           "Baloo 2 400 800",
           "Archivo 100 900"
         ],
+        "graphics": [],
+        "graphicTimeouts": [],
         "pageErrors": [],
         "failedRequests": []
       }
@@ -48,6 +59,27 @@
           "archivo 100 900",
           "archivo Fallback normal"
         ],
+        "graphics": [
+          {
+            "index": 0,
+            "kind": "frame",
+            "status": "ready",
+            "fallback": false
+          },
+          {
+            "index": 1,
+            "kind": "chave",
+            "status": "ready",
+            "fallback": false
+          },
+          {
+            "index": 2,
+            "kind": "symbol",
+            "status": "ready",
+            "fallback": false
+          }
+        ],
+        "graphicTimeouts": [],
         "pageErrors": []
       },
       "exportPage": {
@@ -61,6 +93,8 @@
           "Baloo 2 400 800",
           "Archivo 100 900"
         ],
+        "graphics": [],
+        "graphicTimeouts": [],
         "pageErrors": [],
         "failedRequests": []
       }
@@ -77,6 +111,27 @@
           "baloo 400 800",
           "archivo 100 900"
         ],
+        "graphics": [
+          {
+            "index": 0,
+            "kind": "frame",
+            "status": "ready",
+            "fallback": false
+          },
+          {
+            "index": 1,
+            "kind": "servidores",
+            "status": "ready",
+            "fallback": false
+          },
+          {
+            "index": 2,
+            "kind": "symbol",
+            "status": "ready",
+            "fallback": false
+          }
+        ],
+        "graphicTimeouts": [],
         "pageErrors": []
       },
       "exportPage": {
@@ -90,6 +145,8 @@
           "Baloo 2 400 800",
           "Archivo 100 900"
         ],
+        "graphics": [],
+        "graphicTimeouts": [],
         "pageErrors": [],
         "failedRequests": []
       }
@@ -106,6 +163,27 @@
           "baloo 400 800",
           "archivo 100 900"
         ],
+        "graphics": [
+          {
+            "index": 0,
+            "kind": "frame",
+            "status": "ready",
+            "fallback": false
+          },
+          {
+            "index": 1,
+            "kind": "modulos",
+            "status": "ready",
+            "fallback": false
+          },
+          {
+            "index": 2,
+            "kind": "symbol",
+            "status": "ready",
+            "fallback": false
+          }
+        ],
+        "graphicTimeouts": [],
         "pageErrors": []
       },
       "exportPage": {
@@ -119,6 +197,8 @@
           "Baloo 2 400 800",
           "Archivo 100 900"
         ],
+        "graphics": [],
+        "graphicTimeouts": [],
         "pageErrors": [],
         "failedRequests": []
       }
@@ -127,14 +207,29 @@
       "route": "/ferramentas/rosi",
       "export": "Ferramenta ROSI.dc.html",
       "native": {
-        "documentHeight": 3932,
+        "documentHeight": 2811,
         "overflowX": false,
-        "canvases": 3,
+        "canvases": 2,
         "h1": "Explore o retorno de uma proteção adicional.",
         "fontsLoaded": [
           "baloo 400 800",
           "archivo 100 900"
         ],
+        "graphics": [
+          {
+            "index": 0,
+            "kind": "frame",
+            "status": "ready",
+            "fallback": false
+          },
+          {
+            "index": 1,
+            "kind": "balanca",
+            "status": "ready",
+            "fallback": false
+          }
+        ],
+        "graphicTimeouts": [],
         "pageErrors": []
       },
       "exportPage": {
@@ -148,6 +243,8 @@
           "Baloo 2 400 800",
           "Archivo 100 900"
         ],
+        "graphics": [],
+        "graphicTimeouts": [],
         "pageErrors": [],
         "failedRequests": []
       }
@@ -156,14 +253,29 @@
       "route": "/ferramentas/shadow-ai",
       "export": "Ferramenta Shadow AI.dc.html",
       "native": {
-        "documentHeight": 3227,
+        "documentHeight": 2375,
         "overflowX": false,
-        "canvases": 3,
+        "canvases": 2,
         "h1": "Organize a governança do uso de IA.",
         "fontsLoaded": [
           "baloo 400 800",
           "archivo 100 900"
         ],
+        "graphics": [
+          {
+            "index": 0,
+            "kind": "frame",
+            "status": "ready",
+            "fallback": false
+          },
+          {
+            "index": 1,
+            "kind": "olho",
+            "status": "ready",
+            "fallback": false
+          }
+        ],
+        "graphicTimeouts": [],
         "pageErrors": []
       },
       "exportPage": {
@@ -177,6 +289,8 @@
           "Baloo 2 400 800",
           "Archivo 100 900"
         ],
+        "graphics": [],
+        "graphicTimeouts": [],
         "pageErrors": [],
         "failedRequests": []
       }
@@ -185,14 +299,29 @@
       "route": "/ferramentas/divida-tecnica",
       "export": "Ferramenta Divida tecnica.dc.html",
       "native": {
-        "documentHeight": 3365,
+        "documentHeight": 2280,
         "overflowX": false,
-        "canvases": 3,
+        "canvases": 2,
         "h1": "Estime o custo do tempo atribuído à dívida técnica.",
         "fontsLoaded": [
           "baloo 400 800",
           "archivo 100 900"
         ],
+        "graphics": [
+          {
+            "index": 0,
+            "kind": "frame",
+            "status": "ready",
+            "fallback": false
+          },
+          {
+            "index": 1,
+            "kind": "engrenagem",
+            "status": "ready",
+            "fallback": false
+          }
+        ],
+        "graphicTimeouts": [],
         "pageErrors": []
       },
       "exportPage": {
@@ -206,6 +335,8 @@
           "Baloo 2 400 800",
           "Archivo 100 900"
         ],
+        "graphics": [],
+        "graphicTimeouts": [],
         "pageErrors": [],
         "failedRequests": []
       }
@@ -214,14 +345,29 @@
       "route": "/ferramentas/migracao-para-nuvem",
       "export": "Ferramenta Migracao para nuvem.dc.html",
       "native": {
-        "documentHeight": 3392,
+        "documentHeight": 2536,
         "overflowX": false,
-        "canvases": 3,
+        "canvases": 2,
         "h1": "Compare os custos de manter ou migrar.",
         "fontsLoaded": [
           "baloo 400 800",
           "archivo 100 900"
         ],
+        "graphics": [
+          {
+            "index": 0,
+            "kind": "frame",
+            "status": "ready",
+            "fallback": false
+          },
+          {
+            "index": 1,
+            "kind": "nuvem",
+            "status": "ready",
+            "fallback": false
+          }
+        ],
+        "graphicTimeouts": [],
         "pageErrors": []
       },
       "exportPage": {
@@ -235,6 +381,8 @@
           "Baloo 2 400 800",
           "Archivo 100 900"
         ],
+        "graphics": [],
+        "graphicTimeouts": [],
         "pageErrors": [],
         "failedRequests": []
       }
@@ -243,7 +391,7 @@
       "route": "/newsletter",
       "export": "Newsletter.dc.html",
       "native": {
-        "documentHeight": 3310,
+        "documentHeight": 3260,
         "overflowX": false,
         "canvases": 2,
         "h1": "Análise da Root Trust em dias úteis.",
@@ -251,6 +399,21 @@
           "baloo 400 800",
           "archivo 100 900"
         ],
+        "graphics": [
+          {
+            "index": 0,
+            "kind": "frame",
+            "status": "ready",
+            "fallback": false
+          },
+          {
+            "index": 1,
+            "kind": "symbol",
+            "status": "ready",
+            "fallback": false
+          }
+        ],
+        "graphicTimeouts": [],
         "pageErrors": []
       },
       "exportPage": {
@@ -264,6 +427,8 @@
           "Baloo 2 400 800",
           "Archivo 100 900"
         ],
+        "graphics": [],
+        "graphicTimeouts": [],
         "pageErrors": [],
         "failedRequests": []
       }
@@ -272,7 +437,7 @@
       "route": "/newsletter/edicoes",
       "export": "Newsletter Arquivo.dc.html",
       "native": {
-        "documentHeight": 2216,
+        "documentHeight": 1714,
         "overflowX": false,
         "canvases": 1,
         "h1": "Prévias das edições.",
@@ -280,6 +445,15 @@
           "baloo 400 800",
           "archivo 100 900"
         ],
+        "graphics": [
+          {
+            "index": 0,
+            "kind": "frame",
+            "status": "ready",
+            "fallback": false
+          }
+        ],
+        "graphicTimeouts": [],
         "pageErrors": []
       },
       "exportPage": {
@@ -293,6 +467,8 @@
           "Baloo 2 400 800",
           "Archivo 100 900"
         ],
+        "graphics": [],
+        "graphicTimeouts": [],
         "pageErrors": [],
         "failedRequests": []
       }
@@ -301,7 +477,7 @@
       "route": "/newsletter/edicoes/backup-e-recuperacao",
       "export": "Newsletter Previa.dc.html",
       "native": {
-        "documentHeight": 1573,
+        "documentHeight": 1485,
         "overflowX": false,
         "canvases": 1,
         "h1": "Backup concluído: você já testou a recuperação?",
@@ -309,6 +485,15 @@
           "baloo 400 800",
           "archivo 100 900"
         ],
+        "graphics": [
+          {
+            "index": 0,
+            "kind": "frame",
+            "status": "ready",
+            "fallback": false
+          }
+        ],
+        "graphicTimeouts": [],
         "pageErrors": []
       },
       "exportPage": {
@@ -322,9 +507,13 @@
           "Baloo 2 400 800",
           "Archivo 100 900"
         ],
+        "graphics": [],
+        "graphicTimeouts": [],
         "pageErrors": [],
         "failedRequests": []
       }
     }
-  }
+  },
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Safari/537.36",
+  "isMobile": false
 }

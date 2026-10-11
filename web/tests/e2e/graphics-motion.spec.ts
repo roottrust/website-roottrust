@@ -37,7 +37,6 @@ async function instrument(page: Page, probe: Probe = {}) {
   }, probe);
 }
 
-const visibleCanvases = (page: Page) => page.locator("canvas:visible");
 
 /** Draw calls per canvas inside one window; only canvases currently intersecting the viewport. */
 async function drawsDuring(page: Page, ms: number) {
@@ -297,7 +296,9 @@ test.describe("graphics fallback contract", () => {
     await expect(page.locator('main > img[data-graphic-fallback="true"]')).toHaveCount(0, { timeout: 10000 });
     await page.evaluate(() => document.querySelector<HTMLCanvasElement>("main > canvas")?.dispatchEvent(new Event("contextlost")));
     await expect(page.locator('main > img[data-graphic-fallback="true"]')).toBeVisible();
-    await expect(visibleCanvases(page).first()).toBeAttached();
+    const homeCanvas = page.locator("main > canvas").first();
+    await expect(homeCanvas).toBeAttached();
+    await expect(homeCanvas).toBeHidden();
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   });
 });
