@@ -63,6 +63,7 @@
 .check { font:700 15px/1 var(--font-display);color:var(--rt-folha); }
 .secondaryCta { align-self:flex-start;display:inline-flex;align-items:center;gap:10px;height:48px;padding:0 24px;border-radius:999px;background:transparent;box-shadow:inset 0 0 0 1px var(--rt-folha);color:var(--rt-superficie);text-decoration:none;font:600 15px/1 var(--font-body);white-space:nowrap;transition:background-color 160ms ease-out; }
 .secondaryCta:hover { background:#262626; }
+@media (max-width:420px) { .secondaryCta { height:auto;min-height:48px;max-width:100%;padding:12px 24px;line-height:1.25;white-space:normal;text-align:left; } }
 .serviceStack { margin-top:40px;display:flex;flex-direction:column;gap:16px; }
 .mobileService { border-radius:12px;background:#1d1d1d;box-shadow:inset 0 0 0 1px #3C3C3C;overflow:hidden; }
 .mobileServiceHeading { display:flex;align-items:baseline;gap:14px;padding:20px 20px 0; }

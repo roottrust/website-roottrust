@@ -23,7 +23,7 @@ function hrefs(abertura: readonly { href?: string }[]) {
 test("landing: SSR content, single email field and shared opening with links", async ({ page, request }) => {
   const w = watch(page);
   const html = await (await request.get("/newsletter")).text();
-  for (const text of ["Análise da Root Trust em dias úteis.", "Conheça uma edição.", "Conteúdo para decisões sobre a sua operação.", "Como a curadoria é preparada.", "Edição demonstrativa"]) expect(html).toContain(text);
+  for (const text of ["Análise da Root Trust", "em dias úteis.", "Conheça uma edição.", "Conteúdo para decisões sobre", "a sua operação.", "Como a curadoria", "é preparada.", "Perguntas", "Edição demonstrativa"]) expect(html).toContain(text);
   expect(html).toContain(recente.titulo);
   expect(html).not.toMatch(/inteligência artificial|\bIA\b/i);
 
@@ -83,7 +83,7 @@ test("archive: highlight, two items per page, filters without search, reset to p
 
   const list = page.getByRole("list").filter({ has: page.locator("article") });
   await expect(list.locator("article")).toHaveCount(2);
-  await expect(page.locator("#destaque ~ article")).toContainText(recente.titulo);
+  await expect(page.locator("section[aria-labelledby=destaque]")).toContainText(recente.titulo);
   await expect(page.getByText("Página 1 de 2")).toBeVisible();
   await expect(page.locator('span[aria-disabled="true"]')).toHaveText("Anterior");
 
@@ -92,7 +92,7 @@ test("archive: highlight, two items per page, filters without search, reset to p
   await expect(page.getByText("Página 2 de 2")).toBeVisible();
   await expect(list.locator("article")).toHaveCount(1);
   await expect(list.locator("article")).toContainText(terceira.titulo);
-  await expect(page.locator("#destaque ~ article")).toContainText(recente.titulo);
+  await expect(page.locator("section[aria-labelledby=destaque]")).toContainText(recente.titulo);
   await expect(page.locator('span[aria-disabled="true"]')).toHaveText("Próxima");
 
   await filters.getByRole("link", { name: "Software" }).click();
@@ -100,7 +100,7 @@ test("archive: highlight, two items per page, filters without search, reset to p
   await expect(page.getByText("Página 1 de 1")).toBeVisible();
   await expect(list.locator("article")).toHaveCount(1);
   await expect(list.locator("article")).toContainText(terceira.titulo);
-  await expect(page.locator("#destaque ~ article")).toContainText(terceira.titulo);
+  await expect(page.locator("section[aria-labelledby=destaque]")).toContainText(terceira.titulo);
   await expect(page.getByRole("link", { name: "Conhecer a newsletter" })).toHaveAttribute("href", "/newsletter");
 
   await page.goto("/newsletter/edicoes?pilar=inexistente&pagina=99");
@@ -139,7 +139,10 @@ for (const edicao of EDICOES_PUBLICAS) {
     await expect(article.locator("p").filter({ hasText: edicao.abertura[0].t.slice(0, 40) })).toHaveText(edicao.abertura.map((s) => s.t).join(""));
     for (const href of hrefs(edicao.abertura)) await expect(article.locator(`a[href="${href}"]`)).toHaveCount(1);
     await expect(page.getByRole("link", { name: /anterior|próxima|relacionad/i })).toHaveCount(0);
-    await expect(page.getByRole("link", { name: "Voltar para todas as edições" })).toHaveAttribute("href", "/newsletter/edicoes");
+    const back = page.getByRole("link", { name: "Voltar para todas as edições" });
+    await expect(back).toHaveCount(2);
+    for (const link of await back.all()) await expect(link).toHaveAttribute("href", "/newsletter/edicoes");
+    await expect(page.getByText(`Edição solicitada: ${edicao.titulo}`)).toBeVisible();
     await expect(page.getByRole("heading", { level: 2, name: "Receba esta edição completa." })).toBeVisible();
     await expect(page.getByText("Já assina? Você também pode solicitar esta edição aqui.")).toBeVisible();
     await expect(page.getByText("O envio ainda não está disponível nesta versão.")).toBeVisible();

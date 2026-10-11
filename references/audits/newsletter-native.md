@@ -40,3 +40,15 @@ Nenhuma comparação visual com os exports foi feita (sem screenshots) e não h�
 - Metadata da prévia: descrição derivada da abertura pública do catálogo (até 160 caracteres, corte em palavra com "…"); nenhum trecho além da abertura.
 - Estado vazio do arquivo mantido como em `product.md` ("Ainda não há edições publicadas. Volte para conhecer as próximas prévias."); `newsletter.md` cita só a primeira frase — divergência documental registrada, não alterada. Estado de falha não criado: o catálogo é estático.
 - Testes: `newsletter.spec.ts` (descrição da prévia derivada da abertura, aviso visível) e `public-routes.spec.ts` (descrição do arquivo).
+
+## P5.2 restauração de fidelidade (checkpoint `400eef1c296bb524562038f1f71514d3b3a49e41`)
+
+Comparado por leitura de marcação/estilos dos trechos relevantes dos três exports (`Newsletter`, `Newsletter Arquivo`, `Newsletter Previa`); sem captura visual.
+
+- Landing: h1 com acento inline ("em dias úteis."); formulário em linha (rótulo, campo e botão com seta; empilha ≤560px); edição recente em duas colunas (texto + cartão); benefícios numerados 01–03 com borda pontilhada; método com "√" e etapas numeradas; FAQ com título à esquerda e perguntas à direita; painel final "Veja outras edições" (único link "Ver prévias anteriores"). Textos da curadoria divididos como no export (parágrafo + três etapas curtas); FAQ passa a "Perguntas frequentes." como no export.
+- Arquivo: destaque compacto (título, data/pilar, "Ler prévia") antes dos filtros; filtros em pílulas com contagem; lista editorial em duas colunas (metadados | título, abertura, link) sem cartões integrais; paginação espalhada com setas. Sem busca; filtro reinicia a página 1; duas por página.
+- Prévia: leitura estreita (720px) com "Voltar para todas as edições" no topo e no fim; cartão neutro de inscrição (sem faixa verde, sem `data-band`), com "Edição solicitada: …".
+- `NewsletterForm`: nova variante `inline` (somente layout); lógica, validação, avisos de não envio, estados demo e `FORM_MODE` inalterados.
+- Home: `.secondaryCta` quebra texto e ajusta a largura apenas em ≤420px (botão cortado em 320px); desktop inalterado.
+- Divergências deliberadas: sem pílula "Demonstração — nenhum dado é enviado" avulsa (o formulário já exibe o aviso correspondente ao modo); filtros são links (SSR/URL) e não botões; sem interação client no arquivo.
+- Testes: `newsletter.spec.ts` ajustado (texto do h1/títulos com acento em `span`, destaque como seção, dois links de voltar, linha "Edição solicitada"). Nenhum gate foi executado por este revisor; a execução fica com o GPT.
