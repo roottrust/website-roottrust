@@ -18,3 +18,9 @@ Estado: preparação. Nenhum gate, captura ou medição foi executado por esta n
 - Prefetch `_rsc` cancelado na navegação (`ERR_ABORTED`, `NS_BINDING_ABORTED`, `cancelled`) é tolerado; qualquer outra falha de rede/console/página reprova.
 - Lighthouse: laboratório, emulação móvel, loopback, TBT de laboratório não certifica INP de campo. Não é certificação de desempenho nem de acessibilidade.
 - CI remoto não executado até push autorizado.
+
+## P3.1 carga adiada de PillarArt
+
+- `PillarArt` agora importa `pillar-runtime`/Three só quando o elemento entra no viewport (IntersectionObserver; sem observer, carrega no mount). Gates de movimento, pausa, reduced motion, aba oculta, fallback, perda de contexto e dispose mantidos; guarda `cancelled` evita montagem após desmontagem.
+- Teste fora de tela (`graphics-motion.spec.ts`) ajustado: antes da rolagem os pilares ficam `loading` e nenhum contexto WebGL novo é criado; depois da rolagem ficam `ready` e a contagem de contextos aumenta. Teste de perda de contexto passa a exigir `failed` presente e nenhum `ready` (pilares nunca visíveis permanecem `loading` com fallback).
+- Medições (LCP/TBT/JS) pendentes: GPT executa após os gates; não declarar ganho sem medir.

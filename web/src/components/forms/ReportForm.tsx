@@ -7,7 +7,7 @@ import { useLocalSubmission } from "./useLocalSubmission";
 import styles from "./forms.module.css";
 
 /** Relatório padrão por tema: envia apenas e-mail e ID da ferramenta; independente da newsletter. */
-export function ReportForm({ mode, toolId, topic }: { mode: FormMode; toolId: string; topic: string }) {
+export function ReportForm({ mode, toolId, topic, variant }: { mode: FormMode; toolId: string; topic: string; variant?: "inline" }) {
   const id = useId();
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string>();
@@ -21,10 +21,10 @@ export function ReportForm({ mode, toolId, topic }: { mode: FormMode; toolId: st
     void submission.submit({ kind: "report", email: email.trim(), toolId });
   }
   return (
-    <form className={styles.form} noValidate autoComplete="off" onSubmit={handleSubmit} aria-label={`Receber relatório de ${topic}`} aria-busy={busy}>
+    <form className={`${styles.form} ${variant === "inline" ? styles.inlineReport : ""}`} noValidate autoComplete="off" onSubmit={handleSubmit} aria-label={`Receber relatório de ${topic}`} aria-busy={busy}>
       <div className={styles.field}>
         <label htmlFor={`${id}-email`}>Seu e-mail</label>
-        <input id={`${id}-email`} name="email" type="email" autoComplete="off" required value={email} readOnly={busy}
+        <input id={`${id}-email`} name="email" type="email" autoComplete="off" placeholder={variant === "inline" ? "Seu e-mail" : undefined} required value={email} readOnly={busy}
           aria-invalid={Boolean(error)} aria-describedby={error ? `${id}-email-error` : `${id}-help`}
           onChange={(event) => setEmail(event.target.value)} />
         {error ? <p className={styles.error} id={`${id}-email-error`}>{error}</p> : null}

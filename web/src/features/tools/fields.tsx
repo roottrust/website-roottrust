@@ -1,4 +1,5 @@
 import { useEffect, useRef, type FormEvent, type ReactNode } from "react";
+import { useMethodSlot } from "./method-slot";
 import { parsePtBR } from "./models";
 import type { Input, ParseOptions } from "./models";
 import styles from "./tools.module.css";
@@ -53,22 +54,34 @@ export function ToolForm({ label, onSubmit, formError, submitLabel, onClear, chi
 
 export function ResultBox({ active, stale, children }: { active: boolean; stale: boolean; children?: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
+  const method = useMethodSlot();
   useEffect(() => { if (active) ref.current?.focus(); }, [active]);
   return (
-    <div id="resultado" ref={ref} tabIndex={-1} className={styles.result} aria-live="polite">
-      {active ? children : stale
-        ? <p className={styles.stale}>As respostas mudaram depois do último cálculo. O resultado anterior foi descartado: calcule de novo.</p>
-        : <p className={styles.muted}>Preencha os campos e calcule para ver o resultado. Nada é enviado ou guardado.</p>}
-    </div>
+    <aside className={styles.aside} aria-label="Resultado">
+      <div className={styles.eyebrowRow}><span className={styles.eyebrow}>Resultado</span><span className={styles.eyebrowRule} /></div>
+      <div id="resultado" ref={ref} tabIndex={-1} className={styles.result} aria-live="polite">
+        {active ? children : stale
+          ? <p className={styles.stale}>As respostas mudaram depois do último cálculo. O resultado anterior foi descartado: calcule de novo.</p>
+          : (
+            <>
+              <p className={styles.muted}>Preencha os campos e calcule para ver o resultado. Nada é enviado ou guardado.</p>
+              <div className={styles.placeholders} aria-hidden="true"><span /><span /><span /></div>
+            </>
+          )}
+      </div>
+      {method}
+    </aside>
   );
 }
 
 export function Metric({ label, value, note }: { label: string; value: string; note?: string }) {
   return (
     <div className={styles.metric}>
-      <h3>{label}</h3>
+      <div className={styles.metricText}>
+        <h3>{label}</h3>
+        {note ? <p className={styles.note}>{note}</p> : null}
+      </div>
       <p className={styles.value}>{value}</p>
-      {note ? <p className={styles.note}>{note}</p> : null}
     </div>
   );
 }

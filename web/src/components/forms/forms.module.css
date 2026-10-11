@@ -41,3 +41,17 @@
   .inlineNewsletter > button { grid-column:2; grid-row:2; }
   .inlineNewsletter .error, .inlineNewsletter .notice, .inlineNewsletter .status, .inlineNewsletter .demoControl { grid-column:1 / -1; }
 }
+
+.inlineReport .field input { height:48px; background:#171717; border-color:var(--rt-musgo); font:400 16px/1.4 var(--font-body); }
+.inlineReport .field input[aria-invalid="true"] { border-color:var(--rt-terracota); }
+.inlineReport .field input::placeholder { color:#9db3a8; }
+.inlineReport .field label { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; }
+.form.inlineReport > button { min-height:48px; padding:0 24px; white-space:nowrap; background:transparent; color:var(--rt-superficie); box-shadow:inset 0 0 0 1px var(--rt-folha); }
+.form.inlineReport > button:hover:not(:disabled) { background:#262626; }
+@media (min-width: 561px) {
+  .inlineReport { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; align-items:start; }
+  .inlineReport .field { display:contents; }
+  .inlineReport .field input { grid-column:1; grid-row:1; }
+  .inlineReport > button { grid-column:2; grid-row:1; }
+  .inlineReport .error, .inlineReport .notice, .inlineReport .status, .inlineReport .demoControl { grid-column:1 / -1; }
+}

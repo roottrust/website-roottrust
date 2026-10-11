@@ -40,3 +40,11 @@ Checkpoint de partida: `db9e594`; correção focada a partir de `24bb735`. Escri
 - `brl`/`pct`: valor não nulo que arredondaria para zero usa limiar explícito ("< R$ 0,01", "> −R$ 0,01", "< 0,1%", "> −0,1%"); zero exato e −0 permanecem zero; sinal negativo nunca é omitido. Unit em `tests/unit/tools/format.test.ts`.
 - Selo da página: texto diferente para `FORM_MODE=demo` (demonstração local, nenhum dado enviado) e modo padrão (envio indisponível); coberto nos testes por rota.
 - Migração (F28): os três totais têm ajuda associada por `aria-describedby` (totais do horizonte; operação inclui coexistência e parte local; transição única não contada na operação e não multiplicada; evitar despesa duplicada). Coberto em e2e.
+
+## Restauração visual P4.3 (fidelidade aos 4 exports)
+
+- Composição: hero horizontal com título de acento inline e arte reduzida à direita; formulário e resultados lado a lado (1,2fr/1fr, empilhados abaixo de 960px); campos em pares no desktop, auxiliares/fieldsets/ações em largura total; resultados em cartões (rótulo/nota à esquerda, valor à direita) com placeholders tracejados claros e sem valor real antes do cálculo.
+- Método: `details` "Como chegamos a este resultado" dentro da coluna de resultados, entregue por slot SSR (`method-slot.tsx` + `ResultBox`); fórmulas, hipóteses, limites e fontes completas preservados e presentes no HTML.
+- Relatório: cartão largo com `ReportForm variant="inline"` (e-mail + botão na mesma linha no desktop, rótulo acessível preservado). CTA conforme o export: seta no botão, sem símbolo ASCII (o export não tem).
+- Modelos, `format`, `useToolForm`, `ToolSession`, estado/reset/"Não sei"/foco/horizonte não foram alterados. Cenário ROSI continua `select`. Painel de resultados não é sticky (o export fixa por altura de viewport; não portado).
+- Não executado nesta etapa: gates, comparação visual por seção, capturas. Revalidar após a execução do GPT.

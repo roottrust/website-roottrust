@@ -126,7 +126,15 @@ test.describe("graphics motion contract (production build, Chromium)", () => {
 
   test("off-screen graphics are suspended and wake up when scrolled into view", async ({ page }) => {
     await page.goto("/");
+    const glCount = () => page.evaluate(() => (window as unknown as { __gl: unknown[] }).__gl.length);
+    const pillars = page.locator('[data-sec="pilares"] [data-graphic]');
+    await expect(pillars.first()).toHaveAttribute("data-graphic-status", "loading");
+    await page.waitForTimeout(500);
+    const before = await glCount();
+    await expect(pillars.first()).toHaveAttribute("data-graphic-status", "loading");
+    await page.locator('[data-sec="pilares"]').evaluate(el => el.scrollIntoView({ block: "center" }));
     await expect(page.locator('[data-sec="pilares"] [data-graphic-status="ready"]').first()).toHaveCount(1);
+    expect(await glCount()).toBeGreaterThan(before);
     await page.evaluate(() => scrollTo(0, 0));
     await page.waitForTimeout(500);
     const top = await drawsDuring(page, 700);
@@ -211,7 +219,10 @@ test.describe("graphics fallback contract", () => {
     });
     expect(lost.hadExtension).toBe(true);
     const arts = page.locator("[data-graphic]:not([data-graphic=symbol])");
-    await expect.poll(async () => (await arts.evaluateAll(list => list.map(el => el.getAttribute("data-graphic-status")))).every(status => status === "failed")).toBe(true);
+    await expect.poll(async () => {
+      const statuses = await arts.evaluateAll(list => list.map(el => el.getAttribute("data-graphic-status")));
+      return statuses.includes("failed") && !statuses.includes("ready");
+    }).toBe(true);
     const shown = page.locator("[data-graphic]:not([data-graphic=symbol]):visible");
     expect(await shown.count()).toBeGreaterThan(0);
     for (const art of await shown.all()) await expect(art.locator('[data-graphic-fallback="true"]')).toBeVisible();
