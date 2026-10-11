@@ -111,8 +111,12 @@ export const mul = (a: number, b: number): number | null => safe(a * b, a, b);
 export const div = (a: number, b: number): number | null => safe(a / b, a);
 export const add = (a: number, b: number): number | null => safe(a + b);
 
-/** Múltiplo de Number.EPSILON tolerado como erro de representação em cadeias curtas de operações. */
-const CANCELLATION_ULPS = 16;
+/**
+ * Tolerância de acúmulo de erro IEEE 754 (aproximado) em cadeias curtas de operações, em múltiplos de Number.EPSILON.
+ * Atalho sem teto monetário nem biblioteca decimal: um valor representável diferente dentro de 4·EPSILON é tratado como igual.
+ * Reavalie este erro se as fórmulas (número ou tipo de operações encadeadas) mudarem.
+ */
+const CANCELLATION_ULPS = 4;
 
 /** a − b; diferença dentro do erro de representação dos operandos vira 0 exato (não arredonda a centavos). */
 export function sub(a: number, b: number): number | null {

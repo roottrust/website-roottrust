@@ -87,6 +87,8 @@ describe("Migração: cancelamento de ponto flutuante", () => {
   it("magnitudes grandes: igualdade de representação e diferença real", () => {
     expect(diff({ keep: 3e15, operate: 1e15, transition: 2e15 })).toMatchObject({ difference: 0, direction: "equal" });
     expect(diff({ keep: 1e15, operate: 1e15, transition: 100 }).direction).toBe("costlier");
+    expect(diff({ keep: 1e15, operate: 999999999999999, transition: 0 })).toMatchObject({ difference: 1, direction: "cheaper" });
+    expect(diff({ keep: 999999999999999, operate: 999999999999998, transition: 0 })).toMatchObject({ difference: 1, direction: "cheaper" });
     expect(diff({ keep: 1e300, operate: 0.5e300, transition: 0.5e300 }).direction).toBe("equal");
     expect(run({ keep: 1e308, operate: 1e308, transition: 1e308 })).toEqual({ status: "overflow" });
   });

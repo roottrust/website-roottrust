@@ -267,8 +267,8 @@ Dependência: P3.4. Portar três rotas, seis seções, quatro frentes.
 
 #### P4.2 Modelos puros — [claude:escreve] Sonnet
 Dependência: P3.4. Extrair modelos F e fixtures independentes.
-- [ ] Vazio/desconhecido/zero diferenciados, divisão zero/não finitos tratados; Shadow sem score.
-- [ ] Testes de resultados e limites contratuais passando.
+- [x] Vazio/desconhecido/zero diferenciados, divisão zero/não finitos tratados; Shadow sem score.
+- [x] 69 testes unitários passando, confirmados GPT; revisão independente Sonnet e Opus no impasse de precisão concluídas. Limite IEEE754 documentado.
 
 #### P4.3 Quatro interfaces — [claude:escreve] Sonnet
 Dependência: P4.2. Entradas/resultados compactos e revisão.
@@ -364,7 +364,8 @@ Estados: pendente, em execução, em revisão, aguardando usuário, concluído. 
 | P3.4-P | Concluído | Consulta Sonnet 5.5 concluída; parecer conferido, cobertura corrigida pelo GPT. Lint/typecheck/build e 15 unitários/16 e2e passaram. Usuário validou piloto em 10/10/2026. Sem aceite visual P3.4. |
 | P3.4-T | Concluído | Dois testes, relatório/45 capturas; sem alteração web/src. Gates originais confirmados GPT: 15 unitários/32 E2E. Correção focada: gates Sonnet 15 unitários/34 E2E+4 skips; novo teste HTTP confirmado GPT 2/2. Revisão independente e aceite Home concluídos. |
 | P4.1 | Concluído | Sessão d9fac3af-1e3e-4e4d-b414-0980b0744b55: três serviços SSR,15unit/54E2E+4skip e lint/type/build; revisão 0981b385-3269-47ef-a462-980021713fee aprovou lifecycle/contratos/composição após correção (301s escritor,22s revisor). Revisor não releu testes/audit no follow-up; rechecagem integral em P4.4. |
-| P4.2–P4.4 | Pendente | Após aceite Home, já recebido. |
+| P4.2 | Concluído | cd309153-1f7a-40de-bad1-00a0a9dcf69c Sonnet5.5, correção final104s:69unit/54E2E+4skip,lint/type/build. GPT confirmou69unit. RevisorOpus2aa28270-6bc2-4c09-aac8-2aba6b74cead follow-up17s aprovou4EPS e regressões; limiteIEEE754 registrado em tools-models.md. |
+| P4.3–P4.4 | Pendente | Modelos revisados; iniciar interfaces. |
 | P5.1–P5.4 | Pendente | Após P3.4. |
 | P6.1–P6.3 | Pendente | — |
 | P6.3-D | Pendente | Documentação Haiku após QA; revisão Sonnet antes do aceite. |
@@ -388,11 +389,15 @@ Cada escrita exige linha com hash WIP antes da chamada. Consultas usam “não a
 
 SQL/session-store não disponíveis nesta sessão: este PLAN é o registro único, sem banco artificial ou cópia concorrente.
 
+**P4.2 ajuste indicado P0.2:** checkpoint WIP `606582b6a9e416c90c4ed9d9086f817c66f7f81f`, escopo já aprovado modelos/testes/audit. Follow-up mesmo dono Sonnet, revisão final agrupada P4.4; nenhuma entrada real armazenada.
+
 **P4.2 início:** checkpoint WIP `8cbd155dd870ff14dc13b90a6ef7bf7c4856010c`; pré-checagem sem segredos/gerados. Dono Sonnet para modelos/parsers TS puros em features/tools/models, testes unit/tools e audit/tools-models.md; interfaces ficam P4.3. Sem alterações de dependências/env/export/marca/Home.
 
 **P4.2 correção:** escritor cd309153-1f7a-40de-bad1-00a0a9dcf69c succeeded380s Sonnet5.5,60unit/54E2E+4skip; GPT60unit confirmados. Revisor43ed22e9-ef64-400a-b214-d987e633d2b9 succeeded82s Sonnet5.5 aprovou fórmulas com bug de cancelamento decimal em diferença/líquido. Checkpoint antes da correção focada `f87694651b1d070e50a6c35ebbeafa1c21f2285c`; preservar diferenças reais subcentavo, normalizar somente resíduos de precisão flutuante e testar igualdade/inegualdade/overflow. Revisão nova após correção.
 
 **P0.2 acionado por impasse matemático P4.2:** follow-up Sonnet escritor succeeded170s (69unit/54E2E+4skip), helper16EPS zera diferenças reais (1 em1e15). Revisor43ed succeeded16s aprovou por plausibilidade de uso; GPT discorda: ausência de teto arbitrário é contrato e1 nessa escala é representável (ULP~0,125). Também corrigir parecer: PLAN seção6 possui fixtures numéricas. Consulta Opus somente leitura para menor solução defensável, sem aceitar perda silenciosa ou instalar biblioteca. Model efetivo/acesso devem ser verificados; falha interrompe fluxo para usuário.
+
+**Decisão P0.2:** Opus5.5 efetivo confirmado, sessão2aa28270-6bc2-4c09-aac8-2aba6b74cead succeeded101s. Recomendou limite4EPS para cadeias atuais, em vez16; GPT aceita menor correção com testes1em1e15 e documentação explícita da precisão IEEE754, sem garantir aritmética decimal exata nem preservação universal de diferenças. Valor efetivamente representável pode cair na tolerância: declarar limite, não chamá-lo irrepresentável. Sem teto monetário, nova dependência ou alteração de produto. Checkpoint da próxima escrita registrado abaixo antes da chamada.
 
 **P4.1 início:** aceite Home recebido. Dono Sonnet; escopo três páginas de serviço, componentes/dados/CSS em features/services, rotas servicos e testes correspondentes; reutilizar gráficos/formulários. Checkpoint WIP `b69a452c9179d84f5a65ccd35ee23ff7dd3afee6`; pré-checagem sem arquivo sensível/gerado, servidor manual encerrado para liberar gates. Sem alteração de exports/marca/dependências/env/Home.
 

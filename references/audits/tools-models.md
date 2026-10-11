@@ -24,10 +24,10 @@
 - Sem prova de correção além dos testes; revisão independente P4.4 pendente. Nada aqui certifica operação ou UI.
 
 ## Cancelamento de ponto flutuante (revisor 43ed)
-- `sub(a, b)` em `numbers.ts`: diferença com módulo ≤ 16·`Number.EPSILON`·max(|a|,|b|) (≈3,5e-15 relativo) vira `0` exato; não arredonda a centavos. Usada em migração (`A − M`: direção, `difference` e percentual saem do valor assentado), ROSI (`netBenefit`, `residualLoss`). Infinito continua `overflow`; negativos legítimos e diferenças reais (ex.: 0,001 em 1000,30) permanecem.
-- Limite conhecido: diferença relativa < ~3,5e-15 (ex.: 1 em 1e15) é indistinguível de erro de representação e é tratada como igual.
+- `sub(a, b)` em `numbers.ts`: diferença com módulo ≤ 4·`Number.EPSILON`·max(|a|,|b|) (≈8,9e-16 relativo) vira `0` exato, para absorver acúmulo de erro de cadeias curtas em IEEE 754 (aproximado); não arredonda a centavos. Usada em migração (`A − M`: direção, `difference` e percentual saem do valor assentado), ROSI (`netBenefit`, `residualLoss`). Infinito continua `overflow`; negativos legítimos e diferenças reais (ex.: 0,001 em 1000,30) permanecem.
+- Limite conhecido: atalho sem teto monetário nem biblioteca decimal; um valor representável que difira dentro de 4·EPSILON é tratado como igual. Não se afirma que diferenças reais menores sejam irrepresentáveis nem se garante preservação universal até 15 dígitos (1 em 1e15 e 999999999999999 vs 999999999999998 são preservados nos testes). Reavaliar o erro se as fórmulas mudarem.
 - Percentual, ROSI e divisão por zero: fórmulas inalteradas; `0/A` ⇒ 0, `zero_base`/`zero_cost` intactos, sem `-0`. Somas (`add`) não sofrem cancelamento e não mudaram.
-- Testes: `.1+.2` vs `.3`, `1000,30` vs `500,10+500,20`, equilíbrio ROSI decimal, subcentavo real, magnitudes grandes (1e15, 1e300, overflow).
+- Testes: `.1+.2` vs `.3`, `1000,30` vs `500,10+500,20`, equilíbrio ROSI decimal, subcentavo real, magnitudes grandes (1e15, pares de 15 dígitos com diferença 1, 1e300, overflow).
 
 ## Gates (em série, `web/`)
 `npm run lint` ok · `npm run typecheck` ok · `npm test` 9 arquivos/69 testes ok · `npm run build` ok · `npm run test:e2e` 54 passed, 4 skipped (2 de captura e 2 de aba em segundo plano, preexistentes). Correção durante a execução: percentual de migração calculava `100×diff` antes de dividir (estouro evitável); trocado por `(diff/A)×100`.
