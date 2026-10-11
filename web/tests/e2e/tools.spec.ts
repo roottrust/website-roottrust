@@ -39,6 +39,17 @@ for (const route of routes) {
     await page.setViewportSize({ width: 320, height: 844 });
     await page.goto(route.path);
     expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(0);
+    const targets = [
+      page.getByRole("heading", { level: 1 }),
+      page.getByRole("form", { name: route.form }),
+      page.locator('section[aria-labelledby="relatorio"] > div'),
+    ];
+    for (const target of targets) {
+      const b = await target.boundingBox();
+      expect(b).not.toBeNull();
+      expect(b!.x).toBeGreaterThanOrEqual(20);
+      expect(b!.x + b!.width).toBeLessThanOrEqual(300);
+    }
   });
 
   test(`${route.path}: report form is independent of the newsletter and local in demo mode`, async ({ page }) => {

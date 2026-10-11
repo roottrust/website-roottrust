@@ -55,3 +55,10 @@ Checkpoint de partida: `db9e594`; correção focada a partir de `24bb735`. Escri
 - ROSI: pares perda/frequência e custo/prazo ficam lado a lado no desktop; "Compor por partes" desce para largura total abaixo do par. Campos personalizados, ajudas, "Não sei", foco e select de cenário (adaptação funcional) preservados; a ordem de Tab passa a ser par → auxiliar.
 - Resultado inicial: os três blocos tracejados genéricos foram trocados por pré-visualização com rótulos/descrições já conhecidos e travessão "—" no lugar do valor (`aria-hidden`, sem número calculado). Shadow AI lista só os temas, sem valor, nota, pontuação ou classificação.
 - Não executado: lint, typecheck, testes, build, capturas (GPT).
+
+## Ajuste mobile P4.3 (gutters)
+
+- Causa: `.hero`, `.section` e `.reportSection` (e os dois primeiros no `@media (max-width: 720px)`) usavam shorthand `padding: Y 0 Y`, zerando o `padding-inline` de `svc.wrap` (clamp 20–60px) e encostando conteúdo na borda em 320px.
+- Correção: somente `padding-block` com os mesmos valores verticais; padding de cards/campos e demais regras intactos.
+- Teste de regressão (`tools.spec.ts`, 4 rotas a 320px): título, painel do formulário e cartão do relatório com `x >= 20` e borda direita `<= 300` (viewport 320 − 20), valores geométricos, sem snapshot.
+- Não executado por Claude: lint, typecheck, testes, build, Lighthouse (GPT; repetir Lighthouse após o build final).

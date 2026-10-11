@@ -44,14 +44,14 @@
 
 .crumbList { margin:0;padding:0;list-style:none; }
 .crumbList li:not(:last-child)::after { content:"›";margin-left:8px;color:var(--rt-menta); }
-.hero { padding:128px 0 40px; }
+.hero { padding-block:128px 40px; }
 .heroRow { margin-top:20px; display:flex; flex-wrap:wrap; align-items:center; gap:32px 48px; }
 .heroText { flex:1 1 440px; min-width:0; display:flex; flex-direction:column; align-items:flex-start; gap:20px; }
 .h1 { margin:0; font:700 clamp(38px,4.6vw,64px)/1.04 var(--font-display); letter-spacing:-0.02em; text-wrap:balance; }
 .art { position:relative; flex:0 0 auto; width:220px; height:200px; margin:0 auto; min-width:0; }
 .badge { margin:0; display:inline-flex; align-items:center; gap:10px; padding:8px 14px; border-radius:999px; box-shadow:inset 0 0 0 1px #3C3C3C; font:400 13px/1.4 var(--font-body); color:var(--rt-menta); }
 .badge span { width:6px; height:6px; border-radius:50%; background:var(--rt-folha); flex:none; }
-.section { padding:40px 0 72px; }
+.section { padding-block:40px 72px; }
 .eyebrowRow { display:flex; align-items:center; gap:16px; }
 .eyebrow { font:700 12px/1.4 var(--font-body); letter-spacing:0.18em; text-transform:uppercase; color:var(--rt-menta); white-space:nowrap; }
 .eyebrowRule { width:40px; height:1px; flex:none; background:var(--rt-musgo); }
@@ -79,7 +79,7 @@
 .methodBody .formulas { padding:0; list-style:none; gap:10px; }
 .formulas li { display:flex; gap:10px; align-items:baseline; }
 .formulas li > span:first-child { font:700 15px/1 var(--font-display); color:var(--rt-folha); }
-.reportSection { padding:48px 0 96px; }
+.reportSection { padding-block:48px 96px; }
 .reportCard { padding:clamp(20px,3vw,36px); border-radius:12px; background:#1D1D1D; border:1px solid #3C3C3C; display:flex; flex-direction:column; gap:20px; }
 .reportTitle { margin:0; font:700 clamp(26px,2.8vw,34px)/1.15 var(--font-display); }
 .reportText { margin:0; max-width:560px; font:400 16px/1.55 var(--font-body); }
@@ -87,8 +87,8 @@
 .ctaStack { display:flex; flex-direction:column; align-items:flex-start; gap:24px; }
 @media (max-width: 960px) { .layout { grid-template-columns:minmax(0,1fr); } }
 @media (max-width: 720px) {
-  .hero { padding:104px 0 32px; }
-  .section { padding:32px 0 56px; }
+  .hero { padding-block:104px 32px; }
+  .section { padding-block:32px 56px; }
   .art { width:180px; height:164px; }
   .panel { grid-template-columns:minmax(0,1fr); }
   .cta { padding-block:72px 80px; }

@@ -213,7 +213,7 @@
       "route": "/ferramentas/rosi",
       "export": "Ferramenta ROSI.dc.html",
       "native": {
-        "documentHeight": 3840,
+        "documentHeight": 4013,
         "overflowX": false,
         "canvases": 2,
         "h1": "Explore o retorno de uma proteção adicional.",
@@ -259,7 +259,7 @@
       "route": "/ferramentas/shadow-ai",
       "export": "Ferramenta Shadow AI.dc.html",
       "native": {
-        "documentHeight": 3581,
+        "documentHeight": 3681,
         "overflowX": false,
         "canvases": 2,
         "h1": "Organize a governança do uso de IA.",
@@ -305,7 +305,7 @@
       "route": "/ferramentas/divida-tecnica",
       "export": "Ferramenta Divida tecnica.dc.html",
       "native": {
-        "documentHeight": 3219,
+        "documentHeight": 3300,
         "overflowX": false,
         "canvases": 2,
         "h1": "Estime o custo do tempo atribuído à dívida técnica.",
@@ -351,7 +351,7 @@
       "route": "/ferramentas/migracao-para-nuvem",
       "export": "Ferramenta Migracao para nuvem.dc.html",
       "native": {
-        "documentHeight": 3378,
+        "documentHeight": 3500,
         "overflowX": false,
         "canvases": 2,
         "h1": "Compare os custos de manter ou migrar.",

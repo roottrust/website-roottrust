@@ -8,7 +8,7 @@ Converter os 12 exports aprovados do Claude Design em frontend Next.js executáv
 
 ## 2. Pesquisa e evidências
 
-O repositório contém marca v2, contratos F01–F29, S01–S16 e N01–N11 e auditorias dos exports. No levantamento inicial ainda não havia aplicação npm ou testes; a fundação e a Home agora estão implementadas, com revisão P3.4 pendente. Node observado: 24.13.1; npm: 11.8.0. O runtime DC interpreta templates dinamicamente; sua substituição por JSX integra a migração. Three.js direto produz objetos; Canvas 2D produz hero/moldura/símbolos. A Home original tem `s.href`/`s.title` indevidos em `ETAPAS.map`; preservar original e corrigir somente cópia de comparação.
+O repositório contém marca v2, contratos F01–F29, S01–S16 e N01–N11 e auditorias dos exports. No levantamento inicial ainda não havia aplicação npm ou testes; a fundação, Home e páginas internas estão implementadas; Home aprovada em 10/10 e QA final em P6. Node observado: 24.13.1; npm: 11.8.0. O runtime DC interpreta templates dinamicamente; sua substituição por JSX integra a migração. Three.js direto produz objetos; Canvas 2D produz hero/moldura/símbolos. A Home original tem `s.href`/`s.title` indevidos em `ETAPAS.map`; preservar original e corrigir somente cópia de comparação.
 
 Fontes: [Server/Client Components](https://nextjs.org/docs/app/getting-started/server-and-client-components), [hidratação](https://nextjs.org/docs/messages/react-hydration-error), [instalação](https://nextjs.org/docs/app/getting-started/installation), [suporte](https://nextjs.org/support-policy), [React effects](https://react.dev/reference/react/useEffect), [Three cleanup](https://threejs.org/manual/pages/cleanup.html), [Vitest](https://nextjs.org/docs/app/guides/testing/vitest), [Playwright](https://nextjs.org/docs/app/guides/testing/playwright), [snapshots](https://playwright.dev/docs/test-snapshots), [Web Vitals](https://web.dev/articles/vitals), [agentes](https://learn.chatgpt.com/docs/agent-configuration/subagents).
 
@@ -79,7 +79,7 @@ Distribuição atual substitui Luna/Sol como executores futuros; nomes nas evid�
 | Revisão funcional, visual, matemática, privacidade e acessibilidade | `sonnet`; `[claude:consulta]`, sessão independente | Verificar contratos e diff com contexto suficiente, sem autorrevisão como aceite. |
 | Impasse arquitetural/matemático ou falha crítica persistente | `opus`; `[claude:consulta]`, condicional | Segunda opinião pontual; GPT decide e Sonnet implementa. |
 
-**Capacidade verificada em 10/10/2026:** o schema MCP aceita os aliases `haiku`, `sonnet`, `opus` e `fable`; **Fable é proibido neste plano**, pois o usuário não tem acesso no Pro. O schema não permite IDs arbitrários, `opusplan`, ajuste de esforço ou orçamento de tokens. Não inventar parâmetros low/high/XHigh para Claude. Modelos observados nesta conversa: Haiku `claude-haiku-4-5-20251001` e Sonnet `claude-sonnet-5`; registrar o `model` efetivo de cada chamada. Opus ainda não foi chamado; sua resolução/autorização local permanece não verificada. Alias aceito no schema não comprova acesso. Não gastar rodadas apenas para testar modelos; validar na primeira tarefa útil. Modelo inesperado: interromper antes de continuar a tarefa, registrar e informar; nunca fazer fallback silencioso.
+**Capacidade verificada em 10/10/2026:** o schema MCP aceita os aliases `haiku`, `sonnet`, `opus` e `fable`; **Fable é proibido neste plano**, pois o usuário não tem acesso no Pro. O schema não permite IDs arbitrários, `opusplan`, ajuste de esforço ou orçamento de tokens. Não inventar parâmetros low/high/XHigh para Claude. Resolução inicial histórica: Haiku `claude-haiku-4-5-20251001` e Sonnet `claude-sonnet-5`. Após os mapeamentos locais abaixo, Sonnet/Haiku/Opus 5.5 efetivos foram observados em tarefas úteis; registrar o `model` de cada chamada, sem presumir disponibilidade futura. Alias aceito no schema não comprova acesso. Não gastar rodadas apenas para testar modelos; validar na primeira tarefa útil. Modelo inesperado: interromper antes de continuar a tarefa, registrar e informar; nunca fazer fallback silencioso.
 
 Servidor denominado `claude-agent` nas instruções do usuário; ferramentas reais expostas neste ambiente: `mcp__claude_agent__claude`, `mcp__claude_agent__claude_reply`, `mcp__claude_agent__claude_result` e `mcp__claude_agent__claude_cancel`. Os nomes curtos `claude-reply`/`claude-result`/`claude-cancel` neste protocolo se referem a essas ferramentas; não são servidores adicionais.
 
@@ -154,13 +154,13 @@ Dependência: solicitação atual do usuário. Dono GPT; alterações limitadas 
 
 #### P0.2 Consultoria complexa condicional — [claude:consulta] Opus
 Dependência: impasse documentado após uma correção Sonnet, ou decisão arquitetural complexa levantada pelo GPT.
-- [ ] Quando acionado: registrar problema, alternativas, sessão/modelo e recomendação; GPT decide sem ampliar escopo implicitamente.
+- [x] Quando acionado: registrar problema, alternativas, sessão/modelo e recomendação; GPT decide sem ampliar escopo implicitamente.
 Não é bloqueador obrigatório: permanecer “não acionado” quando não houver impasse; sem chamada só para testar disponibilidade.
 
 #### P0.3 Atualizar versões e validar uma tarefa — [codex]
 Dependência: solicitação do usuário para modelos atuais e um piloto antes da continuação completa.
 - [x] Fonte oficial e CLI local verificadas; mapeamento de família restrito a `.claude/settings.json`, sem Fable/permissões novas.
-- [x] Modelo efetivo Sonnet 5.5 confirmado pelo MCP na tarefa piloto; Haiku/Opus 5.5 ainda sem chamada.
+- [x] Modelos efetivos Sonnet, Haiku e Opus 5.5 confirmados em tarefas úteis; Sonnet no piloto, Haiku em P5.1 e Opus no impasse P4.2.
 - [x] Resultado, limites e próximos passos registrados em `references/audits/claude-home-motion-pilot.md`.
 - [x] Usuário validou piloto: “Pela minha análise tudo correu bem. Siga com o resto das outras tasks.” (10/10/2026). Isso não aprova visualmente a Home.
 
@@ -221,25 +221,25 @@ Dependência: P2.3. Vitest Node e Playwright contra produção; contrato D09–D
 
 #### P3.1 Portar gráficos — [claude:escreve] Sonnet, somente correções restantes
 Dependência: P2.4. Preservar formas, materiais e shaders em lifecycle React.
-- [ ] Sem canvas/listeners/loops duplicados na montagem/desmontagem.
-- [ ] GPU/recursos compartilhados descartados; import/fontes tardios não ressuscitam componente.
-- [ ] Falha de inicialização/perda de contexto exibem fallback.
+- [x] Sem canvas/listeners/loops duplicados na montagem/desmontagem.
+- [x] GPU/recursos compartilhados descartados; import/fontes tardios não ressuscitam componente.
+- [x] Falha de inicialização/perda de contexto exibem fallback.
 
 #### P3.2 Movimento acessível — [claude:escreve] Sonnet, somente correções restantes
 Dependência: P3.1. Completar pausa e suspensão dinâmica.
-- [ ] Pausa visível, redução dinâmica, suspensão de aba oculta/elemento fora de tela.
-- [ ] Conteúdo/CTA utilizáveis sem gráficos; estado estático legível.
+- [x] Pausa visível, redução dinâmica, suspensão de aba oculta/elemento fora de tela.
+- [x] Conteúdo/CTA utilizáveis sem gráficos; estado estático legível.
 
 #### P3.3 Home nativa — [claude:escreve] Sonnet, somente correções restantes
 Dependência: P3.2. Portar todas as seções e corrigir auditoria.
-- [ ] Desktop/mobile fiéis; seletor/processo/terminal acessíveis por teclado.
+- [x] Desktop/mobile fiéis; seletor/processo/terminal acessíveis por teclado.
 - [x] Links de serviços/ferramentas/arquivo corretos; formulário D09–D10.
 - [x] ROSI descrito como simulador financeiro, sem runtime DC ou erro de hidratação.
 
 #### P3.4 Validar Home e obter aceite — [claude:consulta] Sonnet independente; [codex] GPT + usuário
 Dependência: P3.3.
 - [x] Build/lint/tipos/testes; capturas por seção e inspeção amostral desktop/mobile, diferenças e limites em `references/audits/home-qa.md`.
-- [ ] Desktop/mobile/teclado/pausa/redução/fallback verificados.
+- [x] Desktop/mobile/teclado/pausa/redução/fallback verificados.
 - [x] **Usuário aprovou Home: “Sim, aprovo a home”, 10/10/2026. P4/P5 liberados.**
 
 #### P3.4-P Piloto de revisão movimento/lifecycle — [claude:consulta] Sonnet
@@ -307,8 +307,8 @@ Dependência: P5.3.
 
 #### P6.1 CI GitHub — [claude:escreve] Sonnet
 Dependências: P4.4 e P5.4.
-- [ ] npm ci/lint/typecheck/unit/build/e2e, Node consistente, falhas vermelhas, sem segredo/deploy.
-- [ ] Equivalente local validado; CI remota só declarada após push autorizado e execução real.
+- [x] npm ci/lint/typecheck/unit/build/e2e, Node consistente, falhas vermelhas, sem segredo/deploy.
+- [x] Equivalente local validado; CI remota só declarada após push autorizado e execução real.
 
 #### P6.2 QA integral — [claude:consulta] Sonnet independente; [codex] gates determinísticos
 Dependência: P6.1.
@@ -347,8 +347,8 @@ Estados: pendente, em execução, em revisão, aguardando usuário, concluído. 
 | Tarefa | Estado | Evidência / responsável |
 |---|---|---|
 | P0.1 | Concluído | PLAN/AGENTS/development alinhados. Crítica Sonnet independente concluída: sem conflito factual grave; quatro ajustes resolvidos pelo GPT (independência de sessão, Fase 5 serial, nomes completos MCP, fechamento pós-crítica). 26 IDs únicos com referência na matriz/evidências; nenhuma mudança no código do site. |
-| P0.2 | Não acionado | Opus apenas para impasse complexo; sem sessão aberta. |
-| P0.3 | Concluído | CLI 2.1.296; mapeamentos locais 5.5. Sonnet 5.5 efetivo confirmado; Haiku/Opus sem teste. Usuário validou piloto e autorizou continuidade em 10/10/2026. |
+| P0.2 | Concluído quando acionado | Consulta Opus5.5 2aa28270-6bc2-4c09-aac8-2aba6b74cead resolveu impasse de tolerância matemática P4.2; decisão e limite IEEE754 abaixo. |
+| P0.3 | Concluído | CLI 2.1.296; mapeamentos locais 5.5. Sonnet/Haiku/Opus5.5 efetivos confirmados em tarefas úteis, sem Fable. Usuário validou piloto e autorizou continuidade em 10/10/2026. |
 | P0.4 | Concluído | GPT manteve bloqueio, removeu exceção `.env.example` e usou ignore `.env*`. Oito verificações passaram; template local preservado, zero `.env*` rastreados; dry-run 243 entradas sem caminhos sensíveis/gerados detectados. Sem chamada Claude, staging real ou commit nesta correção. |
 | P1.1 | Concluído | PLAN persistido; git status anterior: AGENTS e quatro docs/design alterados, três planos antigos e docs/web/web pendentes; nada descartado. |
 | P1.2 | Concluído | 158 arquivos / 11.176.670 bytes / 12 HTML preservados, hashes iguais em references/audits/export-inventory.json. Baseline com correção única de 53 bytes; Chromium 1440×1000, H1 renderizado, dez canvas e zero pageerror; relatório home-baseline.md. |
@@ -358,8 +358,8 @@ Estados: pendente, em execução, em revisão, aguardando usuário, concluído. 
 | P2.2 | Concluído | Quatro assets necessários + duas fontes/duas OFL; oito cópias com hashes iguais. Allowlist/proveniência em references/audits/public-assets.json. |
 | P2.3 | Concluído | Shell/formulários e menu desktop/mobile; conflito de especificidade no CTA mobile corrigido, teste 320px menu/erros sem overflow (2/2). Home completa será revalidada. |
 | P2.4 | Concluído | Validadores corrigidos após revisão: Vitest 8/8, build final e e2e afetados 6/6; 320px 2/2. Revisor confirmou Enter sem JS não envia dados/não altera URL e guardas de duplicidade/desmontagem. Correção menor de fechar menu pelo logo será integrada à P3.3. |
-| P3.1–P3.2 | Em revisão | Canvas/Three e movimento implementados. Revisão independente corrigiu atuação após dispose; sete testes gráficos passaram, incluindo perda de contexto/troca/descarte com uma geometria criada e descartada, sem recriação. Verificação real no navegador integra P3.4. |
-| P3.3 | Em revisão | Home completa integrada; lint/type/build passaram, Vitest 15/15, foundation e2e 12/12 e Home 4/4. Produção demo em http://127.0.0.1:3100/; padrão em :3101/. |
+| P3.1–P3.2 | Concluído tecnicamente | Lifecycle/movimento/fallback/GPU cobertos por testes e revisão Sonnet independente; carga adiada e primeiro quadro corrigidos em P6. Limites de aba real em final-qa.md. |
+| P3.3 | Concluído | Home nativa aprovada pelo usuário em10/10; CTA320px corrigido e jornadas locais validadas em P6. |
 | P3.4 | Concluído | Usuário: “Sim, aprovo a home”, 10/10/2026. Revisão Sonnet independente e gates concluídos; P4/P5 liberados. Lacunas navegador real/SPA e QA integral permanecem obrigatórias em P6. |
 | P3.4-P | Concluído | Consulta Sonnet 5.5 concluída; parecer conferido, cobertura corrigida pelo GPT. Lint/typecheck/build e 15 unitários/16 e2e passaram. Usuário validou piloto em 10/10/2026. Sem aceite visual P3.4. |
 | P3.4-T | Concluído | Dois testes, relatório/45 capturas; sem alteração web/src. Gates originais confirmados GPT: 15 unitários/32 E2E. Correção focada: gates Sonnet 15 unitários/34 E2E+4 skips; novo teste HTTP confirmado GPT 2/2. Revisão independente e aceite Home concluídos. |
@@ -368,7 +368,9 @@ Estados: pendente, em execução, em revisão, aguardando usuário, concluído. 
 | P4.3–P4.4 | Concluído | Quatro interfaces,82→86unit/108→110E2E+4skip e lint/type/build. GPT86unit/54E2E ferramentas confirmados. Escritorbed215fd follow-ups300s/132s, revisor ea77d follow-ups37s/11s aprovou fechamento. F28/serialização/aux/foco/sinais corrigidos; revisões independentes e limites em tools-native.md. |
 | P5.1 | Concluído | Haiku5.5 sessão6c1f3a8e-2f47-40c6-909a-3faeb5af3932 succeeded187s:94unit/110E2E+4skip lint/type/build. Sonnet5.5 revisão23c26e7b-8401-4935-99c6-5c41a3de4b7d succeeded18s aprovou. GPT94unit/hash confirmados. |
 | P5.2–P5.4 | Concluído | P5.3 gates GPT101unit/148E2E+4skip; correção19ebf5fb Sonnet5.5 succeeded254s mesmos gates; revisor independente aaa7c823 follow-up32s aprovou. Limites em newsletter-native/public-routes. |
-| P6.1–P6.3 | Pendente | — |
+| P6.1 | Concluído localmente | Workflow sem deploy, Node24.13.1/npmci e gates equivalentes locais aprovados; CI remoto não executado. |
+| P6.2 | Em finalização | Revisões independentes e gates101unit/228E2E4skips;44capturas regeneradas. Lighthouse final e consolidação em andamento. |
+| P6.3 | Aguardando preparação do aceite | Aceite humano final e arquivamento obrigatórios, sem commit final/push/deploy autorizados. |
 | P6.3-D | Pendente | Documentação Haiku após QA; revisão Sonnet antes do aceite. |
 
 ### Registro de sessões da ponte
@@ -509,3 +511,9 @@ Usuário escolheu Opção1: GPT executa gates/medições e controla servidores; 
 **P6.2 rodada final:** exec45357 lint/types/101unit/build/228E2E4skips e captura2/2 passou.44JPG atualizados;22pares sem pageerrors/overflow/timeouts/gráficosfailed ou requestfailedexports. GPT conferiu novas capturas serviçoCiberdesktop eROSIdesktop apóscorreções. Lighthouse final iniciado serialmente apósgates/capturas, porta3200 livre.
 
 **P4.3 ajuste mobile — [claude:escreve] Sonnet:** comparação final ROSImobile contraexport encontrou margenslateraiszeradas: tools.module.css .hero/.section/.reportSection e @media usam paddingvertical com laterais0, anulando svc.wrap padding-inlineclamp20..60. Corrigir somente para padding-block (incluindo mediaqueries), mantendo valoresverticais; preservar padding do card/inputs. Teste320px nas4ferramentas garante título/form/cardrelatório comgutters e semcorte; CSS/testestools/audittools são único escopo. Não redesenho, fórmulas/forms/SSRintactos. Aguardar Lighthouse corrente terminar antes do checkpoint; medição atual anterior aosgutters será repetida apósbuildfinal. GPTexecuta gates/capturas, Claude não roda comandos demorados.
+
+**P4.3 mobile início:** checkpoint2597dc0e7c1d23a6fbdcf63f32b246f217e1f13d, pré-checagem aprovada. Lighthousepré-gutters12/12exit0, porta3200encerrada. MedianasHomeLCP4877ms/CLS0/TBT117/JS172501bytes; serviço4860/0/450/308149; ROSI4875/0/451/315566; newsletter4860/0/105/166400. OrientativaLCP2,5snãoatingida, semcertificação. RepetirapóscorreçãoCSSfinal.
+
+**P6.2 pós-gutters final:** escritor05d419bc-7361-4e35-842f-38e5c0311f9f Sonnet5.5 succeeded31s, revisão f62830cd follow-up20s sembloqueador. GPT exec19907 exit0: lint/types/101unit/build/228E2E4skips, captura2/2 e Lighthouse12/12.44JPG/22pares regenerados; GPT confirmouROSImobilegutters. Portas3100/3101/3200 encerradas. Medianas finais: Home LCP4876,8ms CLS0 TBT114ms JS172501bytes; Ciber4800,5/0/452,5/308149; ROSI4875,2/0/452,5/315566; newsletter4860/0/112/166400. LCP2,5snãoatingido. DecisãoGPT: preservar fidelidade/stack e entregar frontendlocal com desvio explícito, sem declarar desempenho aprovado ou publicar; otimização adicional/medição em hardware e patches entram antes da publicação futura. Aceite humano final incluirá ciência desses limites, não certificação.
+
+**P6.3-D execução — [claude:escreve] Haiku:** dono único dos6docsweb, AGENTS.md e references/audits/final-qa.md. Atualizar estado factual P1–P5/QA concluídos tecnicamente, Homeaprovada10/10, aceitefinalpendente. Preservar tabelas S01–S16/F01–F29/N01–N11 bytea-byte naslinhas e identidades/regras D. D06 atual: GPTorquestra/decide/gates/servidores; Claudeescreve/revisaescopequeno, Sonnetcódigo, Haikudocs, Opusconsulta; perfisCodexhistóricossemusoimplementaçãoatual, semFable. Preservar regra semcommitfinal/push/deploy, exceçãoWIPautorizada e bloqueio.env*. Atualizar comandosreais/captura/Lighthouse/browsers/limites/integracõesfuturas, layoutatual aprovado e adaptaçõescontratuais/UI explicitadas, carregarPillarArtvisível/fallbackprimeiroframe, newsletteravisoanterior/metadataabertura/emptycopyproduct, política404válidavsencodingmalformado500. Audit finalQA consolidado comlogs/gates/capturas/12medições/ambiente/resultados/limitesreais e revisõessessões, semcompilarfictícios. GPTscan230arquivos11trechosprivados0hits,158exports/8assets0hashmismatch,82linksarquivosválidosantesdocs; revisãoestáticaparcial não certificação. SHA256linhastabelas: product16=8bf9aec3094df1eb04af38f730b0451a76a0510e5cbd8362cf438563423cdf7d; tools29=c585d82629e7ea2a9c884a48a3fb3734dc1f3a6db4458451356a4f50bfdf1ded; newsletter11=6081a84f487306cae98c2e2aec4caccdb2d3a740e45b8bc14e3b487f58d00df8. Não alterar PLAN/código/brand/assets/exports ou criaroutrosdocs/plano. Sem testes/build/servidores, GPTgates apósterminal e revisãoSonnetindependente. Não arquivarPLAN atéaceite.

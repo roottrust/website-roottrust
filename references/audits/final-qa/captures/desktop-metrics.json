@@ -337,8 +337,6 @@
         "h1": "Estime o custo do tempo atribuído à dívida técnica.",
         "fontsLoaded": [
           "Baloo 2 400 800",
-          "Archivo 100 900",
-          "Baloo 2 400 800",
           "Archivo 100 900"
         ],
         "graphics": [],
@@ -382,6 +380,8 @@
         "canvases": 2,
         "h1": "Compare os custos de manter ou migrar.",
         "fontsLoaded": [
+          "Baloo 2 400 800",
+          "Archivo 100 900",
           "Baloo 2 400 800",
           "Archivo 100 900"
         ],
