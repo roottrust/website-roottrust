@@ -15,7 +15,7 @@ button { cursor: pointer; }
 button:disabled { cursor: default; opacity: .65; }
 :focus-visible { outline: 2px solid var(--rt-folha); outline-offset: 4px; }
 img, svg { max-width: 100%; }
-section[id] { scroll-margin-top: 96px; }
+section[id][tabindex="-1"]:focus { outline: none; }
 .button { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; max-width: 100%; padding: 12px 24px; border: 0; border-radius: 999px; background: var(--rt-superficie); color: var(--rt-verde-raiz); font-size: 15px; font-weight: 600; line-height: 1.4; text-align: center; text-decoration: none; }
 .button:hover { background: var(--rt-menta); color: var(--rt-verde-raiz); }
 .skipLink { position: fixed; z-index: 100; left: 16px; top: -100px; padding: 12px 20px; background: var(--rt-superficie); color: var(--rt-verde-raiz); }
