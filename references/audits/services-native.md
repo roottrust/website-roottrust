@@ -52,3 +52,8 @@ Executor: `claude-agent` (Sonnet), sessão headless. Testes, build e servidores 
 - `services.spec.ts`: novo teste desktop (1440px) de 2 colunas nas frentes, 4 situações numeradas e título do FAQ à esquerda das perguntas.
 
 Limites: sem execução de testes/build nem comparação visual; ícone do FAQ é “+” fixo como no export (sem troca para “−” ao abrir); sem aprovação visual humana.
+
+## Detalhes visuais P4.1 (pós-capturas)
+
+- `max-width: 760px` do `h2` deixou de valer globalmente: restrito ao título de "Quando ajuda" (`h2Narrow`); frentes e processo seguem a largura do export (sem limite), sem alterar fontes.
+- Não executado: lint, typecheck, testes, build, capturas (GPT).

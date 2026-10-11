@@ -50,7 +50,7 @@ export function ToolPage({ tool, mode, children }: { tool: ToolContent; mode: Fo
       <section className={`${svc.wrap} ${styles.hero}`} aria-labelledby="titulo">
         <div className={svc.inner}>
           <nav aria-label="Trilha de navegação">
-            <ol className={svc.crumbs}>
+            <ol className={`${svc.crumbs} ${styles.crumbList}`}>
               <li><Link href="/">Início</Link></li>
               <li><Link href="/#ferramentas">Ferramentas</Link></li>
               <li aria-current="page">{tool.label}</li>

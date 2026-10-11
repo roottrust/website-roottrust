@@ -10,6 +10,10 @@ import styles from "./tools.module.css";
 const LABELS: Record<string, string> = { team: "profissionais na equipe", monthlyCost: "custo médio mensal", maintenancePercent: "tempo de manutenção", debtSharePercent: "parcela atribuída à dívida" };
 const KEYS = ["team", "monthlyCost", "maintenancePercent", "debtSharePercent"] as const;
 type Values = Record<(typeof KEYS)[number], FieldState>;
+const PREVIEW = [
+  { label: "Custo mensal estimado", value: "—" },
+  { label: "Projeção de 12 meses", value: "—", note: "Mantendo equipe, custo e percentuais informados." },
+] as const;
 const initial = (): Values => ({ team: emptyField(), monthlyCost: emptyField(), maintenancePercent: emptyField(), debtSharePercent: emptyField() });
 
 export function TechDebtTool() {
@@ -45,7 +49,7 @@ export function TechDebtTool() {
         <NumField id={`${p}-debtSharePercent`} label="Parcela dessa manutenção atribuída à dívida técnica" unit="%" value={v.debtSharePercent} error={errors.debtSharePercent} onChange={(n) => form.edit({ debtSharePercent: n }, "debtSharePercent")} />
       </ToolForm>
 
-      <ResultBox active={r !== null} stale={form.stale}>
+      <ResultBox active={r !== null} stale={form.stale} preview={PREVIEW}>
         <h2>Resultado</h2>
         {r?.status === "insufficient" ? (
           <>

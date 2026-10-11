@@ -16,11 +16,12 @@ function Eyebrow({ children, accentRule = false }: { children: string; accentRul
   );
 }
 
-function Title({ lines, id, variant = "h2" }: { lines: readonly [string, string]; id: string; variant?: "h1" | "h2" | "cta" }) {
+function Title({ lines, id, variant = "h2" }: { lines: readonly [string, string]; id: string; variant?: "h1" | "h2" | "h2Narrow" | "cta" }) {
   const Tag = variant === "h1" ? "h1" : "h2";
+  const cls = variant === "cta" ? styles.ctaTitle : variant === "h2Narrow" ? `${styles.h2} ${styles.h2Narrow}` : styles[variant];
   const accent = variant === "cta" ? styles.accentBlock : styles.accent;
   return (
-    <Tag id={id} className={variant === "cta" ? styles.ctaTitle : styles[variant]}>
+    <Tag id={id} className={cls}>
       {lines[0]} <span className={accent}>{lines[1]}</span>
     </Tag>
   );
@@ -73,7 +74,7 @@ export function ServicePage({ service, mode }: { service: ServiceContent; mode: 
         <div className={styles.inner}>
           <div className={styles.stack48}>
             <Eyebrow>Quando ajuda</Eyebrow>
-            <Title lines={service.situationsTitle} id="situacoes-titulo" />
+            <Title lines={service.situationsTitle} id="situacoes-titulo" variant="h2Narrow" />
             <ol className={styles.situations}>
               {service.situations.map((item, index) => (
                 <li key={item.title}>

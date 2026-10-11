@@ -14,7 +14,8 @@
 .eyebrowRule,.eyebrowRuleAccent { width:40px;height:1px;flex:none;background:var(--rt-musgo); }
 .eyebrowRuleAccent { background:var(--rt-folha); }
 .h1 { margin:0;font:700 clamp(34px,4.2vw,58px)/1.06 var(--font-display);letter-spacing:-0.02em;text-wrap:balance; }
-.h2 { margin:0;max-width:760px;font:700 clamp(32px,3.6vw,48px)/1.08 var(--font-display);letter-spacing:-0.02em;color:var(--rt-superficie);text-wrap:balance; }
+.h2 { margin:0;font:700 clamp(32px,3.6vw,48px)/1.08 var(--font-display);letter-spacing:-0.02em;color:var(--rt-superficie);text-wrap:balance; }
+.h2Narrow { max-width:760px; }
 .ctaTitle { margin:0;font:700 clamp(36px,4vw,56px)/1.06 var(--font-display);letter-spacing:-0.02em;color:var(--rt-superficie);text-wrap:balance; }
 .accent { color:var(--rt-folha); }
 .accentBlock { display:block;color:var(--rt-folha); }

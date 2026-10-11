@@ -22,6 +22,11 @@ const FIELD_LABELS: Record<string, string> = {
   loss: "prejuízo por incidente", frequency: "frequência", cost: "custo adicional", delayMonths: "prazo até a proteção estar efetiva", reductionPercent: "redução esperada",
 };
 const ORDER = ["loss", "frequency", "frequency-custom", "cost", "delay", "delay-custom", "reduction"] as const;
+const PREVIEW = [
+  { label: "ROSI estimado", value: "—" },
+  { label: "Benefício líquido", value: "—", note: "Benefício esperado menos o custo adicional." },
+  { label: "Redução de equilíbrio", value: "—", note: "Redução mínima das perdas, durante o período ativo, para cobrir o custo." },
+] as const;
 const EMPTY_AUX = (): FieldState[] => [emptyField(), emptyField(), emptyField(), emptyField()];
 
 interface State {
@@ -217,7 +222,6 @@ export function RosiTool() {
 
         <NumField id={`${p}-loss`} label="Prejuízo por incidente" unit="R$" value={v.loss} error={errors.loss}
           help="Estime efeitos não sobrepostos; perda comercial não é automaticamente receita bruta." onChange={(next) => form.edit({ loss: next }, "loss")} />
-        {auxBlock("loss")}
 
         <div className={styles.select}>
           <label htmlFor={`${p}-frequency`}>Frequência de incidentes com prejuízo</label>
@@ -234,10 +238,10 @@ export function RosiTool() {
           <NumField id={`${p}-frequency-custom`} label="Incidentes com prejuízo por ano" unit="por ano" allowUnknown={false} value={v.frequencyCustom}
             error={errors["frequency-custom"]} onChange={(next) => form.edit({ frequencyCustom: next }, "frequency-custom")} />
         ) : null}
+        {auxBlock("loss")}
 
         <NumField id={`${p}-cost`} label="Custo adicional nos primeiros 12 meses" unit="R$" value={v.cost} error={errors.cost}
           onChange={(next) => form.edit({ cost: next }, "cost")} />
-        {auxBlock("cost")}
 
         <div className={styles.select}>
           <label htmlFor={`${p}-delay`}>Prazo até a proteção estar efetiva</label>
@@ -254,6 +258,7 @@ export function RosiTool() {
           <NumField id={`${p}-delay-custom`} label="Meses até a proteção estar efetiva" unit="meses" allowUnknown={false} value={v.delayCustom}
             error={errors["delay-custom"]} onChange={(next) => form.edit({ delayCustom: next }, "delay-custom")} />
         ) : null}
+        {auxBlock("cost")}
 
         <NumField id={`${p}-reduction`} label="Redução esperada da perda" unit="%" value={v.reduction} error={errors.reduction}
           help="Marque “Não sei” para ver a redução necessária para cobrir o custo."
@@ -261,7 +266,7 @@ export function RosiTool() {
       </ToolForm>
 
       <div>
-        <ResultBox active={result !== null} stale={form.stale}>
+        <ResultBox active={result !== null} stale={form.stale} preview={PREVIEW}>
           <h2>Resultado</h2>
           {result && "insufficient" in result ? (
             <>

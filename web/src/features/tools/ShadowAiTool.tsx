@@ -6,6 +6,8 @@ import { evaluateShadowAi, SHADOW_ANSWER_LABELS, SHADOW_ANSWERS, SHADOW_QUESTION
 import { focusFirst, useToolForm } from "./useToolForm";
 import styles from "./tools.module.css";
 
+const PREVIEW = SHADOW_QUESTIONS.map((q) => ({ label: q.theme, note: "Orientação após a resposta." }));
+
 export function ShadowAiTool() {
   const p = `shadow${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
   const form = useToolForm<ShadowAnswers, Extract<ShadowResult, { complete: true }>>({});
@@ -42,7 +44,7 @@ export function ShadowAiTool() {
         ))}
       </ToolForm>
 
-      <ResultBox active={form.result !== null} stale={form.stale}>
+      <ResultBox active={form.result !== null} stale={form.stale} preview={PREVIEW}>
         <h2>Orientações</h2>
         {form.result ? (
           <>

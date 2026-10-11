@@ -10,6 +10,11 @@ import styles from "./tools.module.css";
 const LABELS: Record<string, string> = { keep: "manter o ambiente atual", operate: "operar com migração", transition: "transição adicional" };
 const KEYS = ["keep", "operate", "transition"] as const;
 interface Values { horizon: MigrationHorizon; totalsHorizon: MigrationHorizon; keep: FieldState; operate: FieldState; transition: FieldState }
+const PREVIEW = [
+  { label: "Manter o ambiente atual", value: "—" },
+  { label: "Migrar e operar (operação + transição)", value: "—" },
+  { label: "Diferença estimada", value: "—", note: "Percentual em relação a manter o ambiente atual." },
+] as const;
 const initial = (): Values => ({ horizon: DEFAULT_MIGRATION_HORIZON, totalsHorizon: DEFAULT_MIGRATION_HORIZON, keep: emptyField(), operate: emptyField(), transition: emptyField() });
 
 export function MigrationTool() {
@@ -61,7 +66,7 @@ export function MigrationTool() {
         <NumField id={`${p}-transition`} label="Transição adicional (não incluída na operação)" unit="R$" help="Custos únicos de migrar ou desativar que não estão incluídos na operação acima. Não são multiplicados pelo horizonte. Evite contar a mesma despesa duas vezes." value={v.transition} error={errors.transition} onChange={(n) => form.edit({ transition: n }, "transition")} />
       </ToolForm>
 
-      <ResultBox active={r !== null} stale={form.stale}>
+      <ResultBox active={r !== null} stale={form.stale} preview={PREVIEW}>
         <h2>Resultado</h2>
         {r?.status === "review-required" ? (
           <p className={styles.warn}>Revisão necessária: o horizonte é {r.horizon} meses, mas os totais foram informados para {r.totalsHorizon}. Revise os valores e confirme os totais antes de comparar.</p>

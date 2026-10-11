@@ -48,3 +48,10 @@ Checkpoint de partida: `db9e594`; correção focada a partir de `24bb735`. Escri
 - Relatório: cartão largo com `ReportForm variant="inline"` (e-mail + botão na mesma linha no desktop, rótulo acessível preservado). CTA conforme o export: seta no botão, sem símbolo ASCII (o export não tem).
 - Modelos, `format`, `useToolForm`, `ToolSession`, estado/reset/"Não sei"/foco/horizonte não foram alterados. Cenário ROSI continua `select`. Painel de resultados não é sticky (o export fixa por altura de viewport; não portado).
 - Não executado nesta etapa: gates, comparação visual por seção, capturas. Revalidar após a execução do GPT.
+
+## Detalhes visuais P4.1/P4.3 (pós-capturas)
+
+- Breadcrumb das ferramentas: `ol` com reset de lista (`crumbList`) e separador `›` decorativo via CSS; semântica `nav > ol` e `aria-current` preservadas.
+- ROSI: pares perda/frequência e custo/prazo ficam lado a lado no desktop; "Compor por partes" desce para largura total abaixo do par. Campos personalizados, ajudas, "Não sei", foco e select de cenário (adaptação funcional) preservados; a ordem de Tab passa a ser par → auxiliar.
+- Resultado inicial: os três blocos tracejados genéricos foram trocados por pré-visualização com rótulos/descrições já conhecidos e travessão "—" no lugar do valor (`aria-hidden`, sem número calculado). Shadow AI lista só os temas, sem valor, nota, pontuação ou classificação.
+- Não executado: lint, typecheck, testes, build, capturas (GPT).

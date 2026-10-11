@@ -52,7 +52,9 @@ export function ToolForm({ label, onSubmit, formError, submitLabel, onClear, chi
   );
 }
 
-export function ResultBox({ active, stale, children }: { active: boolean; stale: boolean; children?: ReactNode }) {
+export interface ResultPreview { label: string; note?: string; value?: string }
+
+export function ResultBox({ active, stale, preview, children }: { active: boolean; stale: boolean; preview?: readonly ResultPreview[]; children?: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
   const method = useMethodSlot();
   useEffect(() => { if (active) ref.current?.focus(); }, [active]);
@@ -65,7 +67,19 @@ export function ResultBox({ active, stale, children }: { active: boolean; stale:
           : (
             <>
               <p className={styles.muted}>Preencha os campos e calcule para ver o resultado. Nada é enviado ou guardado.</p>
-              <div className={styles.placeholders} aria-hidden="true"><span /><span /><span /></div>
+              {preview ? (
+                <div className={styles.metrics} aria-hidden="true">
+                  {preview.map((item) => (
+                    <div key={item.label} className={styles.metric}>
+                      <div className={styles.metricText}>
+                        <h3>{item.label}</h3>
+                        {item.note ? <p className={styles.note}>{item.note}</p> : null}
+                      </div>
+                      {item.value ? <p className={styles.value}>{item.value}</p> : null}
+                    </div>
+                  ))}
+                </div>
+              ) : null}
             </>
           )}
       </div>
