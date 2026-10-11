@@ -42,7 +42,7 @@ describe("pct", () => {
 });
 
 describe("exactText", () => {
-  it.each([0, 0.001, 0.1 + 0.2, 6000, 1e-21, 123456789.12345679, 1e21])("preserva %s ao reler", (n) => {
+  it.each([0, 0.001, 0.1 + 0.2, 6000, 1e-21, 1e-200, 1e-308, Number.MIN_VALUE, 123456789.12345679, 1e21, Number.MAX_VALUE])("preserva %s ao reler", (n) => {
     const parsed = parsePtBR(exactText(n));
     expect(parsed).toEqual({ kind: "value", value: n });
   });

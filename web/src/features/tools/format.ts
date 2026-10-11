@@ -1,7 +1,7 @@
 const BRL = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 const PERCENT = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 1 });
 const NUMBER = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 2 });
-const EXACT = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 100, useGrouping: true });
+const EXACT = new Intl.NumberFormat("pt-BR", { maximumSignificantDigits: 21, useGrouping: true });
 const MINUS = "−";
 
 /** Valor não nulo que arredondaria para zero nunca é exibido como zero nem perde o sinal: usa limiar explícito. */

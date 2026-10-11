@@ -272,13 +272,13 @@ Dependência: P3.4. Extrair modelos F e fixtures independentes.
 
 #### P4.3 Quatro interfaces — [claude:escreve] Sonnet
 Dependência: P4.2. Entradas/resultados compactos e revisão.
-- [ ] Calcular/editar/limpar; horizonte invalida; sair/retornar limpa respostas.
-- [ ] Nenhuma resposta em URL/storage/logs/submissão; relatório e newsletter independentes.
+- [x] Calcular/editar/limpar; horizonte invalida; sair/retornar limpa respostas (pageshow persistido testado por simulação, BFcache real não certificado).
+- [x] Nenhuma resposta em URL/storage/logs/submissão; relatório e newsletter independentes.
 
 #### P4.4 Revisão — [claude:consulta] Sonnet independente
 Dependências: P4.1 e P4.3.
-- [ ] Contratos S/F, fixtures independentes e jornadas conferidos.
-- [ ] Nenhum envio/persistência de respostas.
+- [x] Contratos S/F, fixtures independentes e jornadas conferidos; três revisões focadas após escrita, sem bug bloqueador restante.
+- [x] Nenhum envio/persistência de respostas; revisão de código e testes locais, limites em tools-native.md.
 
 ### Fase 5 — Newsletter e rotas (após aceite da Home; independente da fase 4 até P5.2, execução Claude serial)
 
@@ -365,7 +365,7 @@ Estados: pendente, em execução, em revisão, aguardando usuário, concluído. 
 | P3.4-T | Concluído | Dois testes, relatório/45 capturas; sem alteração web/src. Gates originais confirmados GPT: 15 unitários/32 E2E. Correção focada: gates Sonnet 15 unitários/34 E2E+4 skips; novo teste HTTP confirmado GPT 2/2. Revisão independente e aceite Home concluídos. |
 | P4.1 | Concluído | Sessão d9fac3af-1e3e-4e4d-b414-0980b0744b55: três serviços SSR,15unit/54E2E+4skip e lint/type/build; revisão 0981b385-3269-47ef-a462-980021713fee aprovou lifecycle/contratos/composição após correção (301s escritor,22s revisor). Revisor não releu testes/audit no follow-up; rechecagem integral em P4.4. |
 | P4.2 | Concluído | cd309153-1f7a-40de-bad1-00a0a9dcf69c Sonnet5.5, correção final104s:69unit/54E2E+4skip,lint/type/build. GPT confirmou69unit. RevisorOpus2aa28270-6bc2-4c09-aac8-2aba6b74cead follow-up17s aprovou4EPS e regressões; limiteIEEE754 registrado em tools-models.md. |
-| P4.3–P4.4 | Pendente | Modelos revisados; iniciar interfaces. |
+| P4.3–P4.4 | Concluído | Quatro interfaces,82→86unit/108→110E2E+4skip e lint/type/build. GPT86unit/54E2E ferramentas confirmados. Escritorbed215fd follow-ups300s/132s, revisor ea77d follow-ups37s/11s aprovou fechamento. F28/serialização/aux/foco/sinais corrigidos; revisões independentes e limites em tools-native.md. |
 | P5.1–P5.4 | Pendente | Após P3.4. |
 | P6.1–P6.3 | Pendente | — |
 | P6.3-D | Pendente | Documentação Haiku após QA; revisão Sonnet antes do aceite. |
@@ -388,6 +388,8 @@ Cada escrita exige linha com hash WIP antes da chamada. Consultas usam “não a
 | P3.4-P revisão dos três arquivos / follow-up mesma tarefa | sonnet / claude-sonnet-5-5 | 11ffc75e-ec74-4196-8377-c11c669a2e2d | Não aplicável | succeeded; 16 s; última entrada 106090 tokens incluindo cache. Configuração, registro e relatório aprovados sem correções factuais obrigatórias; retratação de cobertura reconhecida. 28 IDs únicos e JSON verificados pelo GPT. |
 
 SQL/session-store não disponíveis nesta sessão: este PLAN é o registro único, sem banco artificial ou cópia concorrente.
+
+**P4.3 fechamento:** correção escritorbed215fd succeeded300s,82unit/108E2E+4skip; GPT confirmou82unit/54E2E ferramentas. Revisorea77d succeeded37s aprovou F11/F15/F16/F24/F27/F29 e services.spec/audit; F28 ajuda de cobertura ausente. GPT encontrou exactText com maximumFractionDigits100 convertendo1e-200em0. Última correção delimitada mesmosarquivos (format/MigrationTool/testes/audit), checkpoint `b4d0fbccc66c772d2fb4806cb8b460f9c8d02b6a`; usar dígitos significativos em serialização e testar subnormal/limites IEEE754. Não alterar modelos.
 
 **P4.3 início:** checkpoint WIP `db9e594804df19cbb2b535b1e61873db05c32b18`, pré-checagem sem segredos/gerados. Dono Sonnet interfaces/dados/CSS features/tools (modelos já aprovados, correção mínima somente se bug demonstrado), quatro rotas ferramentas, ReportForm local e testes/evidências correspondentes. Reutilizar FrameCanvas/PillarArt/adaptador. Sem dependências/env/exports/marca/Home/serviços/PLAN.
 

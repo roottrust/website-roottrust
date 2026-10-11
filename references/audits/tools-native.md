@@ -34,8 +34,9 @@ Checkpoint de partida: `db9e594`; correção focada a partir de `24bb735`. Escri
 
 ## Correção focada (revisão P4.3)
 
-- Transferência do auxiliar ROSI: o total é serializado com `exactText` (`format.ts`), sem limite de 2 decimais; releitura por `parsePtBR` devolve o mesmo número (unit: 0, 0,001, 0,1+0,2, 1e-21, 1e21). Aux 0,001 transfere "0,001"; 0,001 + 0,1 transfere "0,101".
+- Transferência do auxiliar ROSI: o total é serializado com `exactText` (`format.ts`, `maximumSignificantDigits: 21` com agrupamento pt-BR), sem limite de decimais; releitura por `parsePtBR` devolve o mesmo número (unit: 0, 0,001, 0,1+0,2, 1e-21, 1e-200, 1e-308, Number.MIN_VALUE, 1e21, Number.MAX_VALUE; negativos não entram porque o parser os rejeita). Aux 0,001 transfere "0,001"; 0,001 + 0,1 transfere "0,101".
 - Auxiliar inválido: erro local em cada campo (`aria-invalid`, `aria-describedby`), foco no primeiro inválido, erro some ao editar o campo, e "Limpar respostas" zera erros e valores.
 - Selects de frequência/prazo exibem erro associado quando existir.
 - `brl`/`pct`: valor não nulo que arredondaria para zero usa limiar explícito ("< R$ 0,01", "> −R$ 0,01", "< 0,1%", "> −0,1%"); zero exato e −0 permanecem zero; sinal negativo nunca é omitido. Unit em `tests/unit/tools/format.test.ts`.
 - Selo da página: texto diferente para `FORM_MODE=demo` (demonstração local, nenhum dado enviado) e modo padrão (envio indisponível); coberto nos testes por rota.
+- Migração (F28): os três totais têm ajuda associada por `aria-describedby` (totais do horizonte; operação inclui coexistência e parte local; transição única não contada na operação e não multiplicada; evitar despesa duplicada). Coberto em e2e.

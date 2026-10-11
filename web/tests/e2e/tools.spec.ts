@@ -333,3 +333,21 @@ test("simulated persisted pageshow (not real BFcache) resets tool and report ans
   await expect(result(page)).toContainText("Preencha os campos");
   await expect(page.getByLabel("Seu e-mail")).toHaveValue("");
 });
+
+test("Migration: F28 help is visible and associated to each total", async ({ page }) => {
+  await page.goto("/ferramentas/migracao-para-nuvem");
+  const cases: [RegExp, string][] = [
+    [/^Manter o ambiente atual/, "total do horizonte escolhido"],
+    [/^Operar o cenário com migração/, "coexistência"],
+    [/^Transição adicional/, "Não são multiplicados"],
+  ];
+  for (const [name, text] of cases) {
+    const field = box(page, name);
+    const describedBy = await field.getAttribute("aria-describedby");
+    expect(describedBy).toMatch(/-help$/);
+    const help = page.locator(`[id="${describedBy}"]`);
+    await expect(help).toBeVisible();
+    await expect(help).toContainText(text);
+    await expect(help).toContainText("mesma despesa duas vezes");
+  }
+});

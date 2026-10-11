@@ -56,9 +56,9 @@ export function MigrationTool() {
             </button>
           </div>
         ) : null}
-        <NumField id={`${p}-keep`} label={`Manter o ambiente atual em ${v.totalsHorizon} meses`} unit="R$" value={v.keep} error={errors.keep} onChange={(n) => form.edit({ keep: n }, "keep")} />
-        <NumField id={`${p}-operate`} label={`Operar o cenário com migração em ${v.totalsHorizon} meses`} unit="R$" value={v.operate} error={errors.operate} onChange={(n) => form.edit({ operate: n }, "operate")} />
-        <NumField id={`${p}-transition`} label="Transição adicional (não incluída na operação)" unit="R$" value={v.transition} error={errors.transition} onChange={(n) => form.edit({ transition: n }, "transition")} />
+        <NumField id={`${p}-keep`} label={`Manter o ambiente atual em ${v.totalsHorizon} meses`} unit="R$" help="Informe o total do horizonte escolhido, não um valor mensal. Evite contar a mesma despesa duas vezes." value={v.keep} error={errors.keep} onChange={(n) => form.edit({ keep: n }, "keep")} />
+        <NumField id={`${p}-operate`} label={`Operar o cenário com migração em ${v.totalsHorizon} meses`} unit="R$" help="Total do horizonte escolhido, incluindo o ambiente antigo durante a transição, a coexistência e a parte que permanecer local. Evite contar a mesma despesa duas vezes." value={v.operate} error={errors.operate} onChange={(n) => form.edit({ operate: n }, "operate")} />
+        <NumField id={`${p}-transition`} label="Transição adicional (não incluída na operação)" unit="R$" help="Custos únicos de migrar ou desativar que não estão incluídos na operação acima. Não são multiplicados pelo horizonte. Evite contar a mesma despesa duas vezes." value={v.transition} error={errors.transition} onChange={(n) => form.edit({ transition: n }, "transition")} />
       </ToolForm>
 
       <ResultBox active={r !== null} stale={form.stale}>
