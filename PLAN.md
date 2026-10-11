@@ -389,6 +389,8 @@ Cada escrita exige linha com hash WIP antes da chamada. Consultas usam “não a
 
 SQL/session-store não disponíveis nesta sessão: este PLAN é o registro único, sem banco artificial ou cópia concorrente.
 
+**P4.3 início:** checkpoint WIP `db9e594804df19cbb2b535b1e61873db05c32b18`, pré-checagem sem segredos/gerados. Dono Sonnet interfaces/dados/CSS features/tools (modelos já aprovados, correção mínima somente se bug demonstrado), quatro rotas ferramentas, ReportForm local e testes/evidências correspondentes. Reutilizar FrameCanvas/PillarArt/adaptador. Sem dependências/env/exports/marca/Home/serviços/PLAN.
+
 **P4.2 ajuste indicado P0.2:** checkpoint WIP `606582b6a9e416c90c4ed9d9086f817c66f7f81f`, escopo já aprovado modelos/testes/audit. Follow-up mesmo dono Sonnet, revisão final agrupada P4.4; nenhuma entrada real armazenada.
 
 **P4.2 início:** checkpoint WIP `8cbd155dd870ff14dc13b90a6ef7bf7c4856010c`; pré-checagem sem segredos/gerados. Dono Sonnet para modelos/parsers TS puros em features/tools/models, testes unit/tools e audit/tools-models.md; interfaces ficam P4.3. Sem alterações de dependências/env/export/marca/Home.
