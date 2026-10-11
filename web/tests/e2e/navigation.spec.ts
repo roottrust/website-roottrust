@@ -163,3 +163,83 @@ test("repeated clicks and history: lands on the destination, back/forward restor
   await expect(page).toHaveURL(/\/newsletter$/);
   expect(errors).toEqual([]);
 });
+
+const lastY = async (page: Page) => (await probe(page)).samples.at(-1) ?? 0;
+
+async function midAnimation(page: Page) {
+  await expect.poll(() => lastY(page)).toBeGreaterThan(80);
+}
+
+test("initial hash lands below the header", async ({ page }) => {
+  await page.goto("/#ferramentas");
+  await expect(async () => expectAtAnchor(page, "ferramentas")).toPass();
+});
+
+test("keyboard activation moves focus to the destination", async ({ page }) => {
+  await openHome(page);
+  await startProbe(page);
+  const toggle = page.getByRole("button", { name: "Abrir menu" });
+  if (await toggle.isVisible()) await toggle.click();
+  const link = page.locator("header").getByRole("link", { name: "Ferramentas", exact: true });
+  await link.focus();
+  await page.keyboard.press("Enter");
+  await settled(page);
+  await expect(page.locator("#ferramentas")).toBeFocused();
+  await expectAtAnchor(page, "ferramentas");
+  await expect(page.getByRole("button", { name: "Abrir menu" })).toHaveAttribute("aria-expanded", "false");
+});
+
+test("wheel input interrupts the animation", async ({ page }) => {
+  await openHome(page);
+  await startProbe(page);
+  await clickHeader(page, "Solicitar diagnóstico");
+  await midAnimation(page);
+  await page.mouse.wheel(0, 40);
+  await page.waitForTimeout(300);
+  const first = await lastY(page);
+  await page.waitForTimeout(500);
+  expect(Math.abs((await lastY(page)) - first)).toBeLessThan(3);
+});
+
+test("going back during the animation stops it", async ({ page }) => {
+  await openHome(page);
+  await startProbe(page);
+  await clickHeader(page, "Solicitar diagnóstico");
+  await midAnimation(page);
+  await page.goBack();
+  await expect(page).toHaveURL(/\/$/);
+  await page.waitForTimeout(300);
+  const first = await lastY(page);
+  await page.waitForTimeout(500);
+  expect(Math.abs((await lastY(page)) - first)).toBeLessThan(3);
+  expect(await page.evaluate(() => document.getElementById("contato")!.getBoundingClientRect().top)).toBeGreaterThan(200);
+});
+
+test("pausing mid-animation finishes at the destination without restarting", async ({ page }) => {
+  await openHome(page);
+  await startProbe(page);
+  await page.evaluate(async () => {
+    document.querySelector<HTMLAnchorElement>('header a[href="/#contato"]')!.click();
+    await new Promise(resolve => setTimeout(resolve, 150));
+    [...document.querySelectorAll("button")].find(button => button.textContent === "Pausar animações")!.click();
+  });
+  await settled(page);
+  await expectAtAnchor(page, "contato");
+  const first = await lastY(page);
+  await page.waitForTimeout(500);
+  expect(await lastY(page)).toBe(first);
+});
+
+test("stale cross-route job is dropped when the user goes elsewhere first", async ({ page }) => {
+  await page.goto("/ferramentas/rosi");
+  await expect(page.locator("main")).toBeVisible();
+  await page.evaluate(() => {
+    document.querySelector<HTMLAnchorElement>('header a[href="/#servicos"]')!.click();
+    document.querySelector<HTMLAnchorElement>('header a[href="/newsletter"]')!.click();
+  });
+  await expect(page).toHaveURL(/\/newsletter$/);
+  await page.locator("header").getByRole("link", { name: "Root Trust — página inicial" }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await page.waitForTimeout(1200);
+  expect(await page.evaluate(() => scrollY)).toBeLessThan(5);
+});

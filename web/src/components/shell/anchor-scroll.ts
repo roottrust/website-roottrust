@@ -1,4 +1,7 @@
-const INTERRUPTS = ["wheel", "touchstart", "pointerdown", "keydown"] as const;
+const INTERRUPTS = ["wheel", "touchstart", "pointerdown", "keydown", "popstate", "hashchange"] as const;
+
+export type AnchorScroll = { cancel: () => void; finish: () => void };
+const IDLE: AnchorScroll = { cancel: () => {}, finish: () => {} };
 const SETTLE_FRAMES = 3;
 const SETTLE_LIMIT = 30;
 
@@ -12,14 +15,15 @@ function targetTop(element: HTMLElement) {
 
 /**
  * Scrolls to `#id`, recomputing the destination every frame so pinned/late layout changes cannot leave it stale.
- * Any user input cancels it. Returns a canceller; it is safe to call after completion.
+ * User input and history events (popstate/hashchange; router.push does not fire them) cancel it.
+ * `finish` jumps to the destination and ends the job; both handles are no-ops once it has ended.
  */
-export function scrollToAnchor(id: string, instant: boolean): () => void {
+export function scrollToAnchor(id: string, instant: boolean): AnchorScroll {
   const element = document.getElementById(id);
-  if (!element) return () => {};
+  if (!element) return IDLE;
   if (instant) {
     scrollTo({ top: targetTop(element), behavior: "instant" });
-    return () => {};
+    return IDLE;
   }
   const from = scrollY;
   const duration = Math.min(900, 350 + Math.abs(targetTop(element) - from) * 0.25);
@@ -27,7 +31,9 @@ export function scrollToAnchor(id: string, instant: boolean): () => void {
   let begin = -1;
   let stable = 0;
   let settling = 0;
+  let live = true;
   const stop = () => {
+    live = false;
     cancelAnimationFrame(frame);
     for (const type of INTERRUPTS) removeEventListener(type, stop);
   };
@@ -43,7 +49,14 @@ export function scrollToAnchor(id: string, instant: boolean): () => void {
   };
   for (const type of INTERRUPTS) addEventListener(type, stop, { passive: true });
   frame = requestAnimationFrame(step);
-  return stop;
+  return {
+    cancel: stop,
+    finish: () => {
+      if (!live) return;
+      stop();
+      scrollTo({ top: targetTop(element), behavior: "instant" });
+    },
+  };
 }
 
 /** Moves keyboard context to the destination without scrolling or showing a focus ring on the section. */
