@@ -387,6 +387,8 @@ Cada escrita exige linha com hash WIP antes da chamada. Consultas usam “não a
 
 SQL/session-store não disponíveis nesta sessão: este PLAN é o registro único, sem banco artificial ou cópia concorrente.
 
+**P4.1 início:** aceite Home recebido. Dono Sonnet; escopo três páginas de serviço, componentes/dados/CSS em features/services, rotas servicos e testes correspondentes; reutilizar gráficos/formulários. Checkpoint WIP `b69a452c9179d84f5a65ccd35ee23ff7dd3afee6`; pré-checagem sem arquivo sensível/gerado, servidor manual encerrado para liberar gates. Sem alteração de exports/marca/dependências/env/Home.
+
 **Revisão humana local:** Home demo disponível em `http://127.0.0.1:3100/`, processo exec 80151, HTTP 200 confirmado pelo GPT. Formulários não enviam dados. Encerrar esse servidor antes de executar novamente os E2E (porta exclusiva do runner). A disponibilidade depende da sessão local continuar ativa.
 
 **P3.4-T revisão e correção focada:** consulta independente `a430cb46-0458-4b36-b688-86ab2af716e2`, Sonnet 5.5, succeeded (81 s), aprovou com limites e apontou tratamento de URL/contenção/cleanup no servidor de capturas. GPT repetiu lint/typecheck/unit/build/e2e: 15 unitários e 32 E2E passaram, 4 skips explícitos. Checkpoint local antes da correção: `e67d2dbc25889ae506244e39e53b370b4e7ce6d7`; follow-up de escrita restrito aos testes de captura e relatório, sem produção. Aceite humano Home permanece pendente.
