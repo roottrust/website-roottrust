@@ -6,6 +6,13 @@ import { resolveFormMode } from "@/lib/forms";
 
 export const dynamic = "force-dynamic";
 
+function previewDescription(abertura: readonly { t: string }[]): string {
+  const text = abertura.map((s) => s.t).join("");
+  if (text.length <= 160) return text;
+  const cut = text.slice(0, 157);
+  return `${cut.slice(0, cut.lastIndexOf(" "))}…`;
+}
+
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -13,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!edicao) notFound();
   return {
     title: { absolute: `${edicao.titulo} — Prévia · Root Trust` },
-    description: "Prévia demonstrativa da newsletter da Root Trust. Receba a edição completa por e-mail após confirmar seu endereço.",
+    description: previewDescription(edicao.abertura),
     robots: { index: false, follow: false },
   };
 }

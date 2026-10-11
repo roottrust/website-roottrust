@@ -290,18 +290,18 @@ Dependência: P3.4.
 
 #### P5.2 Três páginas — [claude:escreve] Sonnet
 Dependência: P5.1.
-- [ ] Apresentação completa; filtro reinicia paginação, dois itens/página.
-- [ ] Prévia/retorno/edição escolhida corretos; demos identificadas; aceito não significa confirmado.
+- [x] Apresentação completa; filtro reinicia paginação, dois itens/página.
+- [x] Prévia/retorno/edição escolhida corretos; demos identificadas; aceito não significa confirmado.
 
 #### P5.3 Privacidade, metadata e 404 — [claude:escreve] Sonnet
 Dependências: P4.3 e P5.2.
-- [ ] Privacidade provisória verdadeira; títulos/descrições; HTTP 404 real; saída para Home.
-- [ ] Sem links vazios; demos sem indexação.
+- [x] Privacidade provisória verdadeira; títulos/descrições; HTTP 404 real para URLs válidas inexistentes; saída para Home. Codificação malformada: risco framework registrado.
+- [x] Sem links vazios; demos sem indexação.
 
 #### P5.4 Revisão pública — [claude:consulta] Sonnet independente
 Dependência: P5.3.
-- [ ] Jornadas N verificadas; HTML/RSC/JS/maps/assets sem completas ou referências privadas.
-- [ ] Nenhuma alegação de inscrição/envio operacional.
+- [x] Jornadas N verificadas; catálogo por allowlist, imports/build sem referências privadas; inspeção complementar em QA.
+- [x] Aviso de indisponibilidade antes do submit inclusive support personalizado; nenhum estado alega inscrição/envio operacional.
 
 ### Fase 6 — Validação final
 
@@ -367,7 +367,7 @@ Estados: pendente, em execução, em revisão, aguardando usuário, concluído. 
 | P4.2 | Concluído | cd309153-1f7a-40de-bad1-00a0a9dcf69c Sonnet5.5, correção final104s:69unit/54E2E+4skip,lint/type/build. GPT confirmou69unit. RevisorOpus2aa28270-6bc2-4c09-aac8-2aba6b74cead follow-up17s aprovou4EPS e regressões; limiteIEEE754 registrado em tools-models.md. |
 | P4.3–P4.4 | Concluído | Quatro interfaces,82→86unit/108→110E2E+4skip e lint/type/build. GPT86unit/54E2E ferramentas confirmados. Escritorbed215fd follow-ups300s/132s, revisor ea77d follow-ups37s/11s aprovou fechamento. F28/serialização/aux/foco/sinais corrigidos; revisões independentes e limites em tools-native.md. |
 | P5.1 | Concluído | Haiku5.5 sessão6c1f3a8e-2f47-40c6-909a-3faeb5af3932 succeeded187s:94unit/110E2E+4skip lint/type/build. Sonnet5.5 revisão23c26e7b-8401-4935-99c6-5c41a3de4b7d succeeded18s aprovou. GPT94unit/hash confirmados. |
-| P5.2–P5.4 | Pendente | Catálogo público aprovado. |
+| P5.2–P5.4 | Concluído | P5.3 gates GPT101unit/148E2E+4skip; correção19ebf5fb Sonnet5.5 succeeded254s mesmos gates; revisor independente aaa7c823 follow-up32s aprovou. Limites em newsletter-native/public-routes. |
 | P6.1–P6.3 | Pendente | — |
 | P6.3-D | Pendente | Documentação Haiku após QA; revisão Sonnet antes do aceite. |
 
@@ -438,3 +438,12 @@ Usuário: “Ok para retomar o PLAN.md por completo até finaliza-lo”. Revoga 
 **P5.4 revisão inicial:** Sonnet5.5 `aaa7c823-5b7c-418b-9d1c-9272cdda5be8` succeeded127s, aprovou com ressalvas. Correção focada P5.2/P5.3 [claude:escreve] Sonnet: aviso prévio de indisponibilidade em NewsletterForm inclusive quando support personalizado, metadata prévia usando abertura pública, rótulo demonstrativo no arquivo e copy vazia exata; testes e auditorias correspondentes. Não criar estado de falha de rede fictício para catálogo local estático: ausência/filtro vazio já têm fixtures unitárias. GPT conferiu FrameCanvas event-driven, somente moldura lateral, sem fundo contínuo de leitura. Busca em src/static/server newsletter não encontrou referências/editorial, newsletter-editorial, fonte de catálogo de referência ou imports Markdown; public contém só quatro assets aprovados. Inspeção complementar de respostas públicas integra QA.
 
 **Limite decidido pelo orquestrador:** percent-encoding UTF-8 inválido não é um slug válido inexistente; falha no decodificador do framework antes da página. Preservar HTTP404 para slugs bem formados inexistentes. Registrar caso malformado como risco conhecido de Next para revisão antes de publicação; não adicionar camada de roteamento nesta entrega local somente para mascarar falha do framework. Não tratar 500 como sucesso do gate404.
+
+**P5.4 correção início:** checkpoint WIP ed2dd456990606029c1b65ad130635452d3bff7b; pré-checagem sem sensíveis/gerados. GPT confirmou gates P5.3: lint/typecheck/build,101unit/148E2E+4skip.
+
+
+#### P6.2-T Preparação e execução de QA — [claude:escreve] Sonnet
+
+Extensão executável de P6.1/P6.2, sem mudança de produto. Dono único: `.github/workflows/frontend.yml`, `web/playwright.config.ts`, novos testes de QA/captura e scripts de medição em `web/scripts/`, auditoria `references/audits/final-qa*`. Preservar todos testes existentes. CI Node24.13.1 npmci/lint/types/unit/build/E2E, sem deploy/segredos, browsers smoke distintos e Chromium completo. Cobrir SPA pausa/descarte de gráficos, 200% zoom/teclado/320px, runtime/errors e rotas representativas Firefox/WebKit. Capturas de serviço/ferramenta/newsletter/404 comparadas com exports em servidor local read-only, fontes/viewport/movimento estáveis, sem igualdade pixel-a-pixel. Medição Lighthouse13.5.0 efêmera autorizada via npmexec/npx (não dependência do app), três rodadas por Home/serviço/ferramenta/newsletter, mediana LCP/CLS/TBT/bytesJS, relatórios locais rastreáveis. Firefox/WebKit já instalados pelo GPT, Chromium existente. Não instalar outras dependências sem decisão. Novos testes/correções próprios revisados em P6.2 independente. Não mascarar falhas como skips. Entrega final inclui limitações reais, não certificação. Ambiente remoto CI não executado até push autorizado.
+
+**P5.4 fechamento:** escritor19ebf5fb-c3bf-468d-8a6f-7cbdbed5d92a Sonnet5.5 succeeded254s,101unit/148E2E+4skip lint/type/build. Revisor aaa7c823-5b7c-418b-9d1c-9272cdda5be8 follow-up32s aprovou. Metadata corte/HTMLescape têm limites para futuro conteúdo, sem efeito no catálogo fixo atual. Copy vazia longa prevalece conforme product; sincronizar newsletter na documentação final. Rechecagem audit GPT: produção0, desenvolvimento5high na cadeia braces, correção forçada oferece downgrade Next, não aplicada. Lighthouse registry13.5.0; browsers Firefox157/WebKit27.2 instalados localmente pelo GPT para gates previstos.

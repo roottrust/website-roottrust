@@ -11,3 +11,6 @@ Checkpoint WIP `cd5f154ec121c926b42034995b2c92d970ead814`. Gates em série: lint
 
 ## Limitação
 - Slug com percent-encoding malformado (`/newsletter/edicoes/%E0%A4%A`) responde 500 do framework (fora de `/privacidade` e raiz, que dão 404). Não corrigido: exigiria proxy/middleware fora do escopo.
+
+## P5.4 correção
+- Descrição de `/newsletter/edicoes` agora marca o arquivo como demonstrativo; descrição de `/newsletter/edicoes/[slug]` deriva da abertura pública. Título e noindex inalterados. O caso de percent-encoding malformado segue como risco conhecido do framework, sem middleware.

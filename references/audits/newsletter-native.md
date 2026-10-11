@@ -32,3 +32,11 @@ Checkpoint base: `8be2c0359e83347ec5608cf6ba7b0716d92c8063`. Fontes: `docs/web/n
 ## Limites desta verificação
 
 Nenhuma comparação visual com os exports foi feita (sem screenshots) e não há alegação de acessibilidade ou desempenho certificados. O 320px verifica apenas ausência de overflow horizontal. Revisão humana de composição, contraste e zoom continua pendente.
+
+## P5.4 correção (checkpoint `ed2dd456990606029c1b65ad130635452d3bff7b`)
+
+- `NewsletterForm`: o aviso "O envio ainda não está disponível nesta versão." agora é sempre visível, inclusive com `support` personalizado (landing e prévia); sem `support`, o texto da Home é idêntico ao anterior.
+- Metadata do arquivo: descrição passa a identificar o arquivo como demonstrativo e declarar que nenhum envio está disponível. Título preservado.
+- Metadata da prévia: descrição derivada da abertura pública do catálogo (até 160 caracteres, corte em palavra com "…"); nenhum trecho além da abertura.
+- Estado vazio do arquivo mantido como em `product.md` ("Ainda não há edições publicadas. Volte para conhecer as próximas prévias."); `newsletter.md` cita só a primeira frase — divergência documental registrada, não alterada. Estado de falha não criado: o catálogo é estático.
+- Testes: `newsletter.spec.ts` (descrição da prévia derivada da abertura, aviso visível) e `public-routes.spec.ts` (descrição do arquivo).

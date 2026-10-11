@@ -126,6 +126,10 @@ for (const edicao of EDICOES_PUBLICAS) {
     expect(html).toContain(edicao.titulo.replace(/&/g, "&amp;"));
     expect(html).toContain('<meta name="robots" content="noindex, nofollow"');
     for (const other of EDICOES_PUBLICAS.filter((e) => e.slug !== edicao.slug)) expect(html).not.toContain(other.abertura[0].t);
+    const description = /<meta name="description" content="([^"]*)"/.exec(html)?.[1] ?? "";
+    expect(description.length).toBeGreaterThan(20);
+    expect(description.length).toBeLessThanOrEqual(160);
+    expect(edicao.abertura.map((s) => s.t).join("")).toContain(description.replace(/…$/, ""));
 
     await page.goto(`/newsletter/edicoes/${edicao.slug}`);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(edicao.titulo);
@@ -138,6 +142,7 @@ for (const edicao of EDICOES_PUBLICAS) {
     await expect(page.getByRole("link", { name: "Voltar para todas as edições" })).toHaveAttribute("href", "/newsletter/edicoes");
     await expect(page.getByRole("heading", { level: 2, name: "Receba esta edição completa." })).toBeVisible();
     await expect(page.getByText("Já assina? Você também pode solicitar esta edição aqui.")).toBeVisible();
+    await expect(page.getByText("O envio ainda não está disponível nesta versão.")).toBeVisible();
 
     const form = page.getByRole("form", { name: "Assinar newsletter" });
     const email = form.getByLabel("Seu e-mail", { exact: true });

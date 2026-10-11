@@ -6,6 +6,8 @@ import { DemoControls, FormStatus } from "./FormStatus";
 import { useLocalSubmission } from "./useLocalSubmission";
 import styles from "./forms.module.css";
 
+const NO_SEND_NOTICE = "O envio ainda não está disponível nesta versão.";
+
 export function NewsletterForm({ mode, editionSlug, variant, cta, support, help }: {
   mode: FormMode; editionSlug?: string; variant?: "home"; cta?: string; support?: string; help?: string;
 }) {
@@ -31,7 +33,7 @@ export function NewsletterForm({ mode, editionSlug, variant, cta, support, help 
           onChange={(event) => setEmail(event.target.value)} />
         {error ? <p className={styles.error} id={`${id}-email-error`}>{error}</p> : null}
       </div>
-      <p className={styles.notice} id={`${id}-help`}>{support ?? "Conteúdo completo por e-mail após confirmação, com próximos envios em dias úteis. O envio ainda não está disponível nesta versão."}</p>
+      <p className={styles.notice} id={`${id}-help`}>{support ? `${support} ${NO_SEND_NOTICE}` : `Conteúdo completo por e-mail após confirmação, com próximos envios em dias úteis. ${NO_SEND_NOTICE}`}</p>
       {help ? <p className={styles.notice}>{help}</p> : null}
       {mode === "demo" ? <DemoControls id={id} outcome={submission.outcome} onChange={submission.setOutcome} disabled={busy} /> : null}
       <button className="button" type="submit" aria-label={busy ? "Solicitando confirmação…" : label} disabled={!submission.ready || busy}>{variant === "home" ? <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg> : busy ? "Solicitando confirmação…" : label}</button>

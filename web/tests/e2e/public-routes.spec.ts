@@ -37,6 +37,8 @@ test("every public route has a distinct title, description and inherited noindex
     titles.add(title);
   }
   expect(titles.size).toBe(ROUTES.length);
+  const archive = await (await request.get("/newsletter/edicoes")).text();
+  expect(archive).toMatch(/<meta name="description" content="Arquivo demonstrativo/);
   const preview = sortedEdicoes()[0];
   const html = await (await request.get(`/newsletter/edicoes/${preview.slug}`)).text();
   expect(html).toContain(`<title>${preview.titulo} — Prévia · Root Trust</title>`);
