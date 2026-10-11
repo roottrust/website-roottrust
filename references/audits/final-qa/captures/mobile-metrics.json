@@ -10,7 +10,7 @@
       "native": {
         "documentHeight": 1072,
         "overflowX": false,
-        "canvases": 1,
+        "canvases": 2,
         "h1": "Página não encontrada.",
         "fontsLoaded": [
           "baloo 400 800",
@@ -20,6 +20,12 @@
         "graphics": [
           {
             "index": 0,
+            "kind": "frame",
+            "status": "ready",
+            "fallback": false
+          },
+          {
+            "index": 1,
             "kind": "not-found",
             "status": "ready",
             "fallback": false
@@ -207,7 +213,7 @@
       "route": "/ferramentas/rosi",
       "export": "Ferramenta ROSI.dc.html",
       "native": {
-        "documentHeight": 3805,
+        "documentHeight": 3840,
         "overflowX": false,
         "canvases": 2,
         "h1": "Explore o retorno de uma proteção adicional.",
@@ -253,7 +259,7 @@
       "route": "/ferramentas/shadow-ai",
       "export": "Ferramenta Shadow AI.dc.html",
       "native": {
-        "documentHeight": 3382,
+        "documentHeight": 3581,
         "overflowX": false,
         "canvases": 2,
         "h1": "Organize a governança do uso de IA.",
@@ -299,7 +305,7 @@
       "route": "/ferramentas/divida-tecnica",
       "export": "Ferramenta Divida tecnica.dc.html",
       "native": {
-        "documentHeight": 3270,
+        "documentHeight": 3219,
         "overflowX": false,
         "canvases": 2,
         "h1": "Estime o custo do tempo atribuído à dívida técnica.",
@@ -345,7 +351,7 @@
       "route": "/ferramentas/migracao-para-nuvem",
       "export": "Ferramenta Migracao para nuvem.dc.html",
       "native": {
-        "documentHeight": 3372,
+        "documentHeight": 3378,
         "overflowX": false,
         "canvases": 2,
         "h1": "Compare os custos de manter ou migrar.",

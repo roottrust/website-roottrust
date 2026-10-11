@@ -62,8 +62,6 @@
 .result { display:flex; flex-direction:column; gap:10px; min-width:0; outline:none; }
 .result:focus-visible { outline:2px solid var(--rt-menta); outline-offset:4px; border-radius:12px; }
 .result h2 { margin:0 0 6px; font:700 22px/1.2 var(--font-display); }
-.placeholders { display:flex; flex-direction:column; gap:10px; }
-.placeholders span { display:block; height:64px; border-radius:12px; border:1px dashed #3C3C3C; background:#1D1D1D; opacity:0.6; }
 .metrics { display:flex; flex-direction:column; gap:10px; margin:0 0 6px; }
 .metric { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:8px 16px; padding:16px 20px; border-radius:12px; background:#1D1D1D; border:1px solid #3C3C3C; }
 .metricText { display:flex; flex-direction:column; gap:4px; min-width:0; }

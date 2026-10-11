@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { FrameCanvas } from "@/features/graphics/FrameCanvas";
 import { NotFoundArt } from "./not-found-art";
 import styles from "./not-found.module.css";
 
@@ -10,7 +11,8 @@ export const metadata: Metadata = {
 
 export default function NotFound() {
   return (
-    <main id="conteudo" className={styles.root}>
+    <main id="conteudo" data-graphics-root className={styles.root}>
+      <FrameCanvas />
       <section className={styles.wrap} aria-labelledby="titulo">
         <div className={styles.inner}>
           <div className={styles.eyebrowRow}><span className={styles.eyebrow}>Erro 404</span><span className={styles.rule} aria-hidden="true" /></div>
@@ -24,6 +26,7 @@ export default function NotFound() {
           <NotFoundArt />
         </div>
       </section>
+      <div data-frame-cut="1" />
     </main>
   );
 }

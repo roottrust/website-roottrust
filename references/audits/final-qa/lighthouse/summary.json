@@ -15,10 +15,10 @@
       "path": "/",
       "rounds": 3,
       "medians": {
-        "lcpMs": 5475.621999999999,
+        "lcpMs": 4876.876,
         "cls": 0,
-        "tbtMs": 237.18900000000076,
-        "jsTransferBytes": 308122
+        "tbtMs": 117,
+        "jsTransferBytes": 172501
       }
     },
     {
@@ -26,10 +26,10 @@
       "path": "/servicos/ciberseguranca",
       "rounds": 3,
       "medians": {
-        "lcpMs": 5400.311,
+        "lcpMs": 4860,
         "cls": 0,
-        "tbtMs": 355,
-        "jsTransferBytes": 302502
+        "tbtMs": 450,
+        "jsTransferBytes": 308149
       }
     },
     {
@@ -37,10 +37,10 @@
       "path": "/ferramentas/rosi",
       "rounds": 3,
       "medians": {
-        "lcpMs": 5535,
+        "lcpMs": 4875.297,
         "cls": 0,
-        "tbtMs": 350,
-        "jsTransferBytes": 309978
+        "tbtMs": 451,
+        "jsTransferBytes": 315566
       }
     },
     {
@@ -50,8 +50,8 @@
       "medians": {
         "lcpMs": 4860,
         "cls": 0,
-        "tbtMs": 112,
-        "jsTransferBytes": 160794
+        "tbtMs": 105,
+        "jsTransferBytes": 166400
       }
     }
   ],
@@ -61,120 +61,120 @@
       "path": "/",
       "round": 1,
       "version": "13.5.0",
-      "lcpMs": 5617.596,
+      "lcpMs": 4878.6179999999995,
       "cls": 0,
-      "tbtMs": 584,
-      "jsTransferBytes": 308122,
-      "performanceScore": 0.64
+      "tbtMs": 108,
+      "jsTransferBytes": 172501,
+      "performanceScore": 0.82
     },
     {
       "name": "home",
       "path": "/",
       "round": 2,
       "version": "13.5.0",
-      "lcpMs": 5475.621999999999,
+      "lcpMs": 4876.876,
       "cls": 0,
-      "tbtMs": 237.18900000000076,
-      "jsTransferBytes": 308122,
-      "performanceScore": 0.76
+      "tbtMs": 118,
+      "jsTransferBytes": 172501,
+      "performanceScore": 0.81
     },
     {
       "name": "home",
       "path": "/",
       "round": 3,
       "version": "13.5.0",
-      "lcpMs": 5475.044,
+      "lcpMs": 4876.122,
       "cls": 0,
-      "tbtMs": 231.47800000000007,
-      "jsTransferBytes": 308122,
-      "performanceScore": 0.76
+      "tbtMs": 117,
+      "jsTransferBytes": 172501,
+      "performanceScore": 0.81
     },
     {
       "name": "servico",
       "path": "/servicos/ciberseguranca",
       "round": 1,
       "version": "13.5.0",
-      "lcpMs": 5400.311,
+      "lcpMs": 4860,
       "cls": 0,
-      "tbtMs": 359,
-      "jsTransferBytes": 302502,
-      "performanceScore": 0.72
+      "tbtMs": 463.5,
+      "jsTransferBytes": 308149,
+      "performanceScore": 0.71
     },
     {
       "name": "servico",
       "path": "/servicos/ciberseguranca",
       "round": 2,
       "version": "13.5.0",
-      "lcpMs": 5400.232,
+      "lcpMs": 4860,
       "cls": 0,
-      "tbtMs": 355,
-      "jsTransferBytes": 302502,
-      "performanceScore": 0.72
+      "tbtMs": 446.5,
+      "jsTransferBytes": 308149,
+      "performanceScore": 0.71
     },
     {
       "name": "servico",
       "path": "/servicos/ciberseguranca",
       "round": 3,
       "version": "13.5.0",
-      "lcpMs": 5460,
+      "lcpMs": 4801.235,
       "cls": 0,
-      "tbtMs": 351,
-      "jsTransferBytes": 302502,
-      "performanceScore": 0.72
-    },
-    {
-      "name": "ferramenta",
-      "path": "/ferramentas/rosi",
-      "round": 1,
-      "version": "13.5.0",
-      "lcpMs": 5535,
-      "cls": 0,
-      "tbtMs": 350,
-      "jsTransferBytes": 309978,
+      "tbtMs": 450,
+      "jsTransferBytes": 308149,
       "performanceScore": 0.71
     },
     {
       "name": "ferramenta",
       "path": "/ferramentas/rosi",
-      "round": 2,
-      "version": "13.5.0",
-      "lcpMs": 5475.304,
-      "cls": 0,
-      "tbtMs": 366,
-      "jsTransferBytes": 309978,
-      "performanceScore": 0.71
-    },
-    {
-      "name": "ferramenta",
-      "path": "/ferramentas/rosi",
-      "round": 3,
-      "version": "13.5.0",
-      "lcpMs": 5535,
-      "cls": 0,
-      "tbtMs": 350,
-      "jsTransferBytes": 309978,
-      "performanceScore": 0.71
-    },
-    {
-      "name": "newsletter",
-      "path": "/newsletter",
       "round": 1,
       "version": "13.5.0",
       "lcpMs": 4935,
       "cls": 0,
-      "tbtMs": 112,
-      "jsTransferBytes": 160794,
-      "performanceScore": 0.81
+      "tbtMs": 752.5,
+      "jsTransferBytes": 315566,
+      "performanceScore": 0.64
+    },
+    {
+      "name": "ferramenta",
+      "path": "/ferramentas/rosi",
+      "round": 2,
+      "version": "13.5.0",
+      "lcpMs": 4875.297,
+      "cls": 0,
+      "tbtMs": 451,
+      "jsTransferBytes": 315566,
+      "performanceScore": 0.71
+    },
+    {
+      "name": "ferramenta",
+      "path": "/ferramentas/rosi",
+      "round": 3,
+      "version": "13.5.0",
+      "lcpMs": 4875.032999999999,
+      "cls": 0,
+      "tbtMs": 446.5,
+      "jsTransferBytes": 315566,
+      "performanceScore": 0.71
+    },
+    {
+      "name": "newsletter",
+      "path": "/newsletter",
+      "round": 1,
+      "version": "13.5.0",
+      "lcpMs": 4410,
+      "cls": 0,
+      "tbtMs": 105,
+      "jsTransferBytes": 166400,
+      "performanceScore": 0.84
     },
     {
       "name": "newsletter",
       "path": "/newsletter",
       "round": 2,
       "version": "13.5.0",
-      "lcpMs": 4800.030000000001,
+      "lcpMs": 4860,
       "cls": 0,
-      "tbtMs": 109,
-      "jsTransferBytes": 160794,
+      "tbtMs": 105,
+      "jsTransferBytes": 166400,
       "performanceScore": 0.82
     },
     {
@@ -184,9 +184,9 @@
       "version": "13.5.0",
       "lcpMs": 4860,
       "cls": 0,
-      "tbtMs": 116,
-      "jsTransferBytes": 160794,
-      "performanceScore": 0.81
+      "tbtMs": 105,
+      "jsTransferBytes": 166400,
+      "performanceScore": 0.82
     }
   ],
   "error": null

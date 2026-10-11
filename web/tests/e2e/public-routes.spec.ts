@@ -68,6 +68,9 @@ test("404 page: SSR content, exits to Home and services, art decorative", async 
   await expect(page.getByRole("main").getByRole("link", { name: "Solicitar diagnóstico" })).toHaveAttribute("href", "/#contato");
   await expect(page.locator("canvas[data-graphic='not-found']")).toHaveAttribute("aria-hidden", "true");
   await expect(page.locator("canvas[data-graphic='not-found']")).toHaveAttribute("data-graphic-status", "ready");
+  const frame = page.locator("canvas[data-graphic='frame']");
+  await expect(frame).toHaveAttribute("aria-hidden", "true");
+  await expect(frame).toHaveAttribute("data-graphic-status", "ready");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await home.click();
   await expect(page).toHaveURL(/\/$/);

@@ -9,6 +9,10 @@ Checkpoint WIP `cd5f154ec121c926b42034995b2c92d970ead814`. Gates em série: lint
 - Metadata: Home recebeu título/descrição do product.md; páginas de newsletter usam `title.absolute` para evitar sufixo duplicado do template. noindex herdado do layout; sem canonical/host.
 - Testes: `tests/e2e/public-routes.spec.ts`.
 
+## P5.3 moldura 404
+- Checkpoint WIP `9d625ef06be246749439b0df30041ee1b381279b`. `app/not-found.tsx` agora tem `data-graphics-root`, o `FrameCanvas` existente e `<div data-frame-cut="1" />` ao final (corte inferior, mesmo padrão das demais rotas); HTTP 404, metadata, copy, links, layout e arte inalterados. Sem JS a moldura não aparece e o conteúdo essencial permanece.
+- Teste `404 page` em `public-routes.spec.ts` verifica moldura `aria-hidden` e `ready`, além de título e retorno à Home. Removidas as regras CSS `.placeholders` sem uso em `tools.module.css`. Gates executados pelo GPT após o retorno (não executados aqui).
+
 ## Limitação
 - Slug com percent-encoding malformado (`/newsletter/edicoes/%E0%A4%A`) responde 500 do framework (fora de `/privacidade` e raiz, que dão 404). Não corrigido: exigiria proxy/middleware fora do escopo.
 
