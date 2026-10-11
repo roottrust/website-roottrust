@@ -388,6 +388,8 @@ Cada escrita exige linha com hash WIP antes da chamada. Consultas usam “não a
 
 SQL/session-store não disponíveis nesta sessão: este PLAN é o registro único, sem banco artificial ou cópia concorrente.
 
+**P4.2 início:** checkpoint WIP `8cbd155dd870ff14dc13b90a6ef7bf7c4856010c`; pré-checagem sem segredos/gerados. Dono Sonnet para modelos/parsers TS puros em features/tools/models, testes unit/tools e audit/tools-models.md; interfaces ficam P4.3. Sem alterações de dependências/env/export/marca/Home.
+
 **P4.1 início:** aceite Home recebido. Dono Sonnet; escopo três páginas de serviço, componentes/dados/CSS em features/services, rotas servicos e testes correspondentes; reutilizar gráficos/formulários. Checkpoint WIP `b69a452c9179d84f5a65ccd35ee23ff7dd3afee6`; pré-checagem sem arquivo sensível/gerado, servidor manual encerrado para liberar gates. Sem alteração de exports/marca/dependências/env/Home.
 
 **P4.1 revisão/correção:** escritor d9fac3af-1e3e-4e4d-b414-0980b0744b55, Sonnet5.5 succeeded518s;15unit/48E2E+4skip e lint/type/build. GPT confirmou14/14 serviços. Revisor 0981b385-3269-47ef-a462-980021713fee, Sonnet5.5 succeeded50s, contratos aprovados mas faltam símbolo CTA e moldura dos exports. Correção do mesmo dono autorizada também em novo graphics/FrameCanvas.tsx, reutilizando HomeAscii.drawFrame e lifecycle existente, sem alterar composição Home; atualizar serviços/CSS/testes/audit. Checkpoint WIP antes do follow-up: `7aef9c899aad5c70d5b95d5822d96f8a8f3c4967`. Revisão após correção obrigatória.
