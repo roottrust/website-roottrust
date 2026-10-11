@@ -1,0 +1,513 @@
+
+Running 74 tests using 6 workers
+
+  ok  6 [chromium-desktop] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /: loads without runtime errors, h1, skip link, no overflow at 320px (2.0s)
+  ok  4 [chromium-mobile] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /: loads without runtime errors, h1, skip link, no overflow at 320px (2.0s)
+  ok  8 [chromium-mobile] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /servicos/ciberseguranca: loads without runtime errors, h1, skip link, no overflow at 320px (2.0s)
+  ok  7 [chromium-desktop] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /servicos/ciberseguranca: loads without runtime errors, h1, skip link, no overflow at 320px (2.2s)
+  ok  9 [chromium-mobile] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /servicos/infraestrutura-em-nuvem: loads without runtime errors, h1, skip link, no overflow at 320px (1.2s)
+  ok 10 [chromium-desktop] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /servicos/infraestrutura-em-nuvem: loads without runtime errors, h1, skip link, no overflow at 320px (1.1s)
+  ok  5 [chromium-mobile] › tests\e2e\qa-spa.spec.ts:11:3 › SPA graphics lifecycle › global pause survives client-side navigation both ways and resume restores drawing (6.5s)
+  ok 12 [chromium-desktop] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /servicos/desenvolvimento-de-software: loads without runtime errors, h1, skip link, no overflow at 320px (1.4s)
+  ok 11 [chromium-mobile] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /servicos/desenvolvimento-de-software: loads without runtime errors, h1, skip link, no overflow at 320px (1.5s)
+  ok  1 [chromium-desktop] › tests\e2e\qa-spa.spec.ts:11:3 › SPA graphics lifecycle › global pause survives client-side navigation both ways and resume restores drawing (6.8s)
+  ok 14 [chromium-desktop] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /ferramentas/rosi: loads without runtime errors, h1, skip link, no overflow at 320px (2.7s)
+  ok 15 [chromium-mobile] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /ferramentas/rosi: loads without runtime errors, h1, skip link, no overflow at 320px (3.1s)
+  x   2 [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /: loads without runtime errors, h1, skip link, no overflow at 320px (7.8s)
+  ok 13 [chromium-mobile] › tests\e2e\qa-spa.spec.ts:40:3 › SPA graphics lifecycle › leaving the Home by SPA discards every WebGL context and pillar canvas; returning creates a fresh one (3.8s)
+  ok 16 [chromium-desktop] › tests\e2e\qa-spa.spec.ts:40:3 › SPA graphics lifecycle › leaving the Home by SPA discards every WebGL context and pillar canvas; returning creates a fresh one (3.9s)
+  ok  3 [firefox-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /: loads without runtime errors, h1, skip link, no overflow at 320px (9.3s)
+  ok 18 [chromium-mobile] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /ferramentas/shadow-ai: loads without runtime errors, h1, skip link, no overflow at 320px (1.4s)
+  ok 17 [chromium-desktop] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /ferramentas/shadow-ai: loads without runtime errors, h1, skip link, no overflow at 320px (1.9s)
+  ok 23 [chromium-desktop] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /ferramentas/divida-tecnica: loads without runtime errors, h1, skip link, no overflow at 320px (1.4s)
+  ok 22 [chromium-mobile] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /ferramentas/divida-tecnica: loads without runtime errors, h1, skip link, no overflow at 320px (1.6s)
+  ok 25 [chromium-desktop] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /ferramentas/migracao-para-nuvem: loads without runtime errors, h1, skip link, no overflow at 320px (1.7s)
+  ok 26 [chromium-mobile] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /ferramentas/migracao-para-nuvem: loads without runtime errors, h1, skip link, no overflow at 320px (1.6s)
+  ok 21 [firefox-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /servicos/ciberseguranca: loads without runtime errors, h1, skip link, no overflow at 320px (3.7s)
+  ok 27 [chromium-desktop] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /newsletter: loads without runtime errors, h1, skip link, no overflow at 320px (1.2s)
+  ok 28 [chromium-mobile] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /newsletter: loads without runtime errors, h1, skip link, no overflow at 320px (1.2s)
+  ok 31 [chromium-mobile] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /newsletter/edicoes: loads without runtime errors, h1, skip link, no overflow at 320px (2.1s)
+  ok 30 [chromium-desktop] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /newsletter/edicoes: loads without runtime errors, h1, skip link, no overflow at 320px (2.2s)
+  ok 29 [firefox-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /servicos/infraestrutura-em-nuvem: loads without runtime errors, h1, skip link, no overflow at 320px (4.5s)
+  ok 32 [chromium-mobile] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /newsletter/edicoes/backup-e-recuperacao: loads without runtime errors, h1, skip link, no overflow at 320px (1.8s)
+  ok 33 [chromium-desktop] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /newsletter/edicoes/backup-e-recuperacao: loads without runtime errors, h1, skip link, no overflow at 320px (1.7s)
+  x  24 [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /servicos/ciberseguranca: loads without runtime errors, h1, skip link, no overflow at 320px (8.5s)
+  ok 36 [chromium-desktop] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /privacidade: loads without runtime errors, h1, skip link, no overflow at 320px (1.2s)
+  ok 35 [chromium-mobile] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /privacidade: loads without runtime errors, h1, skip link, no overflow at 320px (1.2s)
+  ok 37 [chromium-desktop] › tests\e2e\qa-smoke.spec.ts:23:1 › smoke 404: native page answers HTTP 404 (411ms)
+  ok 38 [chromium-mobile] › tests\e2e\qa-smoke.spec.ts:23:1 › smoke 404: native page answers HTTP 404 (420ms)
+  ok 34 [firefox-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /servicos/desenvolvimento-de-software: loads without runtime errors, h1, skip link, no overflow at 320px (2.3s)
+  ok 19 [chromium-mobile] › tests\e2e\qa-spa.spec.ts:74:3 › reflow 200% zoom (640x512 CSS px): every route stays inside the viewport, without runtime errors (12.2s)
+  ok 41 [chromium-mobile] › tests\e2e\qa-smoke.spec.ts:29:1 › smoke Home: contact form validates and moves focus to the first invalid field (1.2s)
+  ok 40 [chromium-desktop] › tests\e2e\qa-smoke.spec.ts:29:1 › smoke Home: contact form validates and moves focus to the first invalid field (1.3s)
+  ok 20 [chromium-desktop] › tests\e2e\qa-spa.spec.ts:74:3 › reflow 200% zoom (640x512 CSS px): every route stays inside the viewport, without runtime errors (12.2s)
+  ok 44 [chromium-mobile] › tests\e2e\qa-smoke.spec.ts:37:1 › smoke ROSI: tool page renders its form and no storage is used (656ms)
+  ok 45 [chromium-desktop] › tests\e2e\qa-smoke.spec.ts:37:1 › smoke ROSI: tool page renders its form and no storage is used (677ms)
+  ok 42 [firefox-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /ferramentas/rosi: loads without runtime errors, h1, skip link, no overflow at 320px (2.4s)
+  ok 47 [firefox-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /ferramentas/shadow-ai: loads without runtime errors, h1, skip link, no overflow at 320px (1.4s)
+  ok 48 [firefox-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /ferramentas/divida-tecnica: loads without runtime errors, h1, skip link, no overflow at 320px (1.5s)
+  x  39 [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /servicos/infraestrutura-em-nuvem: loads without runtime errors, h1, skip link, no overflow at 320px (6.9s)
+  ok 49 [firefox-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /ferramentas/migracao-para-nuvem: loads without runtime errors, h1, skip link, no overflow at 320px (1.3s)
+  ok 50 [firefox-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /newsletter: loads without runtime errors, h1, skip link, no overflow at 320px (1.5s)
+  ok 43 [chromium-mobile] › tests\e2e\qa-spa.spec.ts:74:3 › reflow 400% zoom / 320px (320x256 CSS px): every route stays inside the viewport, without runtime errors (8.3s)
+  ok 46 [chromium-desktop] › tests\e2e\qa-spa.spec.ts:74:3 › reflow 400% zoom / 320px (320x256 CSS px): every route stays inside the viewport, without runtime errors (8.2s)
+  ok 52 [firefox-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /newsletter/edicoes: loads without runtime errors, h1, skip link, no overflow at 320px (2.6s)
+  ok 55 [firefox-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /newsletter/edicoes/backup-e-recuperacao: loads without runtime errors, h1, skip link, no overflow at 320px (1.4s)
+  ok 56 [firefox-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /privacidade: loads without runtime errors, h1, skip link, no overflow at 320px (1.7s)
+  x  51 [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /servicos/desenvolvimento-de-software: loads without runtime errors, h1, skip link, no overflow at 320px (6.6s)
+  ok 57 [firefox-smoke] › tests\e2e\qa-smoke.spec.ts:23:1 › smoke 404: native page answers HTTP 404 (1.4s)
+  ok 59 [firefox-smoke] › tests\e2e\qa-smoke.spec.ts:29:1 › smoke Home: contact form validates and moves focus to the first invalid field (1.3s)
+  ok 60 [firefox-smoke] › tests\e2e\qa-smoke.spec.ts:37:1 › smoke ROSI: tool page renders its form and no storage is used (1.1s)
+  ok 53 [chromium-mobile] › tests\e2e\qa-spa.spec.ts:74:3 › reflow 320px phone: every route stays inside the viewport, without runtime errors (8.8s)
+  ok 54 [chromium-desktop] › tests\e2e\qa-spa.spec.ts:74:3 › reflow 320px phone: every route stays inside the viewport, without runtime errors (8.8s)
+  x  58 [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /ferramentas/rosi: loads without runtime errors, h1, skip link, no overflow at 320px (6.7s)
+  x  63 [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /ferramentas/shadow-ai: loads without runtime errors, h1, skip link, no overflow at 320px (8.0s)
+  x  64 [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /ferramentas/divida-tecnica: loads without runtime errors, h1, skip link, no overflow at 320px (7.2s)
+  ok 61 [chromium-mobile] › tests\e2e\qa-spa.spec.ts:94:1 › keyboard: every route has a finite tab order, visible focus indicators and no hidden or trapped stops (22.5s)
+  ok 62 [chromium-desktop] › tests\e2e\qa-spa.spec.ts:94:1 › keyboard: every route has a finite tab order, visible focus indicators and no hidden or trapped stops (22.4s)
+  ok 65 [chromium-mobile] › tests\e2e\qa-spa.spec.ts:124:1 › without JavaScript every route keeps its heading and essential content (1.4s)
+  ok 66 [chromium-desktop] › tests\e2e\qa-spa.spec.ts:124:1 › without JavaScript every route keeps its heading and essential content (1.4s)
+  x  67 [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /ferramentas/migracao-para-nuvem: loads without runtime errors, h1, skip link, no overflow at 320px (6.6s)
+  x  68 [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /newsletter: loads without runtime errors, h1, skip link, no overflow at 320px (6.0s)
+  x  69 [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /newsletter/edicoes: loads without runtime errors, h1, skip link, no overflow at 320px (6.0s)
+  x  70 [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /newsletter/edicoes/backup-e-recuperacao: loads without runtime errors, h1, skip link, no overflow at 320px (6.0s)
+  x  71 [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /privacidade: loads without runtime errors, h1, skip link, no overflow at 320px (6.0s)
+  ok 72 [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:23:1 › smoke 404: native page answers HTTP 404 (396ms)
+  ok 73 [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:29:1 › smoke Home: contact form validates and moves focus to the first invalid field (1.2s)
+  ok 74 [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:37:1 › smoke ROSI: tool page renders its form and no storage is used (350ms)
+
+
+  1) [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /: loads without runtime errors, h1, skip link, no overflow at 320px 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('link', { name: 'Pular para o conteúdo' })
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" getByRole('link', { name: 'Pular para o conteúdo' }) with timeout 5000ms
+      - waiting for getByRole('link', { name: 'Pular para o conteúdo' })
+        12 × locator resolved to <a class="skipLink" href="#conteudo">Pular para o conteúdo</a>
+           - unexpected value "inactive"
+
+
+      15 |     // WebKit only tabs to links with Alt held (Safari default); this is browser behaviour, not the site.
+      16 |     await page.keyboard.press(browserName === "webkit" ? "Alt+Tab" : "Tab");
+    > 17 |     await expect(page.getByRole("link", { name: "Pular para o conteúdo" })).toBeFocused();
+         |                                                                             ^
+      18 |     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      19 |     expect(issues).toEqual([]);
+      20 |   });
+        at E:\Development\RootTrust\RootTrust\website-roottrust\web\tests\e2e\qa-smoke.spec.ts:17:77
+
+    Error Context: test-results\qa-smoke-smoke-loads-witho-18894-p-link-no-overflow-at-320px-webkit-smoke\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\qa-smoke-smoke-loads-witho-18894-p-link-no-overflow-at-320px-webkit-smoke\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\qa-smoke-smoke-loads-witho-18894-p-link-no-overflow-at-320px-webkit-smoke\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /servicos/ciberseguranca: loads without runtime errors, h1, skip link, no overflow at 320px 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('link', { name: 'Pular para o conteúdo' })
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" getByRole('link', { name: 'Pular para o conteúdo' }) with timeout 5000ms
+      - waiting for getByRole('link', { name: 'Pular para o conteúdo' })
+        13 × locator resolved to <a class="skipLink" href="#conteudo">Pular para o conteúdo</a>
+           - unexpected value "inactive"
+
+
+      15 |     // WebKit only tabs to links with Alt held (Safari default); this is browser behaviour, not the site.
+      16 |     await page.keyboard.press(browserName === "webkit" ? "Alt+Tab" : "Tab");
+    > 17 |     await expect(page.getByRole("link", { name: "Pular para o conteúdo" })).toBeFocused();
+         |                                                                             ^
+      18 |     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      19 |     expect(issues).toEqual([]);
+      20 |   });
+        at E:\Development\RootTrust\RootTrust\website-roottrust\web\tests\e2e\qa-smoke.spec.ts:17:77
+
+    Error Context: test-results\qa-smoke-smoke-servicos-ci-fb16d-p-link-no-overflow-at-320px-webkit-smoke\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\qa-smoke-smoke-servicos-ci-fb16d-p-link-no-overflow-at-320px-webkit-smoke\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\qa-smoke-smoke-servicos-ci-fb16d-p-link-no-overflow-at-320px-webkit-smoke\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /servicos/infraestrutura-em-nuvem: loads without runtime errors, h1, skip link, no overflow at 320px 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('link', { name: 'Pular para o conteúdo' })
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" getByRole('link', { name: 'Pular para o conteúdo' }) with timeout 5000ms
+      - waiting for getByRole('link', { name: 'Pular para o conteúdo' })
+        13 × locator resolved to <a class="skipLink" href="#conteudo">Pular para o conteúdo</a>
+           - unexpected value "inactive"
+
+
+      15 |     // WebKit only tabs to links with Alt held (Safari default); this is browser behaviour, not the site.
+      16 |     await page.keyboard.press(browserName === "webkit" ? "Alt+Tab" : "Tab");
+    > 17 |     await expect(page.getByRole("link", { name: "Pular para o conteúdo" })).toBeFocused();
+         |                                                                             ^
+      18 |     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      19 |     expect(issues).toEqual([]);
+      20 |   });
+        at E:\Development\RootTrust\RootTrust\website-roottrust\web\tests\e2e\qa-smoke.spec.ts:17:77
+
+    Error Context: test-results\qa-smoke-smoke-servicos-in-693a9-p-link-no-overflow-at-320px-webkit-smoke\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\qa-smoke-smoke-servicos-in-693a9-p-link-no-overflow-at-320px-webkit-smoke\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\qa-smoke-smoke-servicos-in-693a9-p-link-no-overflow-at-320px-webkit-smoke\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /servicos/desenvolvimento-de-software: loads without runtime errors, h1, skip link, no overflow at 320px 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('link', { name: 'Pular para o conteúdo' })
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" getByRole('link', { name: 'Pular para o conteúdo' }) with timeout 5000ms
+      - waiting for getByRole('link', { name: 'Pular para o conteúdo' })
+        14 × locator resolved to <a class="skipLink" href="#conteudo">Pular para o conteúdo</a>
+           - unexpected value "inactive"
+
+
+      15 |     // WebKit only tabs to links with Alt held (Safari default); this is browser behaviour, not the site.
+      16 |     await page.keyboard.press(browserName === "webkit" ? "Alt+Tab" : "Tab");
+    > 17 |     await expect(page.getByRole("link", { name: "Pular para o conteúdo" })).toBeFocused();
+         |                                                                             ^
+      18 |     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      19 |     expect(issues).toEqual([]);
+      20 |   });
+        at E:\Development\RootTrust\RootTrust\website-roottrust\web\tests\e2e\qa-smoke.spec.ts:17:77
+
+    Error Context: test-results\qa-smoke-smoke-servicos-de-0b902-p-link-no-overflow-at-320px-webkit-smoke\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\qa-smoke-smoke-servicos-de-0b902-p-link-no-overflow-at-320px-webkit-smoke\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\qa-smoke-smoke-servicos-de-0b902-p-link-no-overflow-at-320px-webkit-smoke\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /ferramentas/rosi: loads without runtime errors, h1, skip link, no overflow at 320px 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('link', { name: 'Pular para o conteúdo' })
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" getByRole('link', { name: 'Pular para o conteúdo' }) with timeout 5000ms
+      - waiting for getByRole('link', { name: 'Pular para o conteúdo' })
+        13 × locator resolved to <a class="skipLink" href="#conteudo">Pular para o conteúdo</a>
+           - unexpected value "inactive"
+
+
+      15 |     // WebKit only tabs to links with Alt held (Safari default); this is browser behaviour, not the site.
+      16 |     await page.keyboard.press(browserName === "webkit" ? "Alt+Tab" : "Tab");
+    > 17 |     await expect(page.getByRole("link", { name: "Pular para o conteúdo" })).toBeFocused();
+         |                                                                             ^
+      18 |     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      19 |     expect(issues).toEqual([]);
+      20 |   });
+        at E:\Development\RootTrust\RootTrust\website-roottrust\web\tests\e2e\qa-smoke.spec.ts:17:77
+
+    Error Context: test-results\qa-smoke-smoke-ferramentas-b05a1-p-link-no-overflow-at-320px-webkit-smoke\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\qa-smoke-smoke-ferramentas-b05a1-p-link-no-overflow-at-320px-webkit-smoke\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\qa-smoke-smoke-ferramentas-b05a1-p-link-no-overflow-at-320px-webkit-smoke\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /ferramentas/shadow-ai: loads without runtime errors, h1, skip link, no overflow at 320px 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('link', { name: 'Pular para o conteúdo' })
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" getByRole('link', { name: 'Pular para o conteúdo' }) with timeout 5000ms
+      - waiting for getByRole('link', { name: 'Pular para o conteúdo' })
+        13 × locator resolved to <a class="skipLink" href="#conteudo">Pular para o conteúdo</a>
+           - unexpected value "inactive"
+
+
+      15 |     // WebKit only tabs to links with Alt held (Safari default); this is browser behaviour, not the site.
+      16 |     await page.keyboard.press(browserName === "webkit" ? "Alt+Tab" : "Tab");
+    > 17 |     await expect(page.getByRole("link", { name: "Pular para o conteúdo" })).toBeFocused();
+         |                                                                             ^
+      18 |     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      19 |     expect(issues).toEqual([]);
+      20 |   });
+        at E:\Development\RootTrust\RootTrust\website-roottrust\web\tests\e2e\qa-smoke.spec.ts:17:77
+
+    Error Context: test-results\qa-smoke-smoke-ferramentas-c0db5-p-link-no-overflow-at-320px-webkit-smoke\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\qa-smoke-smoke-ferramentas-c0db5-p-link-no-overflow-at-320px-webkit-smoke\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\qa-smoke-smoke-ferramentas-c0db5-p-link-no-overflow-at-320px-webkit-smoke\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  7) [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /ferramentas/divida-tecnica: loads without runtime errors, h1, skip link, no overflow at 320px 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('link', { name: 'Pular para o conteúdo' })
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" getByRole('link', { name: 'Pular para o conteúdo' }) with timeout 5000ms
+      - waiting for getByRole('link', { name: 'Pular para o conteúdo' })
+        13 × locator resolved to <a class="skipLink" href="#conteudo">Pular para o conteúdo</a>
+           - unexpected value "inactive"
+
+
+      15 |     // WebKit only tabs to links with Alt held (Safari default); this is browser behaviour, not the site.
+      16 |     await page.keyboard.press(browserName === "webkit" ? "Alt+Tab" : "Tab");
+    > 17 |     await expect(page.getByRole("link", { name: "Pular para o conteúdo" })).toBeFocused();
+         |                                                                             ^
+      18 |     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      19 |     expect(issues).toEqual([]);
+      20 |   });
+        at E:\Development\RootTrust\RootTrust\website-roottrust\web\tests\e2e\qa-smoke.spec.ts:17:77
+
+    Error Context: test-results\qa-smoke-smoke-ferramentas-92c6a-p-link-no-overflow-at-320px-webkit-smoke\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\qa-smoke-smoke-ferramentas-92c6a-p-link-no-overflow-at-320px-webkit-smoke\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\qa-smoke-smoke-ferramentas-92c6a-p-link-no-overflow-at-320px-webkit-smoke\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  8) [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /ferramentas/migracao-para-nuvem: loads without runtime errors, h1, skip link, no overflow at 320px 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('link', { name: 'Pular para o conteúdo' })
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" getByRole('link', { name: 'Pular para o conteúdo' }) with timeout 5000ms
+      - waiting for getByRole('link', { name: 'Pular para o conteúdo' })
+        14 × locator resolved to <a class="skipLink" href="#conteudo">Pular para o conteúdo</a>
+           - unexpected value "inactive"
+
+
+      15 |     // WebKit only tabs to links with Alt held (Safari default); this is browser behaviour, not the site.
+      16 |     await page.keyboard.press(browserName === "webkit" ? "Alt+Tab" : "Tab");
+    > 17 |     await expect(page.getByRole("link", { name: "Pular para o conteúdo" })).toBeFocused();
+         |                                                                             ^
+      18 |     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      19 |     expect(issues).toEqual([]);
+      20 |   });
+        at E:\Development\RootTrust\RootTrust\website-roottrust\web\tests\e2e\qa-smoke.spec.ts:17:77
+
+    Error Context: test-results\qa-smoke-smoke-ferramentas-22df3-p-link-no-overflow-at-320px-webkit-smoke\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\qa-smoke-smoke-ferramentas-22df3-p-link-no-overflow-at-320px-webkit-smoke\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\qa-smoke-smoke-ferramentas-22df3-p-link-no-overflow-at-320px-webkit-smoke\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  9) [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /newsletter: loads without runtime errors, h1, skip link, no overflow at 320px 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('link', { name: 'Pular para o conteúdo' })
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" getByRole('link', { name: 'Pular para o conteúdo' }) with timeout 5000ms
+      - waiting for getByRole('link', { name: 'Pular para o conteúdo' })
+        14 × locator resolved to <a class="skipLink" href="#conteudo">Pular para o conteúdo</a>
+           - unexpected value "inactive"
+
+
+      15 |     // WebKit only tabs to links with Alt held (Safari default); this is browser behaviour, not the site.
+      16 |     await page.keyboard.press(browserName === "webkit" ? "Alt+Tab" : "Tab");
+    > 17 |     await expect(page.getByRole("link", { name: "Pular para o conteúdo" })).toBeFocused();
+         |                                                                             ^
+      18 |     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      19 |     expect(issues).toEqual([]);
+      20 |   });
+        at E:\Development\RootTrust\RootTrust\website-roottrust\web\tests\e2e\qa-smoke.spec.ts:17:77
+
+    Error Context: test-results\qa-smoke-smoke-newsletter--25ea1-p-link-no-overflow-at-320px-webkit-smoke\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\qa-smoke-smoke-newsletter--25ea1-p-link-no-overflow-at-320px-webkit-smoke\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\qa-smoke-smoke-newsletter--25ea1-p-link-no-overflow-at-320px-webkit-smoke\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  10) [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /newsletter/edicoes: loads without runtime errors, h1, skip link, no overflow at 320px 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('link', { name: 'Pular para o conteúdo' })
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" getByRole('link', { name: 'Pular para o conteúdo' }) with timeout 5000ms
+      - waiting for getByRole('link', { name: 'Pular para o conteúdo' })
+        14 × locator resolved to <a class="skipLink" href="#conteudo">Pular para o conteúdo</a>
+           - unexpected value "inactive"
+
+
+      15 |     // WebKit only tabs to links with Alt held (Safari default); this is browser behaviour, not the site.
+      16 |     await page.keyboard.press(browserName === "webkit" ? "Alt+Tab" : "Tab");
+    > 17 |     await expect(page.getByRole("link", { name: "Pular para o conteúdo" })).toBeFocused();
+         |                                                                             ^
+      18 |     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      19 |     expect(issues).toEqual([]);
+      20 |   });
+        at E:\Development\RootTrust\RootTrust\website-roottrust\web\tests\e2e\qa-smoke.spec.ts:17:77
+
+    Error Context: test-results\qa-smoke-smoke-newsletter--fcddf-p-link-no-overflow-at-320px-webkit-smoke\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\qa-smoke-smoke-newsletter--fcddf-p-link-no-overflow-at-320px-webkit-smoke\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\qa-smoke-smoke-newsletter--fcddf-p-link-no-overflow-at-320px-webkit-smoke\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  11) [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /newsletter/edicoes/backup-e-recuperacao: loads without runtime errors, h1, skip link, no overflow at 320px 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('link', { name: 'Pular para o conteúdo' })
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" getByRole('link', { name: 'Pular para o conteúdo' }) with timeout 5000ms
+      - waiting for getByRole('link', { name: 'Pular para o conteúdo' })
+        14 × locator resolved to <a class="skipLink" href="#conteudo">Pular para o conteúdo</a>
+           - unexpected value "inactive"
+
+
+      15 |     // WebKit only tabs to links with Alt held (Safari default); this is browser behaviour, not the site.
+      16 |     await page.keyboard.press(browserName === "webkit" ? "Alt+Tab" : "Tab");
+    > 17 |     await expect(page.getByRole("link", { name: "Pular para o conteúdo" })).toBeFocused();
+         |                                                                             ^
+      18 |     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      19 |     expect(issues).toEqual([]);
+      20 |   });
+        at E:\Development\RootTrust\RootTrust\website-roottrust\web\tests\e2e\qa-smoke.spec.ts:17:77
+
+    Error Context: test-results\qa-smoke-smoke-newsletter--321cf-p-link-no-overflow-at-320px-webkit-smoke\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\qa-smoke-smoke-newsletter--321cf-p-link-no-overflow-at-320px-webkit-smoke\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\qa-smoke-smoke-newsletter--321cf-p-link-no-overflow-at-320px-webkit-smoke\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  12) [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /privacidade: loads without runtime errors, h1, skip link, no overflow at 320px 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('link', { name: 'Pular para o conteúdo' })
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" getByRole('link', { name: 'Pular para o conteúdo' }) with timeout 5000ms
+      - waiting for getByRole('link', { name: 'Pular para o conteúdo' })
+        14 × locator resolved to <a class="skipLink" href="#conteudo">Pular para o conteúdo</a>
+           - unexpected value "inactive"
+
+
+      15 |     // WebKit only tabs to links with Alt held (Safari default); this is browser behaviour, not the site.
+      16 |     await page.keyboard.press(browserName === "webkit" ? "Alt+Tab" : "Tab");
+    > 17 |     await expect(page.getByRole("link", { name: "Pular para o conteúdo" })).toBeFocused();
+         |                                                                             ^
+      18 |     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      19 |     expect(issues).toEqual([]);
+      20 |   });
+        at E:\Development\RootTrust\RootTrust\website-roottrust\web\tests\e2e\qa-smoke.spec.ts:17:77
+
+    Error Context: test-results\qa-smoke-smoke-privacidade-b4ea5-p-link-no-overflow-at-320px-webkit-smoke\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\qa-smoke-smoke-privacidade-b4ea5-p-link-no-overflow-at-320px-webkit-smoke\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\qa-smoke-smoke-privacidade-b4ea5-p-link-no-overflow-at-320px-webkit-smoke\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  12 failed
+    [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /: loads without runtime errors, h1, skip link, no overflow at 320px 
+    [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /servicos/ciberseguranca: loads without runtime errors, h1, skip link, no overflow at 320px 
+    [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /servicos/infraestrutura-em-nuvem: loads without runtime errors, h1, skip link, no overflow at 320px 
+    [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /servicos/desenvolvimento-de-software: loads without runtime errors, h1, skip link, no overflow at 320px 
+    [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /ferramentas/rosi: loads without runtime errors, h1, skip link, no overflow at 320px 
+    [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /ferramentas/shadow-ai: loads without runtime errors, h1, skip link, no overflow at 320px 
+    [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /ferramentas/divida-tecnica: loads without runtime errors, h1, skip link, no overflow at 320px 
+    [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /ferramentas/migracao-para-nuvem: loads without runtime errors, h1, skip link, no overflow at 320px 
+    [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /newsletter: loads without runtime errors, h1, skip link, no overflow at 320px 
+    [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /newsletter/edicoes: loads without runtime errors, h1, skip link, no overflow at 320px 
+    [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /newsletter/edicoes/backup-e-recuperacao: loads without runtime errors, h1, skip link, no overflow at 320px 
+    [webkit-smoke] › tests\e2e\qa-smoke.spec.ts:6:3 › smoke /privacidade: loads without runtime errors, h1, skip link, no overflow at 320px 
+  62 passed (1.7m)

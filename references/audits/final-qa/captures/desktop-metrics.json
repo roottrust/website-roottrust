@@ -1,0 +1,330 @@
+{
+  "project": "chromium-desktop",
+  "viewport": "1440x1000",
+  "reducedMotion": "reduce",
+  "deviceScaleFactor": 1,
+  "pairs": {
+    "404": {
+      "route": "/rota-inexistente-qa",
+      "export": "404.dc.html",
+      "native": {
+        "documentHeight": 1100,
+        "overflowX": false,
+        "canvases": 1,
+        "h1": "Página não encontrada.",
+        "fontsLoaded": [
+          "baloo 400 800",
+          "baloo Fallback normal",
+          "archivo 100 900"
+        ],
+        "pageErrors": []
+      },
+      "exportPage": {
+        "documentHeight": 1000,
+        "overflowX": false,
+        "canvases": 2,
+        "h1": "Página não encontrada.",
+        "fontsLoaded": [
+          "Baloo 2 400 800",
+          "Archivo 100 900",
+          "Baloo 2 400 800",
+          "Archivo 100 900"
+        ],
+        "pageErrors": [],
+        "failedRequests": []
+      }
+    },
+    "servico-ciberseguranca": {
+      "route": "/servicos/ciberseguranca",
+      "export": "Servico Ciberseguranca.dc.html",
+      "native": {
+        "documentHeight": 5374,
+        "overflowX": false,
+        "canvases": 3,
+        "h1": "Pentest e cibersegurança para a sua operação.",
+        "fontsLoaded": [
+          "baloo 400 800",
+          "baloo Fallback normal",
+          "archivo 100 900",
+          "archivo Fallback normal"
+        ],
+        "pageErrors": []
+      },
+      "exportPage": {
+        "documentHeight": 4994,
+        "overflowX": false,
+        "canvases": 3,
+        "h1": "Pentest e cibersegurança para a sua operação.",
+        "fontsLoaded": [
+          "Baloo 2 400 800",
+          "Archivo 100 900",
+          "Baloo 2 400 800",
+          "Archivo 100 900"
+        ],
+        "pageErrors": [],
+        "failedRequests": []
+      }
+    },
+    "servico-nuvem": {
+      "route": "/servicos/infraestrutura-em-nuvem",
+      "export": "Servico Infraestrutura em nuvem.dc.html",
+      "native": {
+        "documentHeight": 5031,
+        "overflowX": false,
+        "canvases": 3,
+        "h1": "Continuidade e custos sob controle na sua infraestrutura.",
+        "fontsLoaded": [
+          "baloo 400 800",
+          "archivo 100 900"
+        ],
+        "pageErrors": []
+      },
+      "exportPage": {
+        "documentHeight": 4873,
+        "overflowX": false,
+        "canvases": 3,
+        "h1": "Continuidade e custos sob controle na sua infraestrutura.",
+        "fontsLoaded": [
+          "Baloo 2 400 800",
+          "Archivo 100 900",
+          "Baloo 2 400 800",
+          "Archivo 100 900"
+        ],
+        "pageErrors": [],
+        "failedRequests": []
+      }
+    },
+    "servico-software": {
+      "route": "/servicos/desenvolvimento-de-software",
+      "export": "Servico Software.dc.html",
+      "native": {
+        "documentHeight": 5041,
+        "overflowX": false,
+        "canvases": 3,
+        "h1": "Software sob medida para conectar e evoluir sua operação.",
+        "fontsLoaded": [
+          "baloo 400 800",
+          "archivo 100 900"
+        ],
+        "pageErrors": []
+      },
+      "exportPage": {
+        "documentHeight": 4996,
+        "overflowX": false,
+        "canvases": 3,
+        "h1": "Software sob medida para conectar e evoluir sua operação.",
+        "fontsLoaded": [
+          "Baloo 2 400 800",
+          "Archivo 100 900",
+          "Baloo 2 400 800",
+          "Archivo 100 900"
+        ],
+        "pageErrors": [],
+        "failedRequests": []
+      }
+    },
+    "ferramenta-rosi": {
+      "route": "/ferramentas/rosi",
+      "export": "Ferramenta ROSI.dc.html",
+      "native": {
+        "documentHeight": 4132,
+        "overflowX": false,
+        "canvases": 3,
+        "h1": "Explore o retorno de uma proteção adicional.",
+        "fontsLoaded": [
+          "baloo 400 800",
+          "archivo 100 900"
+        ],
+        "pageErrors": []
+      },
+      "exportPage": {
+        "documentHeight": 2563,
+        "overflowX": false,
+        "canvases": 2,
+        "h1": "Explore o retorno de uma proteção adicional.",
+        "fontsLoaded": [
+          "Baloo 2 400 800",
+          "Archivo 100 900",
+          "Baloo 2 400 800",
+          "Archivo 100 900"
+        ],
+        "pageErrors": [],
+        "failedRequests": []
+      }
+    },
+    "ferramenta-shadow-ai": {
+      "route": "/ferramentas/shadow-ai",
+      "export": "Ferramenta Shadow AI.dc.html",
+      "native": {
+        "documentHeight": 3350,
+        "overflowX": false,
+        "canvases": 3,
+        "h1": "Organize a governança do uso de IA.",
+        "fontsLoaded": [
+          "baloo 400 800",
+          "archivo 100 900"
+        ],
+        "pageErrors": []
+      },
+      "exportPage": {
+        "documentHeight": 2465,
+        "overflowX": false,
+        "canvases": 2,
+        "h1": "Organize a governança do uso de IA.",
+        "fontsLoaded": [
+          "Baloo 2 400 800",
+          "Archivo 100 900",
+          "Baloo 2 400 800",
+          "Archivo 100 900"
+        ],
+        "pageErrors": [],
+        "failedRequests": []
+      }
+    },
+    "ferramenta-divida-tecnica": {
+      "route": "/ferramentas/divida-tecnica",
+      "export": "Ferramenta Divida tecnica.dc.html",
+      "native": {
+        "documentHeight": 3566,
+        "overflowX": false,
+        "canvases": 3,
+        "h1": "Estime o custo do tempo atribuído à dívida técnica.",
+        "fontsLoaded": [
+          "baloo 400 800",
+          "archivo 100 900"
+        ],
+        "pageErrors": []
+      },
+      "exportPage": {
+        "documentHeight": 2104,
+        "overflowX": false,
+        "canvases": 2,
+        "h1": "Estime o custo do tempo atribuído à dívida técnica.",
+        "fontsLoaded": [
+          "Baloo 2 400 800",
+          "Archivo 100 900",
+          "Baloo 2 400 800",
+          "Archivo 100 900"
+        ],
+        "pageErrors": [],
+        "failedRequests": []
+      }
+    },
+    "ferramenta-migracao": {
+      "route": "/ferramentas/migracao-para-nuvem",
+      "export": "Ferramenta Migracao para nuvem.dc.html",
+      "native": {
+        "documentHeight": 3654,
+        "overflowX": false,
+        "canvases": 3,
+        "h1": "Compare os custos de manter ou migrar.",
+        "fontsLoaded": [
+          "baloo 400 800",
+          "archivo 100 900"
+        ],
+        "pageErrors": []
+      },
+      "exportPage": {
+        "documentHeight": 2292,
+        "overflowX": false,
+        "canvases": 2,
+        "h1": "Compare os custos de manter ou migrar.",
+        "fontsLoaded": [
+          "Baloo 2 400 800",
+          "Archivo 100 900",
+          "Baloo 2 400 800",
+          "Archivo 100 900"
+        ],
+        "pageErrors": [],
+        "failedRequests": []
+      }
+    },
+    "newsletter": {
+      "route": "/newsletter",
+      "export": "Newsletter.dc.html",
+      "native": {
+        "documentHeight": 3310,
+        "overflowX": false,
+        "canvases": 2,
+        "h1": "Análise da Root Trust em dias úteis.",
+        "fontsLoaded": [
+          "baloo 400 800",
+          "archivo 100 900"
+        ],
+        "pageErrors": []
+      },
+      "exportPage": {
+        "documentHeight": 3273,
+        "overflowX": false,
+        "canvases": 2,
+        "h1": "Análise da Root Trust em dias úteis.",
+        "fontsLoaded": [
+          "Baloo 2 400 800",
+          "Archivo 100 900",
+          "Baloo 2 400 800",
+          "Archivo 100 900"
+        ],
+        "pageErrors": [],
+        "failedRequests": []
+      }
+    },
+    "newsletter-arquivo": {
+      "route": "/newsletter/edicoes",
+      "export": "Newsletter Arquivo.dc.html",
+      "native": {
+        "documentHeight": 2216,
+        "overflowX": false,
+        "canvases": 1,
+        "h1": "Prévias das edições.",
+        "fontsLoaded": [
+          "baloo 400 800",
+          "archivo 100 900"
+        ],
+        "pageErrors": []
+      },
+      "exportPage": {
+        "documentHeight": 1679,
+        "overflowX": false,
+        "canvases": 1,
+        "h1": "Prévias das edições.",
+        "fontsLoaded": [
+          "Baloo 2 400 800",
+          "Archivo 100 900",
+          "Baloo 2 400 800",
+          "Archivo 100 900"
+        ],
+        "pageErrors": [],
+        "failedRequests": []
+      }
+    },
+    "newsletter-previa": {
+      "route": "/newsletter/edicoes/backup-e-recuperacao",
+      "export": "Newsletter Previa.dc.html",
+      "native": {
+        "documentHeight": 1573,
+        "overflowX": false,
+        "canvases": 1,
+        "h1": "Backup concluído: você já testou a recuperação?",
+        "fontsLoaded": [
+          "baloo 400 800",
+          "archivo 100 900"
+        ],
+        "pageErrors": []
+      },
+      "exportPage": {
+        "documentHeight": 1356,
+        "overflowX": false,
+        "canvases": 1,
+        "h1": "Backup concluído: você já testou a recuperação?",
+        "fontsLoaded": [
+          "Baloo 2 400 800",
+          "Archivo 100 900",
+          "Baloo 2 400 800",
+          "Archivo 100 900"
+        ],
+        "pageErrors": [],
+        "failedRequests": []
+      }
+    }
+  }
+}
