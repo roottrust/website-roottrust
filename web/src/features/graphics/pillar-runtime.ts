@@ -48,16 +48,16 @@ function acquireRenderer(onFailure: () => void) {
   };
 }
 
-export function mountPillar(host: HTMLElement, canvas: HTMLCanvasElement, initialKind: PillarKind, interactive: boolean, onFailure: () => void) {
+export function mountPillar(host: HTMLElement, canvas: HTMLCanvasElement, initialKind: PillarKind, interactive: boolean, onFailure: () => void, onFirstFrame?: () => void) {
   const scene = new THREE.Scene(), quadScene = new THREE.Scene();
   let lease: ReturnType<typeof acquireRenderer> | undefined;
   let target: THREE.WebGLRenderTarget | undefined, animation: Animation | undefined;
   let observer: ResizeObserver | undefined, intersection: IntersectionObserver | undefined;
-  let disposed = false;
+  let disposed = false, firstFrame = onFirstFrame;
   let swap: { next: PillarKind; phase: 0 | 1; elapsed: number; queued?: PillarKind } | null = null;
   const dispose = () => {
     if (disposed) return;
-    disposed = true; allowed = false; swap = null; drag.on = false;
+    disposed = true; firstFrame = undefined; allowed = false; swap = null; drag.on = false;
     animation?.dispose(); observer?.disconnect(); intersection?.disconnect();
     canvas.removeEventListener("pointerdown", down); canvas.removeEventListener("pointercancel", up);
     canvas.removeEventListener("lostpointercapture", up); window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up);
@@ -143,6 +143,7 @@ export function mountPillar(host: HTMLElement, canvas: HTMLCanvasElement, initia
         renderer.setRenderTarget(null); renderer.setViewport(0, 0, width, height); renderer.clear(); renderer.render(quadScene, quadCamera);
         if (disposed) return;
         context.clearRect(0, 0, width, height); context.drawImage(source, 0, source.height - height, width, height, 0, 0, width, height);
+        const notify = firstFrame; firstFrame = undefined; notify?.();
       } catch { fail(); }
     });
     size();

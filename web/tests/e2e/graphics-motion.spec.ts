@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 
 /**
  * Instrumentation lives only in the test (addInitScript): it counts 2D draw calls per canvas and,
@@ -49,7 +49,7 @@ async function drawsDuring(page: Page, ms: number) {
     return canvases.map((canvas, index) => {
       const r = canvas.getBoundingClientRect();
       const onScreen = r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth;
-      return { kind: canvas.closest("[data-graphic]")?.getAttribute("data-graphic") ?? (canvas.className.includes("frame") ? "frame" : "home"), onScreen, delta: w.__draws(canvas) - before[index] };
+      return { kind: canvas.closest("[data-graphic]")?.getAttribute("data-graphic") ?? (canvas.className.includes("frame") ? "frame" : "home"), status: canvas.closest("[data-graphic]")?.getAttribute("data-graphic-status") ?? null, onScreen, delta: w.__draws(canvas) - before[index] };
     });
   }, ms);
 }
@@ -70,12 +70,59 @@ async function paintedState(page: Page) {
   }));
 }
 
+const PILLARS = "div[data-graphic]:not([data-graphic=symbol])";
+const pillarArts = (page: Page) => page.locator(PILLARS);
+
+/** Pillars whose box intersects the viewport must all be "ready" (first drawImage done); at least one must exist. */
+async function expectViewportPillarsReady(page: Page) {
+  await expect.poll(() => page.evaluate(selector => {
+    const visible = [...document.querySelectorAll(selector)].filter(el => {
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < innerHeight;
+    });
+    return visible.length > 0 && visible.every(el => el.getAttribute("data-graphic-status") === "ready");
+  }, PILLARS)).toBe(true);
+}
+
+/**
+ * Scrolls every rendered pillar (display:none ones never mount) into view and waits for its terminal status.
+ * "ready" additionally requires the fallback gone and a painted canvas, i.e. a real first frame.
+ */
+async function visitPillars(page: Page, status: "ready" | "failed", scope: Locator = pillarArts(page)) {
+  let visited = 0;
+  for (const art of await scope.all()) {
+    if (!(await art.isVisible())) continue;
+    await art.evaluate(el => el.scrollIntoView({ block: "center" }));
+    await expect(art).toHaveAttribute("data-graphic-status", status);
+    if (status === "ready") {
+      await expect(art.locator('[data-graphic-fallback="true"]')).toHaveCount(0);
+      const painted = await art.locator("canvas").evaluate((canvas: HTMLCanvasElement) => {
+        const data = canvas.getContext("2d")?.getImageData(0, 0, canvas.width, canvas.height).data;
+        for (let i = 3; data && i < data.length; i += 4 * 97) if (data[i] > 0) return true;
+        return false;
+      });
+      expect(painted).toBe(true);
+    }
+    visited++;
+  }
+  expect(visited).toBeGreaterThan(0);
+}
+
+const scrollToPillars = (page: Page) => page.locator('[data-sec="pilares"]').evaluate(el => el.scrollIntoView({ block: "center" }));
+
 async function gotoWithPillars(page: Page) {
   await page.goto("/");
-  await page.locator('[data-sec="pilares"]').scrollIntoViewIfNeeded();
-  await page.locator('[data-sec="pilares"]').evaluate(el => el.scrollIntoView({ block: "center" }));
-  await expect(page.locator('[data-sec="pilares"] [data-graphic-status="ready"]').first()).toBeVisible();
+  await scrollToPillars(page);
+  await expectViewportPillarsReady(page);
   await page.mouse.move(5, 5);
+}
+
+/** Mounts and paints every rendered pillar, then returns to the pillars section so suspension is measured on real, live instances. */
+async function gotoWithAllPillars(page: Page) {
+  await gotoWithPillars(page);
+  await visitPillars(page, "ready");
+  await scrollToPillars(page);
+  await expectViewportPillarsReady(page);
 }
 
 test.describe("graphics motion contract (production build, Chromium)", () => {
@@ -92,7 +139,7 @@ test.describe("graphics motion contract (production build, Chromium)", () => {
   });
 
   test("animates by default and stops drawing when reduced motion turns on after load, then resumes", async ({ page }) => {
-    await gotoWithPillars(page);
+    await gotoWithAllPillars(page);
     const active = await drawsDuring(page, 700);
     expect(onScreen(active).length).toBeGreaterThan(0);
     expect(total(onScreen(active))).toBeGreaterThan(10);
@@ -102,7 +149,7 @@ test.describe("graphics motion contract (production build, Chromium)", () => {
     const reduced = await drawsDuring(page, 700);
     expect(total(reduced)).toBe(0);
     await expect(page.locator('[data-graphic-status="failed"]')).toHaveCount(0);
-    await expect(page.locator('[data-graphic-fallback="true"]:visible')).toHaveCount(0);
+    await expect(pillarArts(page).locator('[data-graphic-fallback="true"]:visible')).toHaveCount(0);
     const frozen = await paintedState(page);
     expect(frozen.length).toBeGreaterThan(0);
     expect(frozen.filter(row => !row.painted)).toEqual([]);
@@ -113,7 +160,7 @@ test.describe("graphics motion contract (production build, Chromium)", () => {
   });
 
   test("global pause freezes drawing and resume restores it", async ({ page }) => {
-    await gotoWithPillars(page);
+    await gotoWithAllPillars(page);
     expect(total(onScreen(await drawsDuring(page, 500)))).toBeGreaterThan(10);
     await page.getByRole("button", { name: "Pausar animações" }).click();
     await page.waitForTimeout(400);
@@ -133,12 +180,13 @@ test.describe("graphics motion contract (production build, Chromium)", () => {
     const before = await glCount();
     await expect(pillars.first()).toHaveAttribute("data-graphic-status", "loading");
     await page.locator('[data-sec="pilares"]').evaluate(el => el.scrollIntoView({ block: "center" }));
-    await expect(page.locator('[data-sec="pilares"] [data-graphic-status="ready"]').first()).toHaveCount(1);
+    await expectViewportPillarsReady(page);
     expect(await glCount()).toBeGreaterThan(before);
+    await visitPillars(page, "ready");
     await page.evaluate(() => scrollTo(0, 0));
     await page.waitForTimeout(500);
     const top = await drawsDuring(page, 700);
-    const pillarsAtTop = top.filter(row => row.kind !== "home" && row.kind !== "frame" && !row.onScreen);
+    const pillarsAtTop = top.filter(row => row.kind !== "home" && row.kind !== "frame" && row.status === "ready" && !row.onScreen);
     expect(pillarsAtTop.length).toBeGreaterThan(0);
     expect(total(pillarsAtTop)).toBe(0);
     expect(total(top.filter(row => row.kind === "home"))).toBeGreaterThan(10);
@@ -152,7 +200,7 @@ test.describe("graphics motion contract (production build, Chromium)", () => {
 
   // Simulation of the contract only: document.hidden is overridden. This is NOT a real background tab.
   test("hidden page (simulated visibility) suspends all drawing and resumes on return", async ({ page }) => {
-    await gotoWithPillars(page);
+    await gotoWithAllPillars(page);
     expect(total(onScreen(await drawsDuring(page, 500)))).toBeGreaterThan(10);
     const setHidden = (hidden: boolean) => page.evaluate(value => {
       Object.defineProperty(document, "hidden", { configurable: true, get: () => value });
@@ -169,7 +217,7 @@ test.describe("graphics motion contract (production build, Chromium)", () => {
 
   // Real browser tab switch. Headless Chromium usually keeps every page visible; skipped (not passed) in that case.
   test("real background tab suspends drawing", async ({ page, context }) => {
-    await gotoWithPillars(page);
+    await gotoWithAllPillars(page);
     expect(total(onScreen(await drawsDuring(page, 500)))).toBeGreaterThan(10);
     const other = await context.newPage();
     await other.goto("about:blank");
@@ -191,8 +239,9 @@ test.describe("graphics fallback contract", () => {
     await page.goto("/");
     await page.locator('[data-sec="pilares"]').evaluate(el => el.scrollIntoView({ block: "center" }));
     const arts = page.locator('[data-sec="pilares"] [data-graphic]');
-    await expect(arts.first()).toHaveAttribute("data-graphic-status", "failed");
+    await visitPillars(page, "failed", pillarArts(page));
     for (const art of await arts.all()) {
+      await art.evaluate(el => el.scrollIntoView({ block: "center" }));
       await expect(art).toHaveAttribute("data-graphic-status", "failed");
       await expect(art.locator('[data-graphic-fallback="true"]')).toBeVisible();
       await expect(art.locator("canvas")).toBeHidden();
@@ -206,11 +255,16 @@ test.describe("graphics fallback contract", () => {
     expect(errors).toEqual([]);
   });
 
-  test("real WebGL context loss falls back for every pillar and never resurrects", async ({ page }) => {
+  // Scope: pillars already mounted (ready) when the shared context is lost. Pillars never mounted before the loss
+  // may legitimately acquire a fresh renderer later, so they are not asserted here.
+  test("real WebGL context loss fails every already-mounted pillar and never resurrects them", async ({ page }) => {
     const errors: string[] = [];
     page.on("pageerror", error => errors.push(error.message));
     await instrument(page);
-    await gotoWithPillars(page);
+    await gotoWithAllPillars(page);
+    const statuses = () => pillarArts(page).evaluateAll(list => list.map(el => el.getAttribute("data-graphic-status")));
+    const mounted = (await statuses()).flatMap((status, index) => (status === "ready" ? [index] : []));
+    expect(mounted.length).toBeGreaterThan(0);
     const lost = await page.evaluate(() => {
       const contexts = (window as unknown as { __gl: WebGLRenderingContext[] }).__gl;
       const extension = contexts.map(gl => gl.getExtension("WEBGL_lose_context")).find(Boolean);
@@ -218,14 +272,13 @@ test.describe("graphics fallback contract", () => {
       return { contexts: contexts.length, hadExtension: Boolean(extension) };
     });
     expect(lost.hadExtension).toBe(true);
-    const arts = page.locator("[data-graphic]:not([data-graphic=symbol])");
-    await expect.poll(async () => {
-      const statuses = await arts.evaluateAll(list => list.map(el => el.getAttribute("data-graphic-status")));
-      return statuses.includes("failed") && !statuses.includes("ready");
-    }).toBe(true);
-    const shown = page.locator("[data-graphic]:not([data-graphic=symbol]):visible");
-    expect(await shown.count()).toBeGreaterThan(0);
-    for (const art of await shown.all()) await expect(art.locator('[data-graphic-fallback="true"]')).toBeVisible();
+    const mountedAllFailed = async () => { const now = await statuses(); return mounted.every(index => now[index] === "failed"); };
+    await expect.poll(mountedAllFailed).toBe(true);
+    for (const index of mounted) {
+      const art = pillarArts(page).nth(index);
+      await art.evaluate(el => el.scrollIntoView({ block: "center" }));
+      await expect(art.locator('[data-graphic-fallback="true"]')).toBeVisible();
+    }
     const afterLoss = await drawsDuring(page, 600);
     expect(total(afterLoss.filter(row => row.kind !== "home" && row.kind !== "frame" && row.kind !== "symbol"))).toBe(0);
     await page.emulateMedia({ reducedMotion: "reduce" });
@@ -233,7 +286,7 @@ test.describe("graphics fallback contract", () => {
     await page.getByRole("button", { name: "Pausar animações" }).click();
     await page.getByRole("button", { name: "Retomar animações" }).click();
     await page.waitForTimeout(400);
-    expect(await arts.evaluateAll(list => list.map(el => el.getAttribute("data-graphic-status")))).not.toContain("ready");
+    expect(await mountedAllFailed()).toBe(true);
     expect(errors).toEqual([]);
   });
 
@@ -241,7 +294,7 @@ test.describe("graphics fallback contract", () => {
   test("canvas contextlost on the Home canvas shows the approved fallback (simulated event)", async ({ page }) => {
     await instrument(page);
     await page.goto("/");
-    await expect(page.locator('[data-graphic-fallback="true"]:visible')).toHaveCount(0, { timeout: 10000 });
+    await expect(page.locator('main > img[data-graphic-fallback="true"]')).toHaveCount(0, { timeout: 10000 });
     await page.evaluate(() => document.querySelector<HTMLCanvasElement>("main > canvas")?.dispatchEvent(new Event("contextlost")));
     await expect(page.locator('main > img[data-graphic-fallback="true"]')).toBeVisible();
     await expect(visibleCanvases(page).first()).toBeAttached();

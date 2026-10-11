@@ -25,9 +25,8 @@ export function PillarArt({ kind, className = "", interactive = true, style }: {
     const load = () => {
       import("./pillar-runtime").then(({ mountPillar }) => {
         if (cancelled || !host.current || !canvas.current) return;
-        instance.current = mountPillar(host.current, canvas.current, latest.current.kind, interactive, () => { if (!cancelled) setStatus("failed"); });
+        instance.current = mountPillar(host.current, canvas.current, latest.current.kind, interactive, () => { if (!cancelled) setStatus("failed"); }, () => { if (!cancelled) setStatus("ready"); });
         instance.current.setGate(latest.current);
-        setStatus("ready");
       }).catch(() => { if (!cancelled) setStatus("failed"); });
     };
     let observer: IntersectionObserver | null = null;
