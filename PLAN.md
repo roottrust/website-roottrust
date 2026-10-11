@@ -180,8 +180,8 @@ Novos asserts devem provar regressões reais: movimento intermediário/endereço
 |---|---|---|---|
 | Pesquisa e entrevista | GPT/usuário | Concluído | Fontes/código acima; largura Opção1 confirmada. |
 | Crítica deste plano | Sonnet5.5 readonly | Concluído com ajustes | Sessão00b6b993-cc46-4696-8187-5b2960ae9004 succeeded45s; cinco grupos de sugestões avaliados/incorporados. |
-| P7.1 Header/scroll | Sonnet | Em execução | Baseline comparada pelo GPT; escrita após checkpoint. |
-| P7.2 Aviso/select | Sonnet | Aguardando aprovação | P7.1. |
+| P7.1 Header/scroll | Sonnet | Concluído | Gates69932 lint/types/101unit/build/266E2E6skip; revisão independente aprovada. |
+| P7.2 Aviso/select | Sonnet | Em execução | P7.1 concluído; checkpoint antes da escrita. |
 | P7.3 Newsletter | Sonnet | Aguardando aprovação | P7.2. |
 | P8.1 E2E | Sonnet | Aguardando aprovação | P7. |
 | P8.2 Diagnóstico LCP | GPT + Sonnet consulta | Aguardando aprovação | P8.1. |
@@ -749,3 +749,7 @@ P7.1 gates11036 exit1 no lint: react-hooks/refs na factory onLink; demais gates 
 P7.1 correção checkpoint: f716c1ddf86d2b335fd64f26f9e6626172c7f528. Sem segredos; next-env.d.ts excluído do índice.
 P7.1 correção mesma sessão succeeded72s: handlers sem factory, pending limitado a origem/hash, popstate/hashchange cancelam, animatedfalse finaliza destino, testes lifecycle/foco/hash/início/cancelamento. Sem gates próprios. GPT nova rodada.
 P7.1 gates14381: lint/types/101unit/build passou; E2E263pass/6skip/3falhas novas assertions: SSR buscou ausência /#newsletter em HTML inteiro incluindo footer foraescopo; foco desktop procurou menu hidden. Funcionalidade scroll/crossroute/reduced/pausa/history passou nos demais cenários. Correção testes somente, sem código produto. Revisão followup00bbf98f succeeded26s aprovou comlimites.
+P7.1 testes checkpoint: dea5cba9983a780848b3f921c9b53200c1fd7e5c. Sem segredos; gerado next-env excluído.
+P7.1 testes followup succeeded26s somente SSRheader e assertmenucondicional. GPT roda gates finais lote.
+
+P7.1 concluído: exec69932 exit0 lint/typecheck/101unit/build/266E2E6skips. Logp7-1-final-gates.log. Skips:4anteriores mais2modificadoresdesktop inaplicáveis no mobile, não falhas mascaradas. Revisão00bbf98f follow26s aprovada. Testescrossroute/reduced/pausa/foco/history/cancelamento passaram.

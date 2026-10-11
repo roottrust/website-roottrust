@@ -53,7 +53,8 @@ async function openHome(page: Page) {
 }
 
 test("header links: Newsletter points to /newsletter, anchors stay real hrefs (SSR, no JS)", async ({ request }) => {
-  const html = await (await request.get("/")).text();
+  const page = await (await request.get("/")).text();
+  const html = /<header[\s\S]*?<\/header>/.exec(page)?.[0] ?? "";
   expect(html).toContain('href="/newsletter"');
   for (const { id } of ANCHORS) expect(html).toContain(`href="/#${id}"`);
   expect(html).not.toContain('href="/#newsletter"');
@@ -179,14 +180,15 @@ test("keyboard activation moves focus to the destination", async ({ page }) => {
   await openHome(page);
   await startProbe(page);
   const toggle = page.getByRole("button", { name: "Abrir menu" });
-  if (await toggle.isVisible()) await toggle.click();
+  const mobile = await toggle.isVisible();
+  if (mobile) await toggle.click();
   const link = page.locator("header").getByRole("link", { name: "Ferramentas", exact: true });
   await link.focus();
   await page.keyboard.press("Enter");
   await settled(page);
   await expect(page.locator("#ferramentas")).toBeFocused();
   await expectAtAnchor(page, "ferramentas");
-  await expect(page.getByRole("button", { name: "Abrir menu" })).toHaveAttribute("aria-expanded", "false");
+  if (mobile) await expect(page.getByRole("button", { name: "Abrir menu" })).toHaveAttribute("aria-expanded", "false");
 });
 
 test("wheel input interrupts the animation", async ({ page }) => {
