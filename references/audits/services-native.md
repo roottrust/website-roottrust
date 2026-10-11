@@ -39,3 +39,16 @@ Data: 2026-10-10. Checkpoint: `b69a452`. Executor: `claude-agent` (Sonnet), sess
 - O CTA do Header global aponta para `/#contato` (Home), conforme permitido.
 - Acessibilidade e desempenho não certificados; Lighthouse não medido.
 - Ferramentas/newsletter não iniciadas.
+
+## Correção de fidelidade visual (P4.1, checkpoint `dd40645`)
+
+Executor: `claude-agent` (Sonnet), sessão headless. Testes, build e servidores NÃO executados por decisão do usuário; gates ficam com o GPT.
+
+- `ServicePage.tsx` / `services.module.css` reescritos contra os 3 `Servico *.dc.html`: hero com trilha “Home › rótulo”, eyebrow, H1 `clamp(34px,4.2vw,58px)`, nota “Conversa inicial gratuita de qualificação…” e seta no CTA; situações como lista numerada aberta (01–04, borda pontilhada, sem cards); frentes em grade 2×2 com número, pílula “Destaque · Pentest” (link para `#pentest`), “Exemplo de entrega” com √; painel Pentest em duas colunas; método com régua √, “01 Etapa”, fecho e pílula de nota; FAQ em duas colunas (eyebrow “FAQ”, título “Perguntas frequentes.” à esquerda, perguntas pontilhadas com ícone + à direita); CTA com eyebrow “Solicitar diagnóstico” e título com acento em bloco.
+- Corrigido bug de CSS: `.section` zerava o padding lateral de `.wrap` (agora `padding-block`/`padding-inline`).
+- Eyebrows e FAQ passam a usar a copy do export (“Quando ajuda”, “FAQ”, “Perguntas frequentes.”); removidos “Quando faz sentido”, “Próximo passo” e “Antes de conversar.”, que não existiam no export.
+- `content.ts`: somente quebras de título (frentes Infra/Software e CTA Infra) alinhadas ao export; nenhum texto contratual alterado.
+- Preservados fora do export, por contrato S01–S16: “Capacidades complementares” (Gestão de vulnerabilidades, Red Team, Apoio a normas e compliance) na coluna direita do painel Pentest; `FrameCanvas`, `SymbolAscii`, `PillarArt`, `ContactForm`, `data-frame-cut`, `data-band`, ids `#situacoes`, `#frentes`, `#como`, `#faq`, `#contato`.
+- `services.spec.ts`: novo teste desktop (1440px) de 2 colunas nas frentes, 4 situações numeradas e título do FAQ à esquerda das perguntas.
+
+Limites: sem execução de testes/build nem comparação visual; ícone do FAQ é “+” fixo como no export (sem troca para “−” ao abrir); sem aprovação visual humana.

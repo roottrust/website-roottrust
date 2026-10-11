@@ -38,7 +38,7 @@
       "route": "/servicos/ciberseguranca",
       "export": "Servico Ciberseguranca.dc.html",
       "native": {
-        "documentHeight": 7594,
+        "documentHeight": 8353,
         "overflowX": false,
         "canvases": 3,
         "h1": "Pentest e cibersegurança para a sua operação.",
@@ -69,7 +69,7 @@
       "route": "/servicos/infraestrutura-em-nuvem",
       "export": "Servico Infraestrutura em nuvem.dc.html",
       "native": {
-        "documentHeight": 6865,
+        "documentHeight": 7959,
         "overflowX": false,
         "canvases": 3,
         "h1": "Continuidade e custos sob controle na sua infraestrutura.",
@@ -98,7 +98,7 @@
       "route": "/servicos/desenvolvimento-de-software",
       "export": "Servico Software.dc.html",
       "native": {
-        "documentHeight": 6955,
+        "documentHeight": 7941,
         "overflowX": false,
         "canvases": 3,
         "h1": "Software sob medida para conectar e evoluir sua operação.",
@@ -127,7 +127,7 @@
       "route": "/ferramentas/rosi",
       "export": "Ferramenta ROSI.dc.html",
       "native": {
-        "documentHeight": 5200,
+        "documentHeight": 5066,
         "overflowX": false,
         "canvases": 3,
         "h1": "Explore o retorno de uma proteção adicional.",
@@ -156,7 +156,7 @@
       "route": "/ferramentas/shadow-ai",
       "export": "Ferramenta Shadow AI.dc.html",
       "native": {
-        "documentHeight": 4451,
+        "documentHeight": 4317,
         "overflowX": false,
         "canvases": 3,
         "h1": "Organize a governança do uso de IA.",
@@ -185,7 +185,7 @@
       "route": "/ferramentas/divida-tecnica",
       "export": "Ferramenta Divida tecnica.dc.html",
       "native": {
-        "documentHeight": 4556,
+        "documentHeight": 4379,
         "overflowX": false,
         "canvases": 3,
         "h1": "Estime o custo do tempo atribuído à dívida técnica.",
@@ -214,7 +214,7 @@
       "route": "/ferramentas/migracao-para-nuvem",
       "export": "Ferramenta Migracao para nuvem.dc.html",
       "native": {
-        "documentHeight": 4541,
+        "documentHeight": 4449,
         "overflowX": false,
         "canvases": 3,
         "h1": "Compare os custos de manter ou migrar.",

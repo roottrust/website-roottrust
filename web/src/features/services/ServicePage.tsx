@@ -7,21 +7,36 @@ import type { FormMode } from "@/lib/forms";
 import { stageNote, stages, type ServiceContent } from "./content";
 import styles from "./services.module.css";
 
-function Eyebrow({ children }: { children: string }) {
+function Eyebrow({ children, accentRule = false }: { children: string; accentRule?: boolean }) {
   return (
     <div className={styles.eyebrowRow}>
       <span className={styles.eyebrow}>{children}</span>
-      <span className={styles.eyebrowRule} />
+      <span aria-hidden="true" className={accentRule ? styles.eyebrowRuleAccent : styles.eyebrowRule} />
     </div>
   );
 }
 
-function Title({ lines, id, as: Tag = "h2" }: { lines: readonly [string, string]; id?: string; as?: "h1" | "h2" }) {
+function Title({ lines, id, variant = "h2" }: { lines: readonly [string, string]; id: string; variant?: "h1" | "h2" | "cta" }) {
+  const Tag = variant === "h1" ? "h1" : "h2";
+  const accent = variant === "cta" ? styles.accentBlock : styles.accent;
   return (
-    <Tag id={id} className={Tag === "h1" ? styles.h1 : styles.title}>
-      {lines[0]} <span className={styles.accent}>{lines[1]}</span>
+    <Tag id={id} className={variant === "cta" ? styles.ctaTitle : styles[variant]}>
+      {lines[0]} <span className={accent}>{lines[1]}</span>
     </Tag>
   );
+}
+
+function Pill({ children }: { children: string }) {
+  return (
+    <p className={styles.pill}>
+      <span aria-hidden="true" className={styles.pillDot} />
+      {children}
+    </p>
+  );
+}
+
+function Check() {
+  return <span aria-hidden="true" className={styles.check}>√</span>;
 }
 
 export function ServicePage({ service, mode }: { service: ServiceContent; mode: FormMode }) {
@@ -30,147 +45,190 @@ export function ServicePage({ service, mode }: { service: ServiceContent; mode: 
     <main id="conteudo" data-graphics-root className={styles.root}>
       <FrameCanvas />
       <section className={`${styles.wrap} ${styles.hero}`} aria-labelledby="titulo">
+        <div className={`${styles.inner} ${styles.heroGrid}`}>
+          <div className={styles.heroText}>
+            <nav aria-label="Trilha de navegação" className={styles.crumbs}>
+              <Link href="/">Home</Link>
+              <span aria-hidden="true">›</span>
+              <span aria-current="page">{service.label}</span>
+            </nav>
+            <Eyebrow>{service.label}</Eyebrow>
+            <Title lines={service.h1} id="titulo" variant="h1" />
+            <p className={styles.lead}>{service.intro}</p>
+            <div className={styles.actions}>
+              <a className={styles.cta} href="#contato">
+                Solicitar diagnóstico
+                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+              </a>
+              <span className={styles.actionNote}>Conversa inicial gratuita de qualificação. Retorno por ligação ou WhatsApp no próximo dia útil.</span>
+            </div>
+          </div>
+          <div className={styles.art}>
+            <PillarArt kind={service.kind} />
+          </div>
+        </div>
+      </section>
+
+      <section id="situacoes" data-frame-cut="1" className={`${styles.wrap} ${styles.section}`} aria-labelledby="situacoes-titulo">
         <div className={styles.inner}>
-          <nav aria-label="Trilha de navegação">
-            <ol className={styles.crumbs}>
-              <li><Link href="/">Início</Link></li>
-              <li><Link href="/#servicos">Serviços</Link></li>
-              <li aria-current="page">{service.label}</li>
+          <div className={styles.stack48}>
+            <Eyebrow>Quando ajuda</Eyebrow>
+            <Title lines={service.situationsTitle} id="situacoes-titulo" />
+            <ol className={styles.situations}>
+              {service.situations.map((item, index) => (
+                <li key={item.title}>
+                  <span aria-hidden="true" className={styles.situationNumber}>{String(index + 1).padStart(2, "0")}</span>
+                  <h3>{item.title}</h3>
+                  <p>{item.text}</p>
+                </li>
+              ))}
             </ol>
-          </nav>
-          <div className={styles.heroGrid}>
-            <div>
-              <Eyebrow>{service.label}</Eyebrow>
-              <Title lines={service.h1} id="titulo" as="h1" />
-              <p className={styles.lead}>{service.intro}</p>
-              <div className={styles.actions}>
-                <a className={styles.cta} href="#contato">Solicitar diagnóstico</a>
+          </div>
+        </div>
+      </section>
+
+      <section id="frentes" data-frame-cut="1" className={`${styles.wrap} ${styles.section}`} aria-labelledby="frentes-titulo">
+        <div className={styles.inner}>
+          <div className={styles.stack40}>
+            <Eyebrow>Frentes de atuação</Eyebrow>
+            <Title lines={service.frentesTitle} id="frentes-titulo" />
+            <ul className={styles.frentes}>
+              {service.frentes.map((frente, index) => (
+                <li key={frente.title} className={styles.frente}>
+                  <div className={styles.frenteTop}>
+                    <span aria-hidden="true" className={styles.frenteNumber}>{String(index + 1).padStart(2, "0")}</span>
+                    {frente.badge && detail ? <a className={styles.badge} href={`#${detail.id}`}>{frente.badge}</a> : null}
+                  </div>
+                  <h3>{frente.title}</h3>
+                  <p>{frente.text}</p>
+                  {frente.lines ? (
+                    <ul className={styles.lines}>
+                      {frente.lines.map((line) => <li key={line}>{line}</li>)}
+                    </ul>
+                  ) : null}
+                  {frente.deliveries ? (
+                    <div className={styles.deliveries}>
+                      <span className={styles.label}>Exemplo de entrega</span>
+                      <ul>
+                        {frente.deliveries.map((delivery) => <li key={delivery}><Check />{delivery}</li>)}
+                      </ul>
+                    </div>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {detail ? (
+            <div id={detail.id} className={styles.panel}>
+              <div className={styles.panelMain}>
+                <Eyebrow accentRule>{detail.label}</Eyebrow>
+                <h3>{detail.title}</h3>
+                <p>{detail.text}</p>
+              </div>
+              <div className={styles.panelSide}>
+                <div className={styles.panelBlock}>
+                  <h4 className={styles.label}>{detail.listLabel}</h4>
+                  <ol className={styles.panelList}>
+                    {detail.items.map((item, index) => (
+                      <li key={item}>
+                        <span aria-hidden="true" className={styles.panelNumber}>{String(index + 1).padStart(2, "0")}</span>
+                        {item}
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+                {detail.complements ? (
+                  <div className={styles.panelBlock}>
+                    <h4 className={styles.label}>{detail.complementLabel}</h4>
+                    <ul className={styles.complements}>
+                      {detail.complements.map((item) => (
+                        <li key={item.title}><strong>{item.title}.</strong> {item.text}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+                <div className={styles.panelNotes}>
+                  {detail.notes.map((note) => (
+                    <p key={note.text} className={note.muted ? styles.muted : undefined}>{note.text}</p>
+                  ))}
+                </div>
               </div>
             </div>
-            <div className={styles.art}>
-              <PillarArt kind={service.kind} />
+          ) : null}
+
+          {service.concepts ? (
+            <div className={styles.concepts}>
+              {service.concepts.map((concept) => (
+                <dl key={concept.term}>
+                  <dt>{concept.term}</dt>
+                  <dd>{concept.text}</dd>
+                </dl>
+              ))}
+              {service.conceptsNote ? <p className={styles.conceptsNote}>{service.conceptsNote}</p> : null}
+            </div>
+          ) : null}
+          {service.frentesNote ? <div className={styles.noteRow}><Pill>{service.frentesNote}</Pill></div> : null}
+        </div>
+      </section>
+
+      <section id="como" data-frame-cut="1" className={`${styles.wrap} ${styles.section}`} aria-labelledby="metodo">
+        <div className={styles.inner}>
+          <div className={styles.stack48}>
+            <Eyebrow>Como trabalhamos</Eyebrow>
+            <Title lines={service.methodTitle} id="metodo" />
+            <ol className={styles.steps}>
+              {service.steps.map((step, index) => (
+                <li key={step}>
+                  <div aria-hidden="true" className={styles.stepRule}>
+                    <span>√</span>
+                    <span />
+                  </div>
+                  <h3>
+                    <span aria-hidden="true" className={styles.stepNumber}>{String(index + 1).padStart(2, "0")}</span>
+                    {stages[index]}
+                  </h3>
+                  <p>{step}</p>
+                </li>
+              ))}
+            </ol>
+            <div className={styles.closingBlock}>
+              <p className={styles.closing}>{service.closing}</p>
+              <Pill>{stageNote}</Pill>
             </div>
           </div>
         </div>
       </section>
 
-      <section data-frame-cut="1" className={`${styles.wrap} ${styles.section}`} aria-labelledby="situacoes">
+      <section id="faq" data-frame-cut="1" className={`${styles.wrap} ${styles.section}`} aria-labelledby="faq-titulo">
         <div className={styles.inner}>
-          <Eyebrow>Quando faz sentido</Eyebrow>
-          <Title lines={service.situationsTitle} id="situacoes" />
-          <ul className={styles.cards}>
-            {service.situations.map((item) => (
-              <li key={item.title} className={styles.card}>
-                <h3>{item.title}</h3>
-                <p>{item.text}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      <section data-frame-cut="1" className={`${styles.wrap} ${styles.section}`} aria-labelledby="frentes">
-        <div className={styles.inner}>
-          <Eyebrow>Frentes de atuação</Eyebrow>
-          <Title lines={service.frentesTitle} id="frentes" />
-          <ul className={styles.cards}>
-            {service.frentes.map((frente) => (
-              <li key={frente.title} className={styles.card}>
-                {frente.badge ? <span className={styles.badge}>{frente.badge}</span> : null}
-                <h3>{frente.title}</h3>
-                <p>{frente.text}</p>
-                {frente.lines ? (
-                  <ul className={styles.list}>
-                    {frente.lines.map((line) => <li key={line}>{line}</li>)}
-                  </ul>
-                ) : null}
-                {frente.deliveries ? (
-                  <ul className={styles.list} aria-label={`Entregas de ${frente.title}`}>
-                    {frente.deliveries.map((delivery) => <li key={delivery}>{delivery}</li>)}
-                  </ul>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-          {service.concepts ? (
-            <>
-              <dl className={styles.concepts}>
-                {service.concepts.map((concept) => (
-                  <div key={concept.term}>
-                    <dt>{concept.term}</dt>
-                    <dd>{concept.text}</dd>
-                  </div>
-                ))}
-              </dl>
-              {service.conceptsNote ? <p className={styles.note}>{service.conceptsNote}</p> : null}
-            </>
-          ) : null}
-          {service.frentesNote ? <p className={styles.note}>{service.frentesNote}</p> : null}
-
-          {detail ? (
-            <div id={detail.id} className={styles.panel}>
-              <span className={styles.badge}>{detail.label}</span>
-              <h3>{detail.title}</h3>
-              <p>{detail.text}</p>
-              <h4>{detail.listLabel}</h4>
-              <ul>{detail.items.map((item) => <li key={item}>{item}</li>)}</ul>
-              {detail.complements ? (
-                <>
-                  <h4>{detail.complementLabel}</h4>
-                  <ul>
-                    {detail.complements.map((item) => (
-                      <li key={item.title}><strong>{item.title}.</strong> {item.text}</li>
-                    ))}
-                  </ul>
-                </>
-              ) : null}
-              {detail.notes.map((note) => (
-                <p key={note.text} className={note.muted ? styles.muted : undefined}>{note.text}</p>
+          <div className={styles.faqGrid}>
+            <div className={styles.faqHead}>
+              <Eyebrow>FAQ</Eyebrow>
+              <Title lines={["Perguntas", "frequentes."]} id="faq-titulo" />
+            </div>
+            <div className={styles.faq}>
+              {service.faq.map((item) => (
+                <details key={item.q}>
+                  <summary>
+                    {item.q}
+                    <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 5v14" /><path d="M5 12h14" /></svg>
+                  </summary>
+                  <p>{item.a}</p>
+                </details>
               ))}
             </div>
-          ) : null}
-        </div>
-      </section>
-
-      <section data-frame-cut="1" className={`${styles.wrap} ${styles.section}`} aria-labelledby="metodo">
-        <div className={styles.inner}>
-          <Eyebrow>Como trabalhamos</Eyebrow>
-          <Title lines={service.methodTitle} id="metodo" />
-          <ol className={styles.steps}>
-            {service.steps.map((step, index) => (
-              <li key={step} className={styles.step}>
-                <span className={styles.stage}>{stages[index]}</span>
-                <p>{step}</p>
-              </li>
-            ))}
-          </ol>
-          <p className={styles.note}>{stageNote}</p>
-          <p className={styles.closing}>{service.closing}</p>
-        </div>
-      </section>
-
-      <section data-frame-cut="1" className={`${styles.wrap} ${styles.section}`} aria-labelledby="faq">
-        <div className={styles.inner}>
-          <Eyebrow>Perguntas frequentes</Eyebrow>
-          <h2 id="faq" className={styles.title}>Antes de conversar.</h2>
-          <div className={styles.faq}>
-            {service.faq.map((item) => (
-              <details key={item.q}>
-                <summary>{item.q}</summary>
-                <p>{item.a}</p>
-              </details>
-            ))}
           </div>
         </div>
       </section>
 
       <div data-band="cta" className={styles.band}>
         <section id="contato" className={`${styles.wrap} ${styles.contactSection}`} aria-labelledby="contato-titulo">
-          <div className={styles.inner}>
-            <Eyebrow>Próximo passo</Eyebrow>
+          <div className={`${styles.inner} ${styles.contactStack}`}>
+            <Eyebrow accentRule>Solicitar diagnóstico</Eyebrow>
             <div className={styles.contactColumns}>
-              <div>
-                <Title lines={service.ctaTitle} id="contato-titulo" />
+              <div className={styles.contactMain}>
+                <Title lines={service.ctaTitle} id="contato-titulo" variant="cta" />
                 <p className={styles.contactText}>{service.ctaText}</p>
                 <ContactForm mode={mode} variant="home" />
               </div>

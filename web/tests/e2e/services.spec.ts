@@ -52,6 +52,24 @@ for (const route of routes) {
   });
 }
 
+test.describe("service layout fidelity (desktop)", () => {
+  for (const route of routes) {
+    test(`${route.path}: frentes 2 columns, numbered situations, FAQ title beside questions`, async ({ page }) => {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.goto(route.path);
+      const columns = (selector: string) => page.locator(selector).first().evaluate((el) => getComputedStyle(el).gridTemplateColumns.split(" ").length);
+      expect(await columns("#frentes ul")).toBe(2);
+      expect(await columns("#situacoes ol")).toBe(4);
+      await expect(page.locator("#situacoes ol > li")).toHaveCount(4);
+      await expect(page.locator("#situacoes ol > li").first()).toContainText("01");
+      await expect(page.locator("#faq h2")).toContainText("Perguntas frequentes.");
+      const title = await page.locator("#faq h2").boundingBox();
+      const first = await page.locator("#faq summary").first().boundingBox();
+      expect(title && first && title.x + title.width <= first.x).toBe(true);
+    });
+  }
+});
+
 test("default mode never claims successful receipt", async ({ page }) => {
   await page.goto("http://127.0.0.1:3101/servicos/ciberseguranca");
   const form = page.getByRole("form", { name: "Solicitar diagnóstico" });

@@ -134,7 +134,7 @@ export const services: readonly ServiceContent[] = [
       { title: "Recuperação pouco clara", text: "Verificar como backups, procedimentos e testes apoiam a retomada do trabalho." },
       { title: "Gastos difíceis de explicar", text: "Relacionar consumo e capacidade ao que a operação realmente utiliza." },
     ],
-    frentesTitle: ["Arquitetura, operação", "e custos considerados em conjunto."],
+    frentesTitle: ["Arquitetura, operação e custos", "considerados em conjunto."],
     frentes: [
       { title: "Arquitetura e migração", text: "Entendemos dependências e requisitos para planejar a arquitetura e, quando fizer sentido, a migração. A atuação contempla ambientes locais, em nuvem, híbridos e redes corporativas.", deliveries: ["Arquitetura documentada"] },
       { title: "Ambientes escaláveis", text: "Relacionamos capacidade à demanda e às condições da solução, considerando desempenho e continuidade. Monitoramento e suporte acompanham os ambientes conforme contrato.", deliveries: ["Ambientes e redes configurados"] },
@@ -160,7 +160,7 @@ export const services: readonly ServiceContent[] = [
       { q: "O trabalho inclui backup e teste de recuperação?", a: "Esses são exemplos de entrega disponíveis conforme escopo e contrato. A rotina e os testes precisam corresponder às necessidades acordadas." },
       { q: "Qual é a disponibilidade e a cobertura de suporte?", a: "Disponibilidade, suporte e condições de atendimento são definidos no contrato. Monitoramento automático 24×7, quando contratado, não implica equipe humana disponível 24×7." },
     ],
-    ctaTitle: ["Vamos conversar", "sobre a base da sua operação."],
+    ctaTitle: ["Vamos conversar sobre", "a base da sua operação."],
     ctaText:
       "Uma conversa inicial gratuita para entender seus ambientes, suas prioridades de continuidade e seus desafios de custos. Retorno por ligação ou WhatsApp no próximo dia útil.",
   },
@@ -181,7 +181,7 @@ export const services: readonly ServiceContent[] = [
       { title: "Processos repetitivos consomem atenção", text: "Avaliar automações que apoiem o trabalho da equipe." },
       { title: "A base existente limita a evolução", text: "Revisar código, dependências e necessidades de modernização." },
     ],
-    frentesTitle: ["Construir, conectar", "e evoluir com contexto."],
+    frentesTitle: ["Construir, conectar e evoluir", "com contexto."],
     frentes: [
       { title: "Sistemas sob medida", text: "Desenvolvemos aplicações web e mobile alinhadas aos processos e necessidades definidos no projeto.", deliveries: ["Aplicações web/mobile funcionais", "Testes"] },
       { title: "Integrações entre ferramentas", text: "Conectamos sistemas e informações para apoiar o fluxo da operação e as dependências entre soluções.", deliveries: ["Integrações implementadas"] },
