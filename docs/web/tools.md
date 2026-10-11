@@ -1,17 +1,23 @@
 # Contrato das ferramentas Root Trust
 
-**Atualizado:** 10/10/2026. F01–F29 definem o escopo aprovado das quatro ferramentas. Seus exports aprovados estão em `references/claude-design/` e foram avaliados na auditoria de 09/10; os cálculos ainda exigem revisão técnica antes da publicação. Propostas neste contrato devem ser comparadas com o export aprovado. Entrada: [README](README.md); newsletter: [newsletter.md](newsletter.md).
+**Atualizado:** 11/10/2026. F01–F29 definem o escopo aprovado das quatro ferramentas. Seus exports aprovados estão em `references/claude-design/` e foram avaliados na auditoria de 09/10; os modelos locais foram implementados, testados e revisados; a publicação futura exige nova revisão de fontes, patches e operação. Propostas neste contrato devem ser comparadas com o export aprovado. Entrada: [README](README.md); newsletter: [newsletter.md](newsletter.md).
 
 ## Resumo para começar
 
-As quatro páginas exportadas (ROSI, Shadow AI, Dívida técnica e Migração para nuvem) serão portadas e revisadas contra este contrato. Cada uma tem formulário/checklist curto e resultado compacto na mesma página. Não há wizard obrigatório, gráficos, score de risco, comparação automática de propostas ou personalização do relatório.
+As quatro páginas (ROSI, Shadow AI, Dívida técnica e Migração para nuvem) foram portadas para Next e revisadas contra este contrato. Cada uma tem formulário/checklist curto e resultado compacto na mesma página. Não há wizard obrigatório, gráficos analíticos, score de risco, comparação automática de propostas ou personalização do relatório.
 
 Este documento é o contrato de escopo, modelos, limites, estados e exemplos reproduzíveis para a portabilidade e revisão das ferramentas.
+
+## Implementação e limites verificados
+
+Modelos TS puros cobertos por 69 testes de modelos, dentro dos 101 unitários totais. Cálculo somente no navegador; edição invalida resultado e respostas não são associadas ao relatório. A aritmética usa IEEE 754, com tratamento de cancelamento limitado a quatro EPSILON; não é contabilidade decimal exata nem garantia de precisão universal. Fixtures incluem valores subcentavo e diferenças de 1 em 10¹⁵.
+
+Adaptações funcionais preservadas: seletor de cenário, campos desconhecidos/personalizados e ajudas explícitas; rótulos com “—” antes do cálculo, sem valores fictícios; Shadow AI sem score. Método em acordeão, resultado sem fixação e exemplo fictício abaixo do resultado podem alterar altura/posição em relação ao export. Objetos 3D são decorativos. [QA e limitações](../../references/audits/final-qa.md).
 
 ## Fontes e precedência
 
 1. Respostas explícitas da entrevista F01–F29 registradas neste documento; decisões posteriores substituem as anteriores no mesmo assunto.
-2. [Home.dc.html](../../references/claude-design/Home.dc.html) e [design](design.md) como referência visual: as ferramentas herdam sua linguagem com efeitos contidos, conforme F01. Composições internas propostas serão avaliadas no protótipo.
+2. [Home.dc.html](../../references/claude-design/Home.dc.html) e [design](design.md) como referência visual: as ferramentas herdam sua linguagem com efeitos contidos, conforme F01. Os quatro exports aprovados orientam as composições internas atuais.
 3. [Marca](../design/README.md), [conteúdo](product.md) e [jornadas](product.md) para contexto compartilhado.
 4. [DC das ferramentas](<../../temp/Ferramentas/Root Trust - Ferramentas Interativas.dc.html>) e [briefing histórico](../../temp/Ferramentas/uploads/root-trust-ferramentas-interativas.md) como inspiração não aprovada.
 
@@ -350,3 +356,7 @@ Também conferir percentuais 0/100, valor negativo, campo vazio, excesso numéri
 
 
 
+
+### Rechecagem documental final — 11/10/2026
+
+Rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.

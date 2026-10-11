@@ -1,6 +1,6 @@
 # Design do website
 
-**Atualizado:** 10/10/2026. Os 12 exports aprovados foram movidos intactos para `references/claude-design/` e auditados em 09/10. Eles continuam como referência de visual e conteúdo durante a portabilidade; corrigir as lacunas técnicas sem redesenho. Fonte da Home: [Home.dc.html](../../references/claude-design/Home.dc.html), com moldura/laterais. [Auditoria](../../references/audits/home-export-audit.md) registra execução e lacunas. Produto e decisões estão em [product.md](product.md).
+**Atualizado:** 11/10/2026. Os 12 exports aprovados foram movidos intactos para `references/claude-design/` e auditados em 09/10. Eles continuam como referência de visual e conteúdo durante a portabilidade; corrigir as lacunas técnicas sem redesenho. Fonte da Home: [Home.dc.html](../../references/claude-design/Home.dc.html), com moldura/laterais. [Auditoria](../../references/audits/home-export-audit.md) registra execução e lacunas. Produto e decisões estão em [product.md](product.md).
 
 ## 1. Autoridade e adaptações aprovadas
 
@@ -13,7 +13,7 @@ O [manual](../design/brand-design.md) permanece fonte oficial da marca. A aprova
 - Cadeado ilustrativo no princípio Presença, além dos objetos técnicos próprios.
 - Representações decorativas ASCII. Assinaturas institucionais continuam SVGs prontos; efeitos não comprovam uma checagem real.
 
-Não generalizar adaptações para internas sem decisão. F01 autoriza ferramentas; **N02 autoriza as três páginas de newsletter** e **S02 autoriza as três páginas de serviços** a herdarem a linguagem da Home com efeitos contidos. Isso não reescreve o manual; composições específicas das internas permanecem propostas para revisão. Sinal, selos e “Verificado” não autorizam alegação fictícia de segurança.
+Não generalizar adaptações para internas sem decisão. F01 autoriza ferramentas; **N02 autoriza as três páginas de newsletter** e **S02 autoriza as três páginas de serviços** a herdarem a linguagem da Home com efeitos contidos. Isso não reescreve o manual; as composições dos 12 exports aprovados são a baseline atual e foram portadas, preservando adaptações funcionais auditadas. Sinal, selos e “Verificado” não autorizam alegação fictícia de segurança.
 
 ## 2. Fundamentos observados
 
@@ -32,7 +32,7 @@ A entrega aprovada usa **somente o tema escuro** (D03). Não implementar tema cl
 | Apoio/luz | Menta/Musgo, conforme token |
 | G2 na faixa verde | Floresta `#175B4B` |
 
-Baloo 2 para títulos; Archivo para corpo/UI; monoespaçada de sistema para terminal/ASCII. Fontes locais em `_ds/assets/fonts`; OFL oficial em `docs/design/assets/fonts`, a preservar na redistribuição.
+Baloo 2 para títulos; Archivo para corpo/UI; monoespaçada de sistema para terminal/ASCII. No export, fontes em `_ds/assets/fonts`; na aplicação, cópias locais rastreáveis via `next/font/local`; OFL oficial em `docs/design/assets/fonts`, a preservar na redistribuição.
 
 Medidas vêm do HTML, não da antiga tabela proposta: H1 `clamp(48px,6vw,92px)/1.04`, H2 `clamp(40px,4.4vw,64px)/1.04`, corpo 18px/1.55 e descrição do hero 20px/1.55. Não converter pt do manual diretamente em px.
 
@@ -46,7 +46,7 @@ Moldura máxima 1320px; conteúdo 1200px; padding horizontal `clamp(20px,4vw,60p
 - Ferramentas: quatro/duas/uma coluna conforme espaço.
 - Mobile expõe todos os entregáveis/etapas sem depender do pinning.
 
-Chrome testado em 1440×1000 e 390×844, sem overflow horizontal observado. 320px, zoom/reflow, teclado e dispositivos reais ainda precisam de revisão.
+Chrome testado em 1440×1000 e 390×844, sem overflow horizontal observado. Reflow em 320px e viewports equivalentes a 200%/400%, teclado Chromium e smoke Firefox/WebKit foram verificados. Zoom real, dispositivos físicos e leitor de tela não foram certificados.
 
 ## 3. Home por seção
 
@@ -94,7 +94,7 @@ Serviços/processo acrescentam pistas de `3 × 0,6 × altura da viewport` e `5 �
 
 ### Para quem lidera
 
-Faixa Verde Raiz, G2 Abrigo grande em Floresta e **Operações críticas pedem mais do que tecnologia.** Texto sobre regulação, crescimento e liderança, acomodado à barra do grafismo. Não recuperar quatro linhas/cards anteriores. Asset ativo: `web/assets/g2-abrigo-175b4b.png`.
+Faixa Verde Raiz, G2 Abrigo grande em Floresta e **Operações críticas pedem mais do que tecnologia.** Texto sobre regulação, crescimento e liderança, acomodado à barra do grafismo. Não recuperar quatro linhas/cards anteriores. No export, asset `assets/g2-abrigo-175b4b.png`; a aplicação utiliza a cópia pública rastreada no catálogo de publicação.
 
 ### Ferramentas
 
@@ -107,17 +107,17 @@ Faixa Verde Raiz, G2 Abrigo grande em Floresta e **Operações críticas pedem m
 | Dívida técnica | Engrenagem com dentes faltantes |
 | Migração para nuvem | Nuvem com seta ascendente |
 
-Hachuras, volume, luz e movimento seguem o export. Cards hoje apontam a `#contato`: destino provisório, não eliminação das ferramentas futuras. Não inferir fórmula do ícone. Escopo das páginas foi definido via grill-me em F01–F29 no [briefing das ferramentas](tools.md); `temp/Ferramentas` permanece referência não aprovada.
+Hachuras, volume, luz e movimento seguem o export. Na aplicação, os cards levam às quatro rotas de ferramentas; o destino `#contato` do export era provisório. Não inferir fórmula do ícone. Escopo das páginas foi definido via grill-me em F01–F29 no [briefing das ferramentas](tools.md); `temp/Ferramentas` permanece referência não aprovada.
 
 ### Newsletter
 
-Símbolo ASCII, **Análise em dias úteis.**, descrição e e-mail. Sucesso aprovado: **Inscrição confirmada. A próxima edição chega no próximo dia útil.** Handler apenas altera estado local; não confirma endereço, cadastra ou envia. “Ver edições anteriores” usa `#` e precisa de rota real. Operação em [jornadas](product.md).
+Símbolo ASCII, **Análise em dias úteis.**, descrição e e-mail. Histórico do export: **Inscrição confirmada. A próxima edição chega no próximo dia útil.** A aplicação substitui esse falso sucesso pelo contrato D10: modo padrão indisponível; demo explícito aceita apenas pedido local, sem confirmação/envio. “Ver edições anteriores” leva ao arquivo real. Operação em [jornadas](product.md).
 
 ### Contato e rodapé
 
 Faixa Verde Raiz: **Vamos cuidar da sua base.** Texto/formulário à esquerda, símbolo ASCII à direita. **Conversa inicial gratuita de qualificação. Retorno por ligação ou WhatsApp.** Nome, Empresa e WhatsApp obrigatórios; não acrescentar e-mail/escolha de canal à reprodução por suposição.
 
-Sucesso aprovado: **Diagnóstico solicitado. A gente retorna por ligação ou WhatsApp no próximo dia útil.** Estado local sem envio; promessa exige operação antes da publicação. Rodapé: assinatura, slogan oficial **A base que sustenta o crescimento!**, atalhos, Privacidade e copyright 2026. Privacidade é placeholder.
+Histórico do export: **Diagnóstico solicitado. A gente retorna por ligação ou WhatsApp no próximo dia útil.** Na aplicação, aviso e estados locais não confirmam recebimento; a promessa exige integração real antes da publicação. Rodapé: assinatura, slogan oficial **A base que sustenta o crescimento!**, atalhos, Privacidade e copyright 2026. A rota de privacidade é provisória e descreve honestamente a operação local.
 
 ## 4. Preservação técnica
 
@@ -127,24 +127,26 @@ O símbolo 3D experimental não está montado no CTA. Hero/moldura/símbolos ati
 
 Destino: Next.js App Router, React, TypeScript, npm e CSS Modules/tokens. React Three Fiber não foi escolhido. Preservar export; portar componentes sem presumir o interpretador `support.js` como arquitetura da aplicação. Versões CDN observadas não fixam dependências futuras.
 
-## 5. Requisitos ainda não implementados
+## 5. Correções implementadas na portabilidade
 
 - Pausa acessível; redução de movimento reagindo a alterações do sistema.
-- Preservar limitação fora de tela e completar suspensão em aba oculta; medir antes de impor budgets.
+- Suspensão fora de tela/aba oculta implementada; cobertura de aba realmente oculta limitada pelos skips descritos abaixo.
 - Fallback estático para carregamento/falha/perda de WebGL e erro de importação.
 - Abas com relação painel/controle e teclado adequado, ou semântica simplificada coerente.
 - Terminal anunciando etapa/conteúdo completo, sem anunciar caractere por caractere.
 - Menu com foco/fechamento revisados, `lang="pt-BR"`, labels, erros e contraste aferidos.
-- Rotas/formulários reais, falhas honestas e privacidade correspondente.
+- Rotas/formulários locais, falhas honestas e privacidade correspondente.
 - Descarte de recursos e tratamento de pointer cancel.
 
-Completar esses pontos não exige nova proposta visual. Aprovação e execução sem erros não certificam acessibilidade, desempenho ou entrega.
+A lista acima registra as lacunas históricas corrigidas em código. Contraste/acessibilidade completos não são certificados. Formulários/rotas são locais; recebimento e envio reais continuam fora do escopo.
+
+PillarArt carrega Three/runtime ao entrar no viewport (no mount quando IntersectionObserver não existe), conserva fallback até o primeiro desenho bem-sucedido e descarta inicializações tardias. Pausa SPA, redução dinâmica, suspensão e descarte têm testes; perda de contexto mantém instâncias já montadas em falha, sem impedir novas instâncias futuras. Aba realmente oculta teve dois testes pulados no headless; não declarar essa cobertura real como aprovada. [Evidências finais](../../references/audits/final-qa.md).
 
 ## 6. Internas
 
-Sitemap/jornadas preservados onde não substituídos pela Home. **Ferramentas: Home com efeitos contidos**, direção aprovada em 05/10. Herdar linguagem visual, adaptando efeitos à leitura/preenchimento. F18/F21/F25/F29 definem formulário/checklist em uma página e resultado compacto abaixo; substituem etapas de F02. Sem gráficos ou painel avançado.
+Sitemap/jornadas preservados onde não substituídos pela Home. **Ferramentas: Home com efeitos contidos**, direção aprovada em 05/10. Herdar linguagem visual, adaptando efeitos à leitura/preenchimento. F18/F21/F25/F29 definem formulário/checklist em uma página e resultado compacto abaixo; substituem etapas de F02. Sem gráficos analíticos ou painel avançado; objetos decorativos permanecem.
 
-Os quatro exports de ferramentas estão em `references/claude-design/`; o [briefing](tools.md) permanece contrato para revisar modelos, estados, fontes e exemplos. Esta preparação de newsletter não auditou sua implementação/cálculos. Não copiar hero inteiro/pinning automaticamente ou tratar arquivo gerado como publicação autorizada.
+Os quatro exports de ferramentas estão em `references/claude-design/`; o [briefing](tools.md) permanece contrato para revisar modelos, estados, fontes e exemplos. A implementação local e os modelos foram revisados e testados; isso não certifica a operação futura. Não copiar hero inteiro/pinning automaticamente ou tratar arquivo gerado como publicação autorizada.
 
 ### Newsletter — direção N02 e composição N01/N05–N10
 
@@ -166,3 +168,7 @@ S01 + S16 definem seis seções: abertura, situações, quatro frentes, método,
 
 
 
+
+### Rechecagem documental final — 11/10/2026
+
+Rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.

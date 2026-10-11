@@ -2,7 +2,7 @@
 
 ## Estado e decisões
 
-Plano aprovado pelo usuário em 10/10/2026. A fundação da aplicação está inicializada em `web/` com Next.js App Router, React, TypeScript estrito, npm, CSS Modules, tokens CSS e Three.js direto. Não usar runtime DC/CDN, React Three Fiber, Tailwind ou Cache Components. Conteúdo essencial fica em Server Components; componentes cliente ficam restritos a interações/gráficos. Primeiro render determinístico; Baloo 2 e Archivo via `next/font/local`, mantendo as licenças OFL.
+Plano aprovado pelo usuário em 10/10/2026. A aplicação está implementada em `web/` com Next.js App Router, React, TypeScript estrito, npm, CSS Modules, tokens CSS e Three.js direto. Não usar runtime DC/CDN, React Three Fiber, Tailwind ou Cache Components. Conteúdo essencial fica em Server Components; componentes cliente ficam restritos a interações/gráficos. Primeiro render determinístico; Baloo 2 e Archivo via `next/font/local`, mantendo as licenças OFL.
 
 Backend, banco de dados, CMS, serviço de e-mail, hospedagem e publicação seguem sem escolha. A fase atual não integra envio, persistência, analytics, relatório operacional ou recebimento de contatos. Idempotência e confirmação incerta de uma solicitação ficam como requisitos da futura integração, sem mecanismo escolhido.
 
@@ -13,7 +13,7 @@ Backend, banco de dados, CMS, serviço de e-mail, hospedagem e publicação segu
 | D03 | Entregar somente tema escuro. |
 | D04 | Aplicação em `web/`; exports preservados em `references/claude-design/`. |
 | D05 | Exatamente seis documentos canônicos em `docs/web`; migrar informação única antes de excluir substituídos. |
-| D06 | GPT-6.1 Sol · XHigh orquestra e decide; todo desenvolvimento restante usa MCP Claude, Sonnet/Haiku explícitos; Opus somente consulta complexa. Uma escrita por vez; limite global três workers. Fable excluído por indisponibilidade no Pro. |
+| D06 | GPT-6.1 Sol · XHigh orquestra e decide; código via MCP Claude, Sonnet/Haiku explícitos; GPT executa gates/servidores e, por autorização posterior, a documentação final; Opus somente consulta complexa. Uma escrita por vez; limite global três workers. Fable excluído por indisponibilidade no Pro. |
 | D07 | Aprovação humana da Home antes das páginas internas; aceite humano final do conjunto. |
 | D08 | `/privacidade` provisória, descrevendo honestamente a operação local. |
 | D09 | Formulários ativos com validação completa, preparados para futura integração. |
@@ -43,13 +43,13 @@ Conteúdo, rótulos e ações essenciais continuam utilizáveis sem Canvas/WebGL
 
 ## Fases e gates
 
-P1.1 plano aprovado e registrado; P1.2 exports preservados com hashes e baseline; P1.3 documentação consolidada; P1.4 instruções/agentes revisados. P2 inicializa aplicação e publica cópias rastreáveis de assets. P3 porta gráficos e Home; **a aprovação humana da Home bloqueia páginas internas**. P4 implementa serviços e ferramentas. P5 implementa newsletter, privacidade, metadata e 404. P6 executa CI/QA e apresenta aceite final. Não declarar fase futura concluída por preparação parcial.
+P1.1 plano aprovado e registrado; P1.2 exports preservados com hashes e baseline; P1.3 documentação consolidada; P1.4 instruções/agentes revisados. P2–P5 concluídos tecnicamente: aplicação/assets, gráficos/Home, serviços/ferramentas, newsletter/privacidade/metadata/404. Home aprovada em 10/10 antes das internas. P6 tem QA local documentado e revisão documental concluída; aguarda aceite humano final com ciência dos limites. Não declarar fase futura concluída por preparação parcial.
 
-Os critérios completos de cada tarefa incluem comandos reais de lint/tipos/testes/build, smoke em produção, validação desktop/mobile/teclado, modelos/limites e inspeção de conteúdo público. Há `web/package.json`, lockfile, configuração TypeScript/ESLint, Vitest Node e Playwright. A Home completa é JSX/CSS Modules com conteúdo SSR, interações locais e gráficos integrados; sua revisão independente P3.4 e aprovação humana continuam pendentes, sem páginas internas antecipadas. Não chamar o export servido por HTTP de build Next. Evidências e versões em [frontend-foundation.md](../../references/audits/frontend-foundation.md); portabilidade e gates da Home em [home-native.md](../../references/audits/home-native.md).
+Os critérios completos de cada tarefa incluem comandos reais de lint/tipos/testes/build, smoke em produção, validação desktop/mobile/teclado, modelos/limites e inspeção de conteúdo público. Há `web/package.json`, lockfile, configuração TypeScript/ESLint, Vitest Node e Playwright. A Home completa é JSX/CSS Modules com conteúdo SSR, interações locais e gráficos integrados; sua revisão independente P3.4 e aprovação humana ocorreram antes das internas. Não chamar o export servido por HTTP de build Next. Evidências e versões em [frontend-foundation.md](../../references/audits/frontend-foundation.md); portabilidade e gates da Home em [home-native.md](../../references/audits/home-native.md).
 
 ## Evidências e limites
 
-Execução detalhada por tarefa está no PLAN, seção “Agentes, modelos e operação da ponte Claude”. Sonnet implementa Next/React/CSS, gráficos, modelos, testes e CI; Haiku executa tarefas mecânicas e documentação factual. Revisão Sonnet ocorre em outra sessão, sem garantia de diversidade de modelos; gates e aceite humano permanecem obrigatórios. Opus somente para impasses complexos. GPT mantém plano/decisões e pode executar gates determinísticos, sem desenvolver o código. Perfis Codex anteriores ficam preservados como histórico. As fases 4 e 5 podem ter dependências independentes, mas as escritas da ponte são serializadas.
+Execução detalhada por tarefa está no PLAN, seção “Agentes, modelos e operação da ponte Claude”. Sonnet implementa Next/React/CSS, gráficos, modelos, testes e CI; Haiku executa tarefas mecânicas e documentação factual. Revisão Sonnet ocorre em outra sessão, sem garantia de diversidade de modelos; gates e aceite humano permanecem obrigatórios. Opus somente para impasses complexos. GPT mantém plano/decisões, executa gates e servidores, sem desenvolver código do site. Após duas tentativas Haiku sem edição, o usuário autorizou GPT a atualizar somente a documentação final (Opção A, 11/10), mantendo revisão Sonnet independente. Perfis Codex anteriores ficam preservados como histórico. As fases 4 e 5 podem ter dependências independentes, mas as escritas da ponte são serializadas.
 
 `claude` usa `cwd` na raiz Git, modelo explícito e leitura por padrão. Escrita exige tag `[claude:escreve]`, escopo delimitado e hash de checkpoint WIP LOCAL autorizado em 10/10/2026, após inspeção de segredos/gerados. Esse checkpoint pode incluir trabalho anterior; não autoriza commit final, push, PR ou deploy. Não editar em paralelo a escrita Claude. Registrar sessão/modelo/hash/gates no PLAN; consultas independentes não têm shell e recebem evidências de testes. Após cada escrita executar lint/typecheck/unit/build/e2e; depois de três arquivos exigir revisão do diff. A ponte não expõe esforço e não permite sub-agents headless; Fable não deve ser chamado. Não alterar configuração global ou fazer fallback silencioso.
 
@@ -74,6 +74,18 @@ npm run build
 npm run start
 ```
 
-Para testes de navegador, instalar o browser correspondente uma vez com `npx playwright install chromium`, executar `npm run build` e depois `npm run test:e2e`. O runner inicia e encerra duas instâncias do mesmo build: porta 3100 com `FORM_MODE=demo`, porta 3101 sem simulação. Não reutiliza servidor existente. Nesta fundação, `force-dynamic` permite resolver o modo exclusivamente no servidor em cada request; parâmetros públicos não controlam a simulação. Para desenvolvimento manual demo, definir `$env:FORM_MODE='demo'` antes de `npm run dev`; retirar a variável restaura o modo indisponível após reiniciar o processo.
+Para testes de navegador, instalar o browser correspondente uma vez com `npx playwright install chromium firefox webkit`, executar `npm run build` e depois `npm run test:e2e`. O runner inicia e encerra duas instâncias do mesmo build: porta 3100 com `FORM_MODE=demo`, porta 3101 sem simulação. Não reutiliza servidor existente. Nesta fundação, `force-dynamic` permite resolver o modo exclusivamente no servidor em cada request; parâmetros públicos não controlam a simulação. Para desenvolvimento manual demo, definir `$env:FORM_MODE='demo'` antes de `npm run dev`; retirar a variável restaura o modo indisponível após reiniciar o processo.
 
-Verificar `npm audit` e `npm audit --omit=dev`. Em 10/10/2026, produção não apresentou advisories; a cadeia de desenvolvimento ESLint/fast-glob/micromatch/braces tem GHSA-vfj7-8cjw-p6xm sem patch publicado. Não executar correções `--force` nem declarar ausência de risco. Rechecagem na etapa P6 e antes de qualquer futura publicação, incluindo atualização Next anunciada para 14/10/2026.
+Verificar `npm audit` e `npm audit --omit=dev`. Em 11/10/2026, o audit de produção retornou zero advisories; o audit completo retornou cinco high na cadeia de desenvolvimento; a cadeia de desenvolvimento ESLint/fast-glob/micromatch/braces tem GHSA-vfj7-8cjw-p6xm sem patch publicado. Não executar correções `--force` nem declarar ausência de risco. Rechecagem na etapa P6 e antes de qualquer futura publicação, incluindo atualização Next anunciada para 14/10/2026.
+
+## Entrega local verificada em 11/10/2026
+
+Frontend local implementado e validado em 11/10/2026. A Home nativa recebeu aprovação humana em 10/10; o aceite final do conjunto permanece pendente. Gates: lint, typecheck, 101 testes unitários, build de produção e 228 E2E aprovados, com quatro skips explicitados na [auditoria final](../../references/audits/final-qa.md). Não há integração operacional nem autorização de publicação.
+
+Versões fixadas: Next 16.4.0, React/React DOM 19.3.0, TypeScript 5.9.3, Three 0.184.0, Vitest 5.0.3, Playwright 1.64.0 e ESLint 9.39.5. Ambiente observado: Node 24.13.1/npm 11.8.0. Scripts de captura/medição, após build e com portas livres: `node scripts/qa-capture.mjs` e `node scripts/lighthouse.mjs`; Lighthouse usa porta 3200 e pacote 13.5.0 efêmero, sem dependência nova no app. Não executar medições junto aos testes.
+
+CI GitHub contém os mesmos gates e browsers, sem deploy; execução remota não realizada. Produção local foi medida: CLS 0, LCP mediano 4,80–4,88 s (meta orientativa 2,5 s não atingida), TBT 112–452,5 ms. São medidas de laboratório, não INP de campo. Revisar desempenho em hardware real, advisories/patches e integrações antes de futura publicação. Não aplicar audit --force que ofereceu downgrade Next.
+
+### Rechecagem documental final — 11/10/2026
+
+Rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.

@@ -1,0 +1,538 @@
+diff --git a/AGENTS.md b/AGENTS.md
+index 536b2ce..a904edd 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -51,7 +51,11 @@ Newsletter: apenas metadados, fontes e primeiro parágrafo editorial completo co
+ 
+ Pausa global acessível na sessão SPA, redução dinâmica, suspensão real em aba oculta e fora de tela, fallback estático e descarte de GPU/listeners/loops. Inicializações tardias não ressuscitam componentes desmontados. Conteúdo essencial e CTA funcionam sem gráficos; teclado, menu/Escape/foco, seletores e anúncio agregado do terminal devem atender os contratos auditados.
+ 
+-## Agentes e propriedade
++## Execução atual e propriedade
++
++GPT orquestra, decide, executa gates/medições/servidores. Código permanece via ponte Claude: Sonnet implementa e revisa em sessões distintas, Haiku em tarefas factuais e Opus somente consulta complexa; famílias efetivas 5.5 observadas, sem Fable. Após falha de escrita Haiku, o usuário autorizou GPT a concluir somente os oito documentos finais (Opção A, 11/10), com revisão Sonnet independente. Uma escrita Claude por vez; sem testes/builds/servidores demorados pelo Claude. Preservar bloqueio de `.env*`, checkpoint WIP local autorizado e ausência de autorização de commit final/push/PR/deploy.
++
++### Perfis Codex preservados como histórico
+ 
+ Decisão atual D06: GPT-6.1 Sol · XHigh faz orquestração, manutenção do PLAN, verificação de evidências e decisões complexas; desenvolvimento restante é executado pelo MCP `claude-agent`. Sonnet implementa código, gráficos, modelos, testes e CI; Haiku executa inventário, cópias e documentação delimitada. Sonnet revisa em sessão independente; Opus é consulta pontual para impasses complexos. Fable excluído: indisponível no plano Pro do usuário. Perfis em [.codex/agents](.codex/agents/) permanecem históricos, sem uso como executores futuros. Limite local de três workers inclui Claude; uma escrita Claude por vez, sem edição concorrente e com revisão após estado terminal.
+ 
+@@ -92,7 +96,7 @@ Tipos válidos: `feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `ci`.
+ 
+ ## Build, testes e validação
+ 
+-A fundação Next está inicializada em `web/`, com lockfile, fontes locais, shell e formulários locais. Use os scripts reais de `web/package.json`, documentados em `docs/web/development.md`: dev/build/start/typecheck/lint/test/test:e2e. A Home completa está em revisão independente P3.4 e as internas aguardam aceite humano no PLAN; servir exports por HTTP não é build Next. Evidências em `references/audits/frontend-foundation.md`.
++A fundação Next está inicializada em `web/`, com lockfile, fontes locais, shell e formulários locais. Use os scripts reais de `web/package.json`, documentados em `docs/web/development.md`: dev/build/start/typecheck/lint/test/test:e2e. A Home nativa foi aprovada em 10/10/2026 e as internas foram implementadas; gates locais em 11/10: lint/tipos/101 unit/build/228 E2E, quatro skips conhecidos. Aceite humano final permanece pendente no PLAN; servir exports por HTTP não é build Next. Evidências em `references/audits/frontend-foundation.md`.
+ 
+ Vitest Node verifica modelos/parsers/fixtures; Playwright verifica build/start de produção. Gates incluem lint, typecheck, unit, build, e2e; Chromium desktop/mobile, Firefox/WebKit smoke, 320px/zoom/teclado. Comparar visual por seção com fontes/viewport/estado estáveis; CSS animations disabled não congela Canvas. Não alegar acessibilidade/desempenho certificados. Registrar medições Lighthouse e limitações; TBT de laboratório não certifica INP de campo.
+ 
+@@ -103,3 +107,11 @@ Revalidar registry, peers, advisories e Node no bootstrap; versões de CDN/expor
+ - Não hardcode credenciais em nenhum arquivo versionado.
+ - Bancos de dados locais: preferir Docker Compose a instalação direta, assim que houver backend.
+ - Validar entradas em fronteiras do sistema (API pública, formulários do site) assim que existirem.
++
++## Limites da entrega local
++
++Ver [QA final](references/audits/final-qa.md). Capturas 44 JPG/22 pares; LCP mediano 4,8–4,9 s acima da meta orientativa 2,5 s. Dois testes de aba realmente oculta e duas capturas Home opt-in foram pulados; não são passes. CI remoto, zoom real, hardware físico, leitor de tela e operação de formulários não certificados. Audit produção zero/dev cinco high; rever patches antes de publicação. Slug bem formado inexistente é 404; UTF-8 malformado pode gerar 500 no Next.
++
++### Rechecagem documental final — 11/10/2026
++
++Rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.
+diff --git a/PLAN.md b/PLAN.md
+index 3f60490..d8a8eef 100644
+--- a/PLAN.md
++++ b/PLAN.md
+@@ -23,7 +23,7 @@ A pesquisa observou Next 16.4.0/React 19.3, Three 0.184.0, Vitest 5.0.3 e Playwr
+ | D03 | Somente tema escuro nesta entrega. |
+ | D04 | Aplicação em `web/`; exports preservados em `references/claude-design/`. |
+ | D05 | Exatamente seis documentos canônicos em `docs/web`; excluir substituídos após migrar informação única. Preservar marca/assets. |
+-| D06 | GPT-6.1 Sol XHigh orquestra, mantém PLAN e decide escopo/arquitetura; todo desenvolvimento restante ocorre pelo MCP `claude-agent`, com Sonnet ou Haiku explícitos. Opus somente consulta complexa. Uma escrita ativa por vez; revisor independente. Atualizado pelo usuário em 10/10/2026; Fable excluído por indisponibilidade no plano Pro. |
++| D06 | GPT-6.1 Sol XHigh orquestra, mantém PLAN e decide escopo/arquitetura; todo desenvolvimento restante ocorre pelo MCP `claude-agent`, com Sonnet ou Haiku explícitos. Opus somente consulta complexa. Uma escrita ativa por vez; revisor independente. Atualizado pelo usuário em 10/10/2026; Fable excluído por indisponibilidade no plano Pro. Exceção autorizada em11/10 (Opção A): GPT atualiza somente documentação final; GPT também executa gates/servidores, sem implementar código do site. |
+ | D07 | Aprovação humana da Home antes das internas; aceite humano final do conjunto. |
+ | D08 | `/privacidade` temporária, descrevendo honestamente a operação local. |
+ | D09 | Campos ativos, validação completa, preparados para futura integração. |
+@@ -138,8 +138,8 @@ Fases concluídas não serão reexecutadas nem terão autoria histórica reatrib
+ | P5.4 Revisão pública | Sonnet `[claude:consulta]` | Sessão independente; HTML/RSC/JS/maps/assets e evidências de inspeção. |
+ | P6.1 CI local | Sonnet `[claude:escreve]` | Sonnet independente; scripts, lockfile, Node e workflow sem deploy. |
+ | P6.2 QA integral | Sonnet `[claude:consulta]`; GPT executa gates `[codex]` | Revisor distinto; artefatos de browser, visual, matemática e medições. Novos testes/correções via dono de escrita original. |
+-| P6.3 Aceite/entrega | GPT + usuário `[codex]` | Haiku escreve apenas documentos/evidências em P6.3-D; Sonnet revisa diff. |
+-| P6.3-D Documentação final | Haiku `[claude:escreve]` | Após P6.2, antes do aceite final: seis docs/evidências, sem código nem alteração de escopo. GPT arquiva PLAN somente após aceite. |
++| P6.3 Aceite/entrega | GPT + usuário `[codex]` | GPT autorizado escreve apenas documentos/evidências em P6.3-D; Sonnet revisa diff. |
++| P6.3-D Documentação final | GPT `[codex]` autorizado em 11/10; Sonnet `[claude:consulta]` | Após P6.2, antes do aceite final: seis docs/evidências, sem código nem alteração de escopo. GPT arquiva PLAN somente após aceite. |
+ 
+ ## 5. Fases, tarefas e Acceptance Criteria
+ 
+@@ -312,8 +312,8 @@ Dependências: P4.4 e P5.4.
+ 
+ #### P6.2 QA integral — [claude:consulta] Sonnet independente; [codex] gates determinísticos
+ Dependência: P6.1.
+-- [ ] Chromium desktop/mobile completo, Firefox/WebKit smoke; 320px/zoom/foco/teclado/erros.
+-- [ ] Sem runtime/hidratação/recursos órfãos; desempenho medido com ambiente/limites e desvios resolvidos ou explicitamente decididos.
++- [x] Chromium desktop/mobile completo, Firefox/WebKit smoke; 320px/reflow/foco/teclado/erros. Limites de zoom real/Tab WebKit registrados.
++- [x] Sem runtime/hidratação/recursos órfãos; desempenho medido com ambiente/limites e desvios resolvidos ou explicitamente decididos. Evidência limitada às rotas/testes executados, sem certificação universal; descarte coberto. Decisão técnica GPT sobre LCP acima da meta sujeita ao aceite humano final P6.3.
+ 
+ #### P6.3 Aceite e entrega — [codex] GPT + usuário
+ Dependência: P6.2.
+@@ -321,10 +321,10 @@ Dependência: P6.2.
+ - [ ] Todas tarefas com evidência; somente após aceite final arquivar PLAN em docs/plans.
+ - [ ] Nenhum commit/push/PR/deploy sem autorização específica.
+ 
+-#### P6.3-D Documentação da entrega — [claude:escreve] Haiku
++#### P6.3-D Documentação da entrega — [codex] GPT autorizado; [claude:consulta] Sonnet
+ Dependência: P6.2; concluir antes do aceite final P6.3. Limitar a documentação e evidências, sem alterar produto ou implementação.
+-- [ ] Comandos/versões/limites reais atualizados; nenhum gate não executado declarado como sucesso.
+-- [ ] Diff revisado por Sonnet em sessão independente; GPT registra resultado e pede aceite final.
++- [x] Comandos/versões/limites reais atualizados; nenhum gate não executado declarado como sucesso.
++- [x] Diff revisado por Sonnet em sessão independente; quatro correções documentais aplicadas. GPT registra resultado; apresentação do aceite final após gates em curso.
+ 
+ ## 6. Testes e validação
+ 
+@@ -369,9 +369,9 @@ Estados: pendente, em execução, em revisão, aguardando usuário, concluído.
+ | P5.1 | Concluído | Haiku5.5 sessão6c1f3a8e-2f47-40c6-909a-3faeb5af3932 succeeded187s:94unit/110E2E+4skip lint/type/build. Sonnet5.5 revisão23c26e7b-8401-4935-99c6-5c41a3de4b7d succeeded18s aprovou. GPT94unit/hash confirmados. |
+ | P5.2–P5.4 | Concluído | P5.3 gates GPT101unit/148E2E+4skip; correção19ebf5fb Sonnet5.5 succeeded254s mesmos gates; revisor independente aaa7c823 follow-up32s aprovou. Limites em newsletter-native/public-routes. |
+ | P6.1 | Concluído localmente | Workflow sem deploy, Node24.13.1/npmci e gates equivalentes locais aprovados; CI remoto não executado. |
+-| P6.2 | Em finalização | Revisões independentes e gates101unit/228E2E4skips;44capturas regeneradas. Lighthouse final e consolidação em andamento. |
+-| P6.3 | Aguardando preparação do aceite | Aceite humano final e arquivamento obrigatórios, sem commit final/push/deploy autorizados. |
+-| P6.3-D | Pendente | Documentação Haiku após QA; revisão Sonnet antes do aceite. |
++| P6.2 | Concluído localmente com limites | Revisões independentes, lint/types/101unit/build/228E2E4skips;44capturas/22pares e12rodadas Lighthouse. LCP acima da meta registrado; não autoriza publicação. |
++| P6.3 | Aguardando aceite humano final | Aceite humano final e arquivamento obrigatórios, sem commit final/push/deploy autorizados. |
++| P6.3-D | Documentação concluída e revisada | GPT autorizado atualizou oito documentos; Sonnet5.5 revisou diff, quatro correções factuais aplicadas.56contratos intactos/seis docs/87links válidos. Código não alterado; lint/types/101unit/build passaram. E2E227pass/4skip/1falha transitória; rechecagem isolada3/3pass, sem nova rodada completa verde. |
+ 
+ ### Registro de sessões da ponte
+ 
+@@ -521,3 +521,19 @@ Usuário escolheu Opção1: GPT executa gates/medições e controla servidores;
+ **P6.3-D início:** checkpoint142dd975050bc2974078e35dd466847b9196f19b, pré-checagem sem sensíveis/gerados, evidências QA intencionais. Haiku escreve somente8documentos acima.
+ 
+ **P6.3-D primeira resposta:** Haiku5.5 sessão922f843e-fc6a-404e-9218-7e4605935128 succeeded118s, compactedThisTurn=true, retornou checagem em vez de editar;0alteraçõesdocumentais. GPT avisou antes de correção focada mesma tarefa. Os dados finais embytes/medianas no último registroPLAN conferem comsummary; valores157KiB/baselineanteriores são históricos, não substituir esses registros como se fossem atuais. Seguir com escrita8docsautorizada usando resumoJSON atual, skipsnominais, gatesregistradosGPT (sem alegarlogsarquivadosquando sótooloutput),56linhastabelaspreservadas. Se houver algo não verificado peloHaiku, atribuirregistroGPT/PLAN e conservarlimite, não parar diante defatosjáregistrados. Sem código nem ampliaçãoescopo. Revisãoindependenteapósescrita, aceitefinalpermanecependente.
++
++**P6.3-D correção focada início:** checkpoint76e0239bb08d7b3cd5f32c611f009619d54ccb92, somentePLANalterado, escopo8docsinalterado. Haikuescritaexplicitamenteautorizada, semgatepróprio.
++
++## Consulta obrigatória sobre a ponte — 11/10/2026
++
++P6.3-D sessão Haiku5.5 922f843e-fc6a-404e-9218-7e4605935128: primeiroturno succeeded118s comcompactação, retornouauditoria semeditar. Follow-up focado explicitamenteautorizado cancelado peloGPT após203s, voltouacompactarcontexto semeditar; terminalcancelled em2026-10-11T14:02:36.193Z. Gitstatus confirma somentePLANmodificado desdecheckpoint76e0239;0alterações8docs. NenhumaescritaClaudeativa ou servidorresidual conhecido. Diante da instruçãodousuário de parar/consultar emproblemasdeutilizaçãoClaude, não abrirnova sessão antesdadecisão.
++
++Frontend eQA preservados/concluídostecnicamente:101unit/228E2E4skips,lint/types/build,capturas44JPG22pares,Lighthouse12rodadas, revisõesSonnetindependentes. Falta P6.3-D editar8documentos+revisãofinal, rechecagensdocumentais/gatesprevistos, disponibilizarprévia eaceitehumanoD07. LCP4,8–4,9s acimaorientativa2,5s, produçãoaudit0/dev5high, encodingUTF8malformado500 conhecido; semprontidãopublicação. Nenhumcommitfinal/push/deploy. Propostas para decisãousuário: GPTsomenteescrita factualdocfinal (exceção explícita àpropriedadeHaiku, códigoinalterado, revisãoSonnetmantida), ou escalar documentaçãoSonnetcomescopodelimitado. Não arquivarPLAN/registraraceitefinalantesdousuário.
++
++### P6.3-D autorização e execução documental — 11/10/2026
++
++Usuário escolheu Opção A: GPT conclui a escrita factual dos seis docs canônicos, AGENTS.md e final-qa.md; Sonnet revisa o diff em somente leitura. Exceção restrita à propriedade documental após Haiku sem edições, sem alteração do código do site. Usuário informou 14% de cota GPT e 26% Claude: uma revisão delimitada, gates determinísticos locais, sem nova pesquisa ou medições opcionais. Aceite final e arquivamento permanecem pendentes.
++
++**P6.3-D revisão independente:** sessão601114c3-8761-457b-a872-a5152f4dd99c Sonnet5.5 succeeded43s, sem bloqueador, quatro correções pequenas: D06 alinhada entre fontes; critério original P6.2 preservado com alcance medido e decisãoGPT sujeita ao aceitehumano; fallbackIntersectionObserver/formulárioslocais/limiteabaoculta esclarecidos; datasexportHome04/10 eHomeNext10/10 distintas. GPT aplicou correções sem código. Revisão estática do diff472linhas e greps pontuais, semrevalidar logs/metrics/hashes; essas evidências são GPT. Contratos56linhas intactos porSHA256, exatamenteseisdocs,87links locaissemfaltas. Gatefinalemexecução56926,logfinal-delivery-gates.log.
++
++**P6.3-D concluído:** oito documentos atualizados e revisados; seis canônicos,56contratos SHA256intactos e95links locais verificados semfaltas (incluindo auditoria). Nenhum código do site alterado. GatesGPT56926 exit1: lint/types/101unit/build passaram; E2E227pass/4skip/1falha no foundation.spec.ts:40, observação do botão transitório Enviando. Rechecagem58958 exit0: mesmo teste3/3pass sem mudanças. Causa não comprovada, instabilidade registrada em todosdocs e log preservado; não declarar rodadafinalcompletaverde. Nenhuma nova chamadaClaude ou medição opcional. Aceite humano final/arquivamento continuam pendentes; commitfinal/push/PR/deploy não autorizados.
+diff --git a/docs/web/README.md b/docs/web/README.md
+index d364f29..ffd79af 100644
+--- a/docs/web/README.md
++++ b/docs/web/README.md
+@@ -16,10 +16,14 @@ O pacote oficial da identidade permanece em [`docs/design`](../design/README.md)
+ 
+ O manual v2 e seus assets definem a marca. A aprovação de `Home.dc.html` em 04/10/2026 define visual, textos e regras da Home; adaptações web delimitadas em `design.md` não reescrevem nem ampliam o manual. Contratos F01–F29, S01–S16 e N01–N11 definem escopo. Aprovação de direção não comprova implementação, cálculo auditado, integração ou serviço operacional.
+ 
+-Use os rótulos **aprovado**, **proposta**, **demonstração**, **histórico** e **pendente** como definidos em cada documento. Textos de páginas internas marcados como proposta exigem revisão própria. Amostras da newsletter são demonstrativas; apenas metadados e o primeiro parágrafo podem estar no conjunto público. A [matriz de migração](../../references/audits/documentation-migration.md) registra fonte, destino e cobertura de cada material removido.
++Use os rótulos **aprovado**, **proposta**, **demonstração**, **histórico** e **pendente** como definidos em cada documento. Os exports aprovados são a baseline editorial/visual atual; blocos históricos de copy proposta servem de contexto quando compatíveis com eles. O aceite final da implementação permanece separado. Amostras da newsletter são demonstrativas; apenas metadados e o primeiro parágrafo podem estar no conjunto público. A [matriz de migração](../../references/audits/documentation-migration.md) registra fonte, destino e cobertura de cada material removido.
+ 
+ ## Estado técnico
+ 
+-A fundação Next.js está inicializada em `web/`, com scripts npm, lockfile, shell, formulários locais e testes Vitest/Playwright. A Home completa foi portada para JSX/CSS Modules e está em revisão independente visual/técnica P3.4; páginas internas aguardam o aceite humano obrigatório do `PLAN.md`. Comandos em `development.md` e evidências em [frontend-foundation.md](../../references/audits/frontend-foundation.md) e [home-native.md](../../references/audits/home-native.md). Exports e execução local não comprovam operação ou prontidão de produção.
++Frontend local implementado e validado em 11/10/2026. A Home nativa recebeu aprovação humana em 10/10; o aceite final do conjunto permanece pendente. Gates: lint, typecheck, 101 testes unitários, build de produção e 228 E2E aprovados, com quatro skips explicitados na [auditoria final](../../references/audits/final-qa.md). Não há integração operacional nem autorização de publicação.
+ 
++As seis páginas desta documentação são o contexto canônico. Resultados detalhados, capturas e limites estão na auditoria final; tarefas e decisões continuam exclusivamente no PLAN.
+ 
++### Rechecagem documental final — 11/10/2026
++
++Rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.
+diff --git a/docs/web/design.md b/docs/web/design.md
+index eb5addc..653082c 100644
+--- a/docs/web/design.md
++++ b/docs/web/design.md
+@@ -1,6 +1,6 @@
+ # Design do website
+ 
+-**Atualizado:** 10/10/2026. Os 12 exports aprovados foram movidos intactos para `references/claude-design/` e auditados em 09/10. Eles continuam como referência de visual e conteúdo durante a portabilidade; corrigir as lacunas técnicas sem redesenho. Fonte da Home: [Home.dc.html](../../references/claude-design/Home.dc.html), com moldura/laterais. [Auditoria](../../references/audits/home-export-audit.md) registra execução e lacunas. Produto e decisões estão em [product.md](product.md).
++**Atualizado:** 11/10/2026. Os 12 exports aprovados foram movidos intactos para `references/claude-design/` e auditados em 09/10. Eles continuam como referência de visual e conteúdo durante a portabilidade; corrigir as lacunas técnicas sem redesenho. Fonte da Home: [Home.dc.html](../../references/claude-design/Home.dc.html), com moldura/laterais. [Auditoria](../../references/audits/home-export-audit.md) registra execução e lacunas. Produto e decisões estão em [product.md](product.md).
+ 
+ ## 1. Autoridade e adaptações aprovadas
+ 
+@@ -13,7 +13,7 @@ O [manual](../design/brand-design.md) permanece fonte oficial da marca. A aprova
+ - Cadeado ilustrativo no princípio Presença, além dos objetos técnicos próprios.
+ - Representações decorativas ASCII. Assinaturas institucionais continuam SVGs prontos; efeitos não comprovam uma checagem real.
+ 
+-Não generalizar adaptações para internas sem decisão. F01 autoriza ferramentas; **N02 autoriza as três páginas de newsletter** e **S02 autoriza as três páginas de serviços** a herdarem a linguagem da Home com efeitos contidos. Isso não reescreve o manual; composições específicas das internas permanecem propostas para revisão. Sinal, selos e “Verificado” não autorizam alegação fictícia de segurança.
++Não generalizar adaptações para internas sem decisão. F01 autoriza ferramentas; **N02 autoriza as três páginas de newsletter** e **S02 autoriza as três páginas de serviços** a herdarem a linguagem da Home com efeitos contidos. Isso não reescreve o manual; as composições dos 12 exports aprovados são a baseline atual e foram portadas, preservando adaptações funcionais auditadas. Sinal, selos e “Verificado” não autorizam alegação fictícia de segurança.
+ 
+ ## 2. Fundamentos observados
+ 
+@@ -32,7 +32,7 @@ A entrega aprovada usa **somente o tema escuro** (D03). Não implementar tema cl
+ | Apoio/luz | Menta/Musgo, conforme token |
+ | G2 na faixa verde | Floresta `#175B4B` |
+ 
+-Baloo 2 para títulos; Archivo para corpo/UI; monoespaçada de sistema para terminal/ASCII. Fontes locais em `_ds/assets/fonts`; OFL oficial em `docs/design/assets/fonts`, a preservar na redistribuição.
++Baloo 2 para títulos; Archivo para corpo/UI; monoespaçada de sistema para terminal/ASCII. No export, fontes em `_ds/assets/fonts`; na aplicação, cópias locais rastreáveis via `next/font/local`; OFL oficial em `docs/design/assets/fonts`, a preservar na redistribuição.
+ 
+ Medidas vêm do HTML, não da antiga tabela proposta: H1 `clamp(48px,6vw,92px)/1.04`, H2 `clamp(40px,4.4vw,64px)/1.04`, corpo 18px/1.55 e descrição do hero 20px/1.55. Não converter pt do manual diretamente em px.
+ 
+@@ -46,7 +46,7 @@ Moldura máxima 1320px; conteúdo 1200px; padding horizontal `clamp(20px,4vw,60p
+ - Ferramentas: quatro/duas/uma coluna conforme espaço.
+ - Mobile expõe todos os entregáveis/etapas sem depender do pinning.
+ 
+-Chrome testado em 1440×1000 e 390×844, sem overflow horizontal observado. 320px, zoom/reflow, teclado e dispositivos reais ainda precisam de revisão.
++Chrome testado em 1440×1000 e 390×844, sem overflow horizontal observado. Reflow em 320px e viewports equivalentes a 200%/400%, teclado Chromium e smoke Firefox/WebKit foram verificados. Zoom real, dispositivos físicos e leitor de tela não foram certificados.
+ 
+ ## 3. Home por seção
+ 
+@@ -94,7 +94,7 @@ Serviços/processo acrescentam pistas de `3 × 0,6 × altura da viewport` e `5 
+ 
+ ### Para quem lidera
+ 
+-Faixa Verde Raiz, G2 Abrigo grande em Floresta e **Operações críticas pedem mais do que tecnologia.** Texto sobre regulação, crescimento e liderança, acomodado à barra do grafismo. Não recuperar quatro linhas/cards anteriores. Asset ativo: `web/assets/g2-abrigo-175b4b.png`.
++Faixa Verde Raiz, G2 Abrigo grande em Floresta e **Operações críticas pedem mais do que tecnologia.** Texto sobre regulação, crescimento e liderança, acomodado à barra do grafismo. Não recuperar quatro linhas/cards anteriores. No export, asset `assets/g2-abrigo-175b4b.png`; a aplicação utiliza a cópia pública rastreada no catálogo de publicação.
+ 
+ ### Ferramentas
+ 
+@@ -107,17 +107,17 @@ Faixa Verde Raiz, G2 Abrigo grande em Floresta e **Operações críticas pedem m
+ | Dívida técnica | Engrenagem com dentes faltantes |
+ | Migração para nuvem | Nuvem com seta ascendente |
+ 
+-Hachuras, volume, luz e movimento seguem o export. Cards hoje apontam a `#contato`: destino provisório, não eliminação das ferramentas futuras. Não inferir fórmula do ícone. Escopo das páginas foi definido via grill-me em F01–F29 no [briefing das ferramentas](tools.md); `temp/Ferramentas` permanece referência não aprovada.
++Hachuras, volume, luz e movimento seguem o export. Na aplicação, os cards levam às quatro rotas de ferramentas; o destino `#contato` do export era provisório. Não inferir fórmula do ícone. Escopo das páginas foi definido via grill-me em F01–F29 no [briefing das ferramentas](tools.md); `temp/Ferramentas` permanece referência não aprovada.
+ 
+ ### Newsletter
+ 
+-Símbolo ASCII, **Análise em dias úteis.**, descrição e e-mail. Sucesso aprovado: **Inscrição confirmada. A próxima edição chega no próximo dia útil.** Handler apenas altera estado local; não confirma endereço, cadastra ou envia. “Ver edições anteriores” usa `#` e precisa de rota real. Operação em [jornadas](product.md).
++Símbolo ASCII, **Análise em dias úteis.**, descrição e e-mail. Histórico do export: **Inscrição confirmada. A próxima edição chega no próximo dia útil.** A aplicação substitui esse falso sucesso pelo contrato D10: modo padrão indisponível; demo explícito aceita apenas pedido local, sem confirmação/envio. “Ver edições anteriores” leva ao arquivo real. Operação em [jornadas](product.md).
+ 
+ ### Contato e rodapé
+ 
+ Faixa Verde Raiz: **Vamos cuidar da sua base.** Texto/formulário à esquerda, símbolo ASCII à direita. **Conversa inicial gratuita de qualificação. Retorno por ligação ou WhatsApp.** Nome, Empresa e WhatsApp obrigatórios; não acrescentar e-mail/escolha de canal à reprodução por suposição.
+ 
+-Sucesso aprovado: **Diagnóstico solicitado. A gente retorna por ligação ou WhatsApp no próximo dia útil.** Estado local sem envio; promessa exige operação antes da publicação. Rodapé: assinatura, slogan oficial **A base que sustenta o crescimento!**, atalhos, Privacidade e copyright 2026. Privacidade é placeholder.
++Histórico do export: **Diagnóstico solicitado. A gente retorna por ligação ou WhatsApp no próximo dia útil.** Na aplicação, aviso e estados locais não confirmam recebimento; a promessa exige integração real antes da publicação. Rodapé: assinatura, slogan oficial **A base que sustenta o crescimento!**, atalhos, Privacidade e copyright 2026. A rota de privacidade é provisória e descreve honestamente a operação local.
+ 
+ ## 4. Preservação técnica
+ 
+@@ -127,24 +127,26 @@ O símbolo 3D experimental não está montado no CTA. Hero/moldura/símbolos ati
+ 
+ Destino: Next.js App Router, React, TypeScript, npm e CSS Modules/tokens. React Three Fiber não foi escolhido. Preservar export; portar componentes sem presumir o interpretador `support.js` como arquitetura da aplicação. Versões CDN observadas não fixam dependências futuras.
+ 
+-## 5. Requisitos ainda não implementados
++## 5. Correções implementadas na portabilidade
+ 
+ - Pausa acessível; redução de movimento reagindo a alterações do sistema.
+-- Preservar limitação fora de tela e completar suspensão em aba oculta; medir antes de impor budgets.
++- Suspensão fora de tela/aba oculta implementada; cobertura de aba realmente oculta limitada pelos skips descritos abaixo.
+ - Fallback estático para carregamento/falha/perda de WebGL e erro de importação.
+ - Abas com relação painel/controle e teclado adequado, ou semântica simplificada coerente.
+ - Terminal anunciando etapa/conteúdo completo, sem anunciar caractere por caractere.
+ - Menu com foco/fechamento revisados, `lang="pt-BR"`, labels, erros e contraste aferidos.
+-- Rotas/formulários reais, falhas honestas e privacidade correspondente.
++- Rotas/formulários locais, falhas honestas e privacidade correspondente.
+ - Descarte de recursos e tratamento de pointer cancel.
+ 
+-Completar esses pontos não exige nova proposta visual. Aprovação e execução sem erros não certificam acessibilidade, desempenho ou entrega.
++A lista acima registra as lacunas históricas corrigidas em código. Contraste/acessibilidade completos não são certificados. Formulários/rotas são locais; recebimento e envio reais continuam fora do escopo.
++
++PillarArt carrega Three/runtime ao entrar no viewport (no mount quando IntersectionObserver não existe), conserva fallback até o primeiro desenho bem-sucedido e descarta inicializações tardias. Pausa SPA, redução dinâmica, suspensão e descarte têm testes; perda de contexto mantém instâncias já montadas em falha, sem impedir novas instâncias futuras. Aba realmente oculta teve dois testes pulados no headless; não declarar essa cobertura real como aprovada. [Evidências finais](../../references/audits/final-qa.md).
+ 
+ ## 6. Internas
+ 
+-Sitemap/jornadas preservados onde não substituídos pela Home. **Ferramentas: Home com efeitos contidos**, direção aprovada em 05/10. Herdar linguagem visual, adaptando efeitos à leitura/preenchimento. F18/F21/F25/F29 definem formulário/checklist em uma página e resultado compacto abaixo; substituem etapas de F02. Sem gráficos ou painel avançado.
++Sitemap/jornadas preservados onde não substituídos pela Home. **Ferramentas: Home com efeitos contidos**, direção aprovada em 05/10. Herdar linguagem visual, adaptando efeitos à leitura/preenchimento. F18/F21/F25/F29 definem formulário/checklist em uma página e resultado compacto abaixo; substituem etapas de F02. Sem gráficos analíticos ou painel avançado; objetos decorativos permanecem.
+ 
+-Os quatro exports de ferramentas estão em `references/claude-design/`; o [briefing](tools.md) permanece contrato para revisar modelos, estados, fontes e exemplos. Esta preparação de newsletter não auditou sua implementação/cálculos. Não copiar hero inteiro/pinning automaticamente ou tratar arquivo gerado como publicação autorizada.
++Os quatro exports de ferramentas estão em `references/claude-design/`; o [briefing](tools.md) permanece contrato para revisar modelos, estados, fontes e exemplos. A implementação local e os modelos foram revisados e testados; isso não certifica a operação futura. Não copiar hero inteiro/pinning automaticamente ou tratar arquivo gerado como publicação autorizada.
+ 
+ ### Newsletter — direção N02 e composição N01/N05–N10
+ 
+@@ -166,3 +168,7 @@ S01 + S16 definem seis seções: abertura, situações, quatro frentes, método,
+ 
+ 
+ 
++
++### Rechecagem documental final — 11/10/2026
++
++Rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.
+diff --git a/docs/web/development.md b/docs/web/development.md
+index 9c274d4..bea77f6 100644
+--- a/docs/web/development.md
++++ b/docs/web/development.md
+@@ -2,7 +2,7 @@
+ 
+ ## Estado e decisões
+ 
+-Plano aprovado pelo usuário em 10/10/2026. A fundação da aplicação está inicializada em `web/` com Next.js App Router, React, TypeScript estrito, npm, CSS Modules, tokens CSS e Three.js direto. Não usar runtime DC/CDN, React Three Fiber, Tailwind ou Cache Components. Conteúdo essencial fica em Server Components; componentes cliente ficam restritos a interações/gráficos. Primeiro render determinístico; Baloo 2 e Archivo via `next/font/local`, mantendo as licenças OFL.
++Plano aprovado pelo usuário em 10/10/2026. A aplicação está implementada em `web/` com Next.js App Router, React, TypeScript estrito, npm, CSS Modules, tokens CSS e Three.js direto. Não usar runtime DC/CDN, React Three Fiber, Tailwind ou Cache Components. Conteúdo essencial fica em Server Components; componentes cliente ficam restritos a interações/gráficos. Primeiro render determinístico; Baloo 2 e Archivo via `next/font/local`, mantendo as licenças OFL.
+ 
+ Backend, banco de dados, CMS, serviço de e-mail, hospedagem e publicação seguem sem escolha. A fase atual não integra envio, persistência, analytics, relatório operacional ou recebimento de contatos. Idempotência e confirmação incerta de uma solicitação ficam como requisitos da futura integração, sem mecanismo escolhido.
+ 
+@@ -13,7 +13,7 @@ Backend, banco de dados, CMS, serviço de e-mail, hospedagem e publicação segu
+ | D03 | Entregar somente tema escuro. |
+ | D04 | Aplicação em `web/`; exports preservados em `references/claude-design/`. |
+ | D05 | Exatamente seis documentos canônicos em `docs/web`; migrar informação única antes de excluir substituídos. |
+-| D06 | GPT-6.1 Sol · XHigh orquestra e decide; todo desenvolvimento restante usa MCP Claude, Sonnet/Haiku explícitos; Opus somente consulta complexa. Uma escrita por vez; limite global três workers. Fable excluído por indisponibilidade no Pro. |
++| D06 | GPT-6.1 Sol · XHigh orquestra e decide; código via MCP Claude, Sonnet/Haiku explícitos; GPT executa gates/servidores e, por autorização posterior, a documentação final; Opus somente consulta complexa. Uma escrita por vez; limite global três workers. Fable excluído por indisponibilidade no Pro. |
+ | D07 | Aprovação humana da Home antes das páginas internas; aceite humano final do conjunto. |
+ | D08 | `/privacidade` provisória, descrevendo honestamente a operação local. |
+ | D09 | Formulários ativos com validação completa, preparados para futura integração. |
+@@ -43,13 +43,13 @@ Conteúdo, rótulos e ações essenciais continuam utilizáveis sem Canvas/WebGL
+ 
+ ## Fases e gates
+ 
+-P1.1 plano aprovado e registrado; P1.2 exports preservados com hashes e baseline; P1.3 documentação consolidada; P1.4 instruções/agentes revisados. P2 inicializa aplicação e publica cópias rastreáveis de assets. P3 porta gráficos e Home; **a aprovação humana da Home bloqueia páginas internas**. P4 implementa serviços e ferramentas. P5 implementa newsletter, privacidade, metadata e 404. P6 executa CI/QA e apresenta aceite final. Não declarar fase futura concluída por preparação parcial.
++P1.1 plano aprovado e registrado; P1.2 exports preservados com hashes e baseline; P1.3 documentação consolidada; P1.4 instruções/agentes revisados. P2–P5 concluídos tecnicamente: aplicação/assets, gráficos/Home, serviços/ferramentas, newsletter/privacidade/metadata/404. Home aprovada em 10/10 antes das internas. P6 tem QA local documentado e revisão documental concluída; aguarda aceite humano final com ciência dos limites. Não declarar fase futura concluída por preparação parcial.
+ 
+-Os critérios completos de cada tarefa incluem comandos reais de lint/tipos/testes/build, smoke em produção, validação desktop/mobile/teclado, modelos/limites e inspeção de conteúdo público. Há `web/package.json`, lockfile, configuração TypeScript/ESLint, Vitest Node e Playwright. A Home completa é JSX/CSS Modules com conteúdo SSR, interações locais e gráficos integrados; sua revisão independente P3.4 e aprovação humana continuam pendentes, sem páginas internas antecipadas. Não chamar o export servido por HTTP de build Next. Evidências e versões em [frontend-foundation.md](../../references/audits/frontend-foundation.md); portabilidade e gates da Home em [home-native.md](../../references/audits/home-native.md).
++Os critérios completos de cada tarefa incluem comandos reais de lint/tipos/testes/build, smoke em produção, validação desktop/mobile/teclado, modelos/limites e inspeção de conteúdo público. Há `web/package.json`, lockfile, configuração TypeScript/ESLint, Vitest Node e Playwright. A Home completa é JSX/CSS Modules com conteúdo SSR, interações locais e gráficos integrados; sua revisão independente P3.4 e aprovação humana ocorreram antes das internas. Não chamar o export servido por HTTP de build Next. Evidências e versões em [frontend-foundation.md](../../references/audits/frontend-foundation.md); portabilidade e gates da Home em [home-native.md](../../references/audits/home-native.md).
+ 
+ ## Evidências e limites
+ 
+-Execução detalhada por tarefa está no PLAN, seção “Agentes, modelos e operação da ponte Claude”. Sonnet implementa Next/React/CSS, gráficos, modelos, testes e CI; Haiku executa tarefas mecânicas e documentação factual. Revisão Sonnet ocorre em outra sessão, sem garantia de diversidade de modelos; gates e aceite humano permanecem obrigatórios. Opus somente para impasses complexos. GPT mantém plano/decisões e pode executar gates determinísticos, sem desenvolver o código. Perfis Codex anteriores ficam preservados como histórico. As fases 4 e 5 podem ter dependências independentes, mas as escritas da ponte são serializadas.
++Execução detalhada por tarefa está no PLAN, seção “Agentes, modelos e operação da ponte Claude”. Sonnet implementa Next/React/CSS, gráficos, modelos, testes e CI; Haiku executa tarefas mecânicas e documentação factual. Revisão Sonnet ocorre em outra sessão, sem garantia de diversidade de modelos; gates e aceite humano permanecem obrigatórios. Opus somente para impasses complexos. GPT mantém plano/decisões, executa gates e servidores, sem desenvolver código do site. Após duas tentativas Haiku sem edição, o usuário autorizou GPT a atualizar somente a documentação final (Opção A, 11/10), mantendo revisão Sonnet independente. Perfis Codex anteriores ficam preservados como histórico. As fases 4 e 5 podem ter dependências independentes, mas as escritas da ponte são serializadas.
+ 
+ `claude` usa `cwd` na raiz Git, modelo explícito e leitura por padrão. Escrita exige tag `[claude:escreve]`, escopo delimitado e hash de checkpoint WIP LOCAL autorizado em 10/10/2026, após inspeção de segredos/gerados. Esse checkpoint pode incluir trabalho anterior; não autoriza commit final, push, PR ou deploy. Não editar em paralelo a escrita Claude. Registrar sessão/modelo/hash/gates no PLAN; consultas independentes não têm shell e recebem evidências de testes. Após cada escrita executar lint/typecheck/unit/build/e2e; depois de três arquivos exigir revisão do diff. A ponte não expõe esforço e não permite sub-agents headless; Fable não deve ser chamado. Não alterar configuração global ou fazer fallback silencioso.
+ 
+@@ -74,6 +74,18 @@ npm run build
+ npm run start
+ ```
+ 
+-Para testes de navegador, instalar o browser correspondente uma vez com `npx playwright install chromium`, executar `npm run build` e depois `npm run test:e2e`. O runner inicia e encerra duas instâncias do mesmo build: porta 3100 com `FORM_MODE=demo`, porta 3101 sem simulação. Não reutiliza servidor existente. Nesta fundação, `force-dynamic` permite resolver o modo exclusivamente no servidor em cada request; parâmetros públicos não controlam a simulação. Para desenvolvimento manual demo, definir `$env:FORM_MODE='demo'` antes de `npm run dev`; retirar a variável restaura o modo indisponível após reiniciar o processo.
++Para testes de navegador, instalar o browser correspondente uma vez com `npx playwright install chromium firefox webkit`, executar `npm run build` e depois `npm run test:e2e`. O runner inicia e encerra duas instâncias do mesmo build: porta 3100 com `FORM_MODE=demo`, porta 3101 sem simulação. Não reutiliza servidor existente. Nesta fundação, `force-dynamic` permite resolver o modo exclusivamente no servidor em cada request; parâmetros públicos não controlam a simulação. Para desenvolvimento manual demo, definir `$env:FORM_MODE='demo'` antes de `npm run dev`; retirar a variável restaura o modo indisponível após reiniciar o processo.
+ 
+-Verificar `npm audit` e `npm audit --omit=dev`. Em 10/10/2026, produção não apresentou advisories; a cadeia de desenvolvimento ESLint/fast-glob/micromatch/braces tem GHSA-vfj7-8cjw-p6xm sem patch publicado. Não executar correções `--force` nem declarar ausência de risco. Rechecagem na etapa P6 e antes de qualquer futura publicação, incluindo atualização Next anunciada para 14/10/2026.
++Verificar `npm audit` e `npm audit --omit=dev`. Em 11/10/2026, o audit de produção retornou zero advisories; o audit completo retornou cinco high na cadeia de desenvolvimento; a cadeia de desenvolvimento ESLint/fast-glob/micromatch/braces tem GHSA-vfj7-8cjw-p6xm sem patch publicado. Não executar correções `--force` nem declarar ausência de risco. Rechecagem na etapa P6 e antes de qualquer futura publicação, incluindo atualização Next anunciada para 14/10/2026.
++
++## Entrega local verificada em 11/10/2026
++
++Frontend local implementado e validado em 11/10/2026. A Home nativa recebeu aprovação humana em 10/10; o aceite final do conjunto permanece pendente. Gates: lint, typecheck, 101 testes unitários, build de produção e 228 E2E aprovados, com quatro skips explicitados na [auditoria final](../../references/audits/final-qa.md). Não há integração operacional nem autorização de publicação.
++
++Versões fixadas: Next 16.4.0, React/React DOM 19.3.0, TypeScript 5.9.3, Three 0.184.0, Vitest 5.0.3, Playwright 1.64.0 e ESLint 9.39.5. Ambiente observado: Node 24.13.1/npm 11.8.0. Scripts de captura/medição, após build e com portas livres: `node scripts/qa-capture.mjs` e `node scripts/lighthouse.mjs`; Lighthouse usa porta 3200 e pacote 13.5.0 efêmero, sem dependência nova no app. Não executar medições junto aos testes.
++
++CI GitHub contém os mesmos gates e browsers, sem deploy; execução remota não realizada. Produção local foi medida: CLS 0, LCP mediano 4,80–4,88 s (meta orientativa 2,5 s não atingida), TBT 112–452,5 ms. São medidas de laboratório, não INP de campo. Revisar desempenho em hardware real, advisories/patches e integrações antes de futura publicação. Não aplicar audit --force que ofereceu downgrade Next.
++
++### Rechecagem documental final — 11/10/2026
++
++Rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.
+diff --git a/docs/web/newsletter.md b/docs/web/newsletter.md
+index 9f3f4d8..24400c9 100644
+--- a/docs/web/newsletter.md
++++ b/docs/web/newsletter.md
+@@ -1,6 +1,6 @@
+ # Newsletter Root Trust
+ 
+-**Atualizado:** 10/10/2026. Os três exports aprovados seguem N01–N11 e foram auditados em 09/10. Preservar o visual/conteúdo exportado na portabilidade. Tema escuro aprovado; CMS e envio não estão integrados. Entrada: [README](README.md).
++**Atualizado:** 11/10/2026. Os três exports aprovados seguem N01–N11 e foram auditados em 09/10. Preservar o visual/conteúdo exportado na portabilidade. Tema escuro aprovado; CMS e envio não estão integrados. Entrada: [README](README.md).
+ 
+ **Estado dos exports:** apresentação, arquivo e prévia estão preservados entre os 12 exports em `references/claude-design/`. A auditoria de 09/10 registra a análise estática e suas limitações. O Markdown editorial completo permanece em `references/editorial/`, fora do conteúdo publicável.
+ 
+@@ -55,6 +55,12 @@ A abertura deve explicar assunto/contexto/relevância sem depender de trecho ocu
+ 
+ Arquivo e amostra da landing usam o mesmo parágrafo. Não exigir outra lista pública de fontes: links na abertura permanecem clicáveis; fontes completas acompanham o e-mail. Não incluir conteúdo completo em HTML, JSON, bundle, atributos ou payload público para escondê-lo. O Markdown completo é anexo editorial, não asset publicável.
+ 
++## Estado implementado
++
++As três rotas estão implementadas em Next, com três amostras demonstrativas sem indexação, arquivo com dois itens por página e filtro que reinicia na página 1. O formulário exibe aviso de nenhum envio desde o estado inicial, inclusive com ajuda específica; preserva edição escolhida, ou seleciona a mais recente na origem geral. Metadata individual deriva somente da abertura pública, com corte de até 160 caracteres sem quebrar palavras.
++
++Aberturas e fontes são públicas; corpos completos permanecem fora da distribuição pública. Scan GPT de 230 arquivos e 11 trechos privados encontrou zero ocorrências, dentro desse recorte. Slug inexistente bem formado retorna 404; UTF-8 malformado pode resultar em 500 antes da aplicação. [QA final](../../references/audits/final-qa.md). Confirmação, entrega, cancelamento e CMS seguem pendentes; nenhum estado demo comprova essas operações.
++
+ ## 4. Página A — apresentação/inscrição
+ 
+ **Rota:** /newsletter. **Copy proposta:** [conteúdo](product.md#newsletter--newsletter).
+@@ -85,9 +91,9 @@ Somente e-mail. Sem nome/empresa/telefone/interesses ou checkbox obrigatório pr
+ - **Anterior**, página atual/total e **Próxima**, com extremos indisponíveis; mudar filtro volta à página 1.
+ - Sem busca, scroll infinito, métricas sociais ou taxonomia adicional.
+ 
+-As três amostras permitem **duas entradas por página apenas na demonstração**: página 1 com dois itens, página 2 com um; filtros por pilar com uma entrada. Tamanho de produção não está fixado. Estados vazios/erro são selecionáveis na revisão, sem criar artigos de preenchimento.
++As três amostras permitem **duas entradas por página apenas na demonstração**: página 1 com dois itens, página 2 com um; filtros por pilar com uma entrada. Tamanho de produção não está fixado. Na aplicação, catálogo estático local e estados vazios são cobertos por fixtures. O seletor de erro de catálogo pertencia à revisão do export; falha de rede do catálogo depende de futura integração, sem simulador adicional nesta entrega.
+ 
+-Copy: **Ainda não há edições publicadas.**; **Nenhuma edição neste pilar por enquanto.** com **Ver todos os pilares**; **Não foi possível carregar as edições. Tente novamente.** Não tratar erro como arquivo vazio.
++Referência editorial de vazio geral: **Ainda não há edições publicadas.**; **Nenhuma edição neste pilar por enquanto.** com **Ver todos os pilares**; **Não foi possível carregar as edições. Tente novamente.** Não tratar erro como arquivo vazio.
+ 
+ ## 6. Página C — prévia individual
+ 
+@@ -178,3 +184,7 @@ Fornecedor, endpoint/API e integrações não foram escolhidos. Esta documentaç
+ 
+ 
+ 
++
++### Rechecagem documental final — 11/10/2026
++
++Rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.
+diff --git a/docs/web/product.md b/docs/web/product.md
+index ddf1ece..6174087 100644
+--- a/docs/web/product.md
++++ b/docs/web/product.md
+@@ -1,6 +1,10 @@
+ # Produto, conteúdo e jornadas
+ 
+-**Atualizado:** 10/10/2026. A Home foi aprovada em 04/10. Os 12 exports aprovados (Home, três serviços, quatro ferramentas, três páginas de newsletter e 404) estão preservados em `references/claude-design/`; a auditoria de 09/10 está em `references/audits/`. F01–F29, S01–S16 e N01–N11 regem suas jornadas. A aprovação dos exports define a referência visual/conteúdo; não comprova cálculo auditado, integração ou operação. Marca oficial: [docs/design](../design/README.md).
++**Atualizado:** 11/10/2026. A Home (export) foi aprovada em 04/10. Os 12 exports aprovados (Home, três serviços, quatro ferramentas, três páginas de newsletter e 404) estão preservados em `references/claude-design/`; a auditoria de 09/10 está em `references/audits/`. F01–F29, S01–S16 e N01–N11 regem suas jornadas. A aprovação dos exports define a referência visual/conteúdo; não comprova cálculo auditado, integração ou operação. Marca oficial: [docs/design](../design/README.md).
++
++## Estado da entrega
++
++Frontend local implementado e validado em 11/10/2026. A Home nativa recebeu aprovação humana em 10/10; o aceite final do conjunto permanece pendente. Gates: lint, typecheck, 101 testes unitários, build de produção e 228 E2E aprovados, com quatro skips explicitados na [auditoria final](../../references/audits/final-qa.md). Não há integração operacional nem autorização de publicação. Slugs bem formados inexistentes retornam HTTP 404 antes de streaming. Encoding UTF-8 malformado pode retornar 500 no decodificador do Next antes da aplicação; limitação registrada para revisão antes da publicação.
+ 
+ ## Público e posicionamento
+ 
+@@ -10,7 +14,7 @@ Abordagens conceituais confirmadas: segurança desde a concepção; visão integ
+ 
+ ## Contrato comum de serviços
+ 
+-A decisão aprovada S01–S16 estabelece seis seções por serviço: abertura/CTA, situações, quatro frentes, método, FAQ e CTA/formulário final. S16 remove a seção e os links promocionais para ferramentas. S02 autoriza a Home escura com efeitos contidos, moldura e um objeto existente na abertura: chave, servidores ou módulos. S03 exige Nome, Empresa e WhatsApp, conversa inicial gratuita de qualificação e retorno por ligação ou WhatsApp no próximo dia útil. Retorno é promessa futura condicionada a recebimento real; o formulário demo nunca envia dados. Textos detalhados abaixo são propostas editoriais para aprovação.
++A decisão aprovada S01–S16 estabelece seis seções por serviço: abertura/CTA, situações, quatro frentes, método, FAQ e CTA/formulário final. S16 remove a seção e os links promocionais para ferramentas. S02 autoriza a Home escura com efeitos contidos, moldura e um objeto existente na abertura: chave, servidores ou módulos. S03 exige Nome, Empresa e WhatsApp, conversa inicial gratuita de qualificação e retorno por ligação ou WhatsApp no próximo dia útil. Retorno é promessa futura condicionada a recebimento real; o formulário demo nunca envia dados. Os blocos abaixo rotulados como proposta preservam o histórico editorial; os 12 exports aprovados e os contratos S/F/N orientam a implementação atual, sem criar aprovação comercial para alegações novas.
+ ## Rotas desta entrega
+ 
+ | Página | Rota |
+@@ -29,7 +33,7 @@ A decisão aprovada S01–S16 estabelece seis seções por serviço: abertura/CT
+ | Privacidade provisória | `/privacidade` |
+ | 404 | Página não encontrada, com resposta HTTP 404 na aplicação |
+ 
+-O hub de ferramentas e a página dedicada de diagnóstico estão adiados e não fazem parte destas rotas. A Home e cada página de serviço oferecem o formulário de contato local `#contato`. A navegação global mantém os destinos aprovados da Home; exports atuais ainda precisam de revisão de execução e portabilidade.
++O hub de ferramentas e a página dedicada de diagnóstico estão adiados e não fazem parte destas rotas. A Home e cada página de serviço oferecem o formulário de contato local `#contato`. A navegação global mantém os destinos aprovados da Home; a portabilidade Next e a revisão técnica local estão concluídas; o aceite humano final segue pendente.
+ 
+ ## Home — textos e composição aprovados
+ 
+@@ -736,3 +740,7 @@ A pesquisa apoia a organização editorial. As quatro frentes e os exemplos de e
+ 
+ 
+ 
++
++### Rechecagem documental final — 11/10/2026
++
++Rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.
+diff --git a/docs/web/tools.md b/docs/web/tools.md
+index ad2d47b..bd2876c 100644
+--- a/docs/web/tools.md
++++ b/docs/web/tools.md
+@@ -1,17 +1,23 @@
+ # Contrato das ferramentas Root Trust
+ 
+-**Atualizado:** 10/10/2026. F01–F29 definem o escopo aprovado das quatro ferramentas. Seus exports aprovados estão em `references/claude-design/` e foram avaliados na auditoria de 09/10; os cálculos ainda exigem revisão técnica antes da publicação. Propostas neste contrato devem ser comparadas com o export aprovado. Entrada: [README](README.md); newsletter: [newsletter.md](newsletter.md).
++**Atualizado:** 11/10/2026. F01–F29 definem o escopo aprovado das quatro ferramentas. Seus exports aprovados estão em `references/claude-design/` e foram avaliados na auditoria de 09/10; os modelos locais foram implementados, testados e revisados; a publicação futura exige nova revisão de fontes, patches e operação. Propostas neste contrato devem ser comparadas com o export aprovado. Entrada: [README](README.md); newsletter: [newsletter.md](newsletter.md).
+ 
+ ## Resumo para começar
+ 
+-As quatro páginas exportadas (ROSI, Shadow AI, Dívida técnica e Migração para nuvem) serão portadas e revisadas contra este contrato. Cada uma tem formulário/checklist curto e resultado compacto na mesma página. Não há wizard obrigatório, gráficos, score de risco, comparação automática de propostas ou personalização do relatório.
++As quatro páginas (ROSI, Shadow AI, Dívida técnica e Migração para nuvem) foram portadas para Next e revisadas contra este contrato. Cada uma tem formulário/checklist curto e resultado compacto na mesma página. Não há wizard obrigatório, gráficos analíticos, score de risco, comparação automática de propostas ou personalização do relatório.
+ 
+ Este documento é o contrato de escopo, modelos, limites, estados e exemplos reproduzíveis para a portabilidade e revisão das ferramentas.
+ 
++## Implementação e limites verificados
++
++Modelos TS puros cobertos por 69 testes de modelos, dentro dos 101 unitários totais. Cálculo somente no navegador; edição invalida resultado e respostas não são associadas ao relatório. A aritmética usa IEEE 754, com tratamento de cancelamento limitado a quatro EPSILON; não é contabilidade decimal exata nem garantia de precisão universal. Fixtures incluem valores subcentavo e diferenças de 1 em 10¹⁵.
++
++Adaptações funcionais preservadas: seletor de cenário, campos desconhecidos/personalizados e ajudas explícitas; rótulos com “—” antes do cálculo, sem valores fictícios; Shadow AI sem score. Método em acordeão, resultado sem fixação e exemplo fictício abaixo do resultado podem alterar altura/posição em relação ao export. Objetos 3D são decorativos. [QA e limitações](../../references/audits/final-qa.md).
++
+ ## Fontes e precedência
+ 
+ 1. Respostas explícitas da entrevista F01–F29 registradas neste documento; decisões posteriores substituem as anteriores no mesmo assunto.
+-2. [Home.dc.html](../../references/claude-design/Home.dc.html) e [design](design.md) como referência visual: as ferramentas herdam sua linguagem com efeitos contidos, conforme F01. Composições internas propostas serão avaliadas no protótipo.
++2. [Home.dc.html](../../references/claude-design/Home.dc.html) e [design](design.md) como referência visual: as ferramentas herdam sua linguagem com efeitos contidos, conforme F01. Os quatro exports aprovados orientam as composições internas atuais.
+ 3. [Marca](../design/README.md), [conteúdo](product.md) e [jornadas](product.md) para contexto compartilhado.
+ 4. [DC das ferramentas](<../../temp/Ferramentas/Root Trust - Ferramentas Interativas.dc.html>) e [briefing histórico](../../temp/Ferramentas/uploads/root-trust-ferramentas-interativas.md) como inspiração não aprovada.
+ 
+@@ -350,3 +356,7 @@ Também conferir percentuais 0/100, valor negativo, campo vazio, excesso numéri
+ 
+ 
+ 
++
++### Rechecagem documental final — 11/10/2026
++
++Rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.
+diff --git a/references/audits/final-qa.md b/references/audits/final-qa.md
+index ffada0f..175ac7a 100644
+--- a/references/audits/final-qa.md
++++ b/references/audits/final-qa.md
+@@ -1,32 +1,73 @@
+-# QA final: escopo, comandos e limites
++# QA final — frontend local Root Trust
+ 
+-Estado: preparação. Nenhum gate, captura ou medição foi executado por esta nota; resultados entram aqui somente depois da execução pelo GPT.
++**Atualizado: 11/10/2026.** Implementação e QA locais concluídos tecnicamente; Home aprovada em 10/10. Aceite humano final pendente. Sem autorização de commit final, push, PR ou deploy. Operação de backend/CMS/e-mail/analytics fora do escopo.
+ 
+-## Comandos (a partir de `web/`, após `npm run build`)
++## Gates e evidências
+ 
+-- Gate: `npm run test:e2e` (a captura fica fora do gate; `qa-capture.spec.ts` só entra com `QA_CAPTURE=1`).
+-- Captura: `node scripts/qa-capture.mjs` (Chromium desktop e mobile; define `QA_CAPTURE=1`). Saída em `references/audits/final-qa/captures`.
+-- Lighthouse 13.5.0 efêmero: `node scripts/lighthouse.mjs` (3 rodadas por Home, serviço, ferramenta, newsletter). Saída em `references/audits/final-qa/lighthouse`.
++GPT executou lint, typecheck, **101 unitários em 12 arquivos**, build de produção e **228 E2E aprovados / quatro skips** após a última alteração de código. Sonnet implementou e revisou em sessões distintas; não foi o único verificador de seu trabalho.
+ 
+-## O que cada evidência é
++- [Log E2E](final-qa/logs/final-e2e.log): Chromium desktop/mobile completo, Firefox/WebKit smoke. Quatro skips: duas capturas Home opt-in e dois testes de aba realmente oculta, indisponível nessa execução headless. Não são passes.
++- [Log de capturas](final-qa/logs/final-captures.log) e [capturas](final-qa/captures/): 44 JPG, 22 pares nativo/export, 11 rotas desktop/mobile, duas execuções de captura aprovadas. Métricas sem page errors, overflow, timeout, falha gráfica ou request falho do export.
++- [Medições Lighthouse](final-qa/lighthouse/summary.json) e [log](final-qa/logs/lighthouse.log): 12 rodadas, três por rota. Relatórios brutos na mesma pasta.
++- [Audit produção](final-qa/logs/audit-production.json): zero advisories. [Audit completo](final-qa/logs/audit-all.json): cinco high na cadeia de desenvolvimento ESLint/fast-glob/micromatch/braces (GHSA-vfj7-8cjw-p6xm). Não aplicado --force, que ofereceu downgrade Next.
++- Integridade conferida pelo GPT: 158 arquivos de export e oito cópias públicas/fontes/licenças sem divergência de hash. Scan de 230 arquivos src/public/build e 11 trechos de corpos editoriais privados: zero ocorrências nesse recorte; não prova ausência universal de vazamento.
+ 
+-- Captura: rota nativa versus export aprovado, mesmo viewport, DPR 1, movimento reduzido, fontes carregadas. A página é percorrida de ponta a ponta antes da foto; `metrics.json` registra, por gráfico, `status` (`ready` = renderizado; `failed` + fallback = fallback estático, não é render), tempo esgotado e viewport/UA. Não é igualdade pixel a pixel. Gráficos reais do export (e fundos externos) podem divergir.
+-- Reflow 640x512 e 320x256 CSS px: equivalente geométrico de 200%/400% de zoom, **não** zoom real do navegador. Verifica `scrollWidth`, e conteúdo de `main`/`footer` fora do viewport ou cortado por ancestral com `overflow: hidden/clip`; contêineres com rolagem intencional são ignorados.
+-- Teclado (Chromium): ordem de Tab finita, sem foco oculto, e o foco precisa mudar `outline`/`box-shadow` (indicador não decorativo). Indicador desenhado em elemento pai (`:focus-within`) seria reportado como falha para triagem manual.
+-- Firefox/WebKit: smoke. No WebKit do Windows o link “Pular” recebe foco programático; isso **não** verifica a ordem real de Tab.
+-- Pausa/descarte de gráficos: conta chamadas 2D (`clearRect`, `drawImage`, `fillRect`, `fillText`, `strokeText`, `fill`, `stroke`) por canvas, com controle > 0 antes da pausa. Não conta desenhos WebGL nem OffscreenCanvas; o descarte WebGL é verificado por `isContextLost()`.
+-- Prefetch `_rsc` cancelado na navegação (`ERR_ABORTED`, `NS_BINDING_ABORTED`, `cancelled`) é tolerado; qualquer outra falha de rede/console/página reprova.
+-- Lighthouse: laboratório, emulação móvel, loopback, TBT de laboratório não certifica INP de campo. Não é certificação de desempenho nem de acessibilidade.
+-- CI remoto não executado até push autorizado.
++Após a atualização documental, lint/tipos/101 unit/build passaram novamente. E2E completo: **227 passes, quatro skips, uma falha** ao observar o botão transitório “Enviando…” do contato. Repetição isolada: **3/3 passaram**, sem alteração de código ou testes. Causa não comprovada; instabilidade registrada, sem declarar nova rodada completa verde. [Log completo](final-qa/logs/final-delivery-gates.log) e [rechecagem isolada](final-qa/logs/final-contact-recheck.log). Registros em [PLAN.md](../../PLAN.md). CI está configurado sem deploy; execução remota não realizada, pois não houve push autorizado.
+ 
+-## P3.1 carga adiada de PillarArt
++## Comandos reproduzíveis
+ 
+-- `PillarArt` agora importa `pillar-runtime`/Three só quando o elemento entra no viewport (IntersectionObserver; sem observer, carrega no mount). Gates de movimento, pausa, reduced motion, aba oculta, fallback, perda de contexto e dispose mantidos; guarda `cancelled` evita montagem após desmontagem.
+-- Teste fora de tela (`graphics-motion.spec.ts`) ajustado: antes da rolagem os pilares ficam `loading` e nenhum contexto WebGL novo é criado; depois da rolagem ficam `ready` e a contagem de contextos aumenta. Teste de perda de contexto passa a exigir `failed` presente e nenhum `ready` (pilares nunca visíveis permanecem `loading` com fallback).
+-- Medições (LCP/TBT/JS) pendentes: GPT executa após os gates; não declarar ganho sem medir.
++Em web/, Node 24.13.1/npm 11.8.0:
+ 
+-## P3.1 primeiro quadro de PillarArt (correção)
++~~~powershell
++npm run lint
++npm run typecheck
++npm test
++npm run build
++npm run test:e2e
++node scripts/qa-capture.mjs
++node scripts/lighthouse.mjs
++~~~
+ 
+-- `mountPillar` recebe `onFirstFrame`, chamado uma única vez após o primeiro `drawImage` bem-sucedido; `dispose`/falha zeram o callback. `PillarArt` não marca `ready` no mount: fallback e `data-graphic-status="loading"` permanecem até o primeiro desenho (guarda `cancelled` evita setState após desmontagem).
+-- Testes (`graphics-motion.spec.ts`): `visitPillars` percorre cada pilar renderizado e exige `ready` com fallback ausente e canvas pintado (ou `failed` no caso sem WebGL); `expectViewportPillarsReady` espera todos os pilares no viewport. Suspensão (pausa, aba oculta, reduced motion, fora de tela) e `semWebGL` só medem depois de visitar todos; linhas fora de tela só contam se `status === ready` (pilar nunca montado não é medido como suspenso). Checagens de fallback visível limitadas a pilares; o teste `contextlost` da Home verifica apenas `main > img` da Home.
+-- Perda de contexto WebGL: escopo preciso = pilares já montados (`ready`) antes da perda permanecem `failed` após reduced motion e pausa/retomada. Pilares ainda não montados podem obter renderer novo e não são asseridos. Nenhuma asserção removida; testes não foram executados por esta sessão (GPT roda os gates).
++Instalar navegadores uma vez: npx playwright install chromium firefox webkit. E2E usa portas 3100/3101; Lighthouse usa 3200. Verificar portas livres e não executar medições junto aos testes. Captura define QA_CAPTURE=1; captura não faz parte do gate comum. Lighthouse 13.5.0 efêmero não é dependência do app nem execução offline fixada.
++
++## Medições finais de laboratório
++
++Windows 10.0.26200, Ryzen 7 5800X (16 CPUs lógicas), 11,9 GiB, Node 24.13.1, Chromium Playwright 1248. Lighthouse 13.5.0 em build Next de produção, loopback, FORM_MODE ausente, emulação móvel padrão com CPU 4× e slow 4G. Sem testes/capturas concorrentes.
++
++| Rota | LCP mediano (ms) | CLS | TBT mediano (ms) | JS transferido (bytes / KiB) |
++|---|---:|---:|---:|---:|
++| Home | 4876,8 | 0 | 114 | 172501 / 168,5 |
++| Cibersegurança | 4800,5 | 0 | 452,5 | 308149 / 300,9 |
++| ROSI | 4875,2 | 0 | 452,5 | 315566 / 308,2 |
++| Newsletter | 4860 | 0 | 112 | 166400 / 162,5 |
++
++LCP variou aproximadamente 4800–4935 ms e TBT 107–602,5 ms entre rodadas. **Meta orientativa LCP ≤2,5 s não atingida em nenhuma rota.** CLS ≤0,1 atendido neste laboratório. Decisão técnica do GPT, sujeita ao aceite humano final (P6.3): preservar visual/stack aprovados e registrar desvio para otimização/medição em hardware antes da publicação futura. TBT não certifica INP de campo; não há certificação de desempenho/acessibilidade.
++
++## Fidelidade e correções verificadas
++
++GPT inspecionou amostras nativo/export de serviços, ferramentas, newsletter e 404, desktop/mobile. A revisão visual é amostral, sem igualdade pixel a pixel ou aceite humano final implícito.
++
++- Serviços: frentes 2×2, situações numeradas abertas, detalhe em duas colunas, método e FAQ restaurados; conteúdos contratuais preservados.
++- Newsletter: landing com amostra/benefícios/curadoria/FAQ, arquivo editorial e destaque antes dos filtros, prévia em coluna de leitura. Formulário avisa ausência de envio desde o início; metadata só usa abertura pública.
++- Ferramentas: pares de campos e auxiliares ROSI, breadcrumb, rótulos antes do cálculo sem números fictícios, gutters mobile e objetos contidos. Seletor de cenário, estados desconhecidos/personalizados, ajudas, método em acordeão e resultado não fixado são adaptações funcionais documentadas; podem alterar altura/posição do export.
++- 404 recebeu moldura e arte, com retorno à Home. Privacidade é provisória e verdadeira. Slugs bem formados inexistentes retornam HTTP 404 antes de streaming. Encoding UTF-8 malformado pode gerar 500 no Next antes da aplicação; revisar antes de publicação.
++
++## Movimento, privacidade e limites dos testes
++
++PillarArt importa Three/runtime ao entrar no viewport (no mount quando IntersectionObserver não existe). Fallback permanece até primeiro drawImage bem-sucedido; callback é único, descartado em dispose/falha e protegido contra montagem tardia. Pausa SPA, redução dinâmica, suspensão fora de tela e descarte foram testados. Context loss mantém instâncias montadas em falha; futuras instâncias ainda não montadas podem obter novo renderer.
++
++Contagem de desenho observa sete métodos Canvas 2D: clearRect, drawImage, fillRect, fillText, strokeText, fill e stroke, com controle positivo antes da pausa. Não mede desenhos WebGL/OffscreenCanvas; descarte WebGL é verificado por isContextLost(). Suspensão real em aba oculta teve skips; testes sintéticos de visibilitychange passaram.
++
++Reflow 640×512 e 320×256 CSS px representa geometria de zoom 200%/400%, **não zoom real do browser**. Detector verifica overflow e corte de conteúdo main/footer por ancestrais, exceto scrollers intencionais. Chromium verifica Tab finito e indicador de foco; no WebKit Windows o skip link recebe foco programático, sem comprovar ordem real de Tab. Linux CI não executado. Sem dispositivos físicos, leitor de tela ou INP de campo. Restauração de sessão é testada com pageshow sintético, sem certificação de BFCache real.
++
++Abortos normais de prefetch RSC na navegação são tolerados; demais falhas de página/console/rede reprovam. Capturas usam DPR 1, fontes carregadas, movimento reduzido e percorrem a página antes da foto. CSS sem animação não congela Canvas. Relatórios só são gravados após captura integral bem-sucedida; ambas as execuções finais passaram.
++
++Formulários padrão não simulam sucesso; FORM_MODE=demo aceita apenas pedido local e informa que nada foi enviado. Não confirma inscrição, endereço, entrega ou recebimento. Respostas das ferramentas ficam em memória, sem armazenamento/associação ao e-mail. Precisão IEEE 754 é limitada, inclusive tratamento de cancelamento de quatro EPSILON; não prometer contabilidade decimal exata.
++
++## Revisão e entrega
++
++Revisão técnica independente Sonnet 5.5: sessão f62830cd-91f7-4033-be5f-d90f9549a91a, com follow-up sobre gutters, sem bloqueador concreto no escopo lido. Revisão estática parcial, sem execução de gates/modelos/exports completos; não ampliar conclusão. Revisões de primeiro quadro e QA constam no PLAN. GPT executou gates e inspeção visual complementar.
++
++Usuário autorizou GPT a finalizar oito documentos após Haiku retornar sem edições e ser cancelado; revisão documental Sonnet 5.5 concluída em sessão independente 601114c3-8761-457b-a872-a5152f4dd99c (43 s): sem bloqueador, quatro correções factuais aplicadas pelo GPT. Revisão somente do diff e conferências pontuais de versão; logs/métricas/hashes foram verificados pelo GPT, não pelo revisor. Nenhum código alterado nessa atualização. PLAN mantém tarefas/aceite como fonte única; só arquivar após aceite humano final.
++
++Scripts encerraram servidores das medições normais. Sinais externos/timeouts podem atrasar cleanup de processos filhos; porta fixa exige checagem prévia. Não foram simuladas todas essas interrupções. Revisar patches/advisories, hardware, desempenho, políticas e integrações antes de publicação, incluindo atualização Next anunciada para 14/10/2026.

@@ -51,7 +51,11 @@ Newsletter: apenas metadados, fontes e primeiro parágrafo editorial completo co
 
 Pausa global acessível na sessão SPA, redução dinâmica, suspensão real em aba oculta e fora de tela, fallback estático e descarte de GPU/listeners/loops. Inicializações tardias não ressuscitam componentes desmontados. Conteúdo essencial e CTA funcionam sem gráficos; teclado, menu/Escape/foco, seletores e anúncio agregado do terminal devem atender os contratos auditados.
 
-## Agentes e propriedade
+## Execução atual e propriedade
+
+GPT orquestra, decide, executa gates/medições/servidores. Código permanece via ponte Claude: Sonnet implementa e revisa em sessões distintas, Haiku em tarefas factuais e Opus somente consulta complexa; famílias efetivas 5.5 observadas, sem Fable. Após falha de escrita Haiku, o usuário autorizou GPT a concluir somente os oito documentos finais (Opção A, 11/10), com revisão Sonnet independente. Uma escrita Claude por vez; sem testes/builds/servidores demorados pelo Claude. Preservar bloqueio de `.env*`, checkpoint WIP local autorizado e ausência de autorização de commit final/push/PR/deploy.
+
+### Perfis Codex preservados como histórico
 
 Decisão atual D06: GPT-6.1 Sol · XHigh faz orquestração, manutenção do PLAN, verificação de evidências e decisões complexas; desenvolvimento restante é executado pelo MCP `claude-agent`. Sonnet implementa código, gráficos, modelos, testes e CI; Haiku executa inventário, cópias e documentação delimitada. Sonnet revisa em sessão independente; Opus é consulta pontual para impasses complexos. Fable excluído: indisponível no plano Pro do usuário. Perfis em [.codex/agents](.codex/agents/) permanecem históricos, sem uso como executores futuros. Limite local de três workers inclui Claude; uma escrita Claude por vez, sem edição concorrente e com revisão após estado terminal.
 
@@ -92,7 +96,7 @@ Tipos válidos: `feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `ci`.
 
 ## Build, testes e validação
 
-A fundação Next está inicializada em `web/`, com lockfile, fontes locais, shell e formulários locais. Use os scripts reais de `web/package.json`, documentados em `docs/web/development.md`: dev/build/start/typecheck/lint/test/test:e2e. A Home completa está em revisão independente P3.4 e as internas aguardam aceite humano no PLAN; servir exports por HTTP não é build Next. Evidências em `references/audits/frontend-foundation.md`.
+A fundação Next está inicializada em `web/`, com lockfile, fontes locais, shell e formulários locais. Use os scripts reais de `web/package.json`, documentados em `docs/web/development.md`: dev/build/start/typecheck/lint/test/test:e2e. A Home nativa foi aprovada em 10/10/2026 e as internas foram implementadas; gates locais em 11/10: lint/tipos/101 unit/build/228 E2E, quatro skips conhecidos. Aceite humano final permanece pendente no PLAN; servir exports por HTTP não é build Next. Evidências em `references/audits/frontend-foundation.md`.
 
 Vitest Node verifica modelos/parsers/fixtures; Playwright verifica build/start de produção. Gates incluem lint, typecheck, unit, build, e2e; Chromium desktop/mobile, Firefox/WebKit smoke, 320px/zoom/teclado. Comparar visual por seção com fontes/viewport/estado estáveis; CSS animations disabled não congela Canvas. Não alegar acessibilidade/desempenho certificados. Registrar medições Lighthouse e limitações; TBT de laboratório não certifica INP de campo.
 
@@ -103,3 +107,11 @@ Revalidar registry, peers, advisories e Node no bootstrap; versões de CDN/expor
 - Não hardcode credenciais em nenhum arquivo versionado.
 - Bancos de dados locais: preferir Docker Compose a instalação direta, assim que houver backend.
 - Validar entradas em fronteiras do sistema (API pública, formulários do site) assim que existirem.
+
+## Limites da entrega local
+
+Ver [QA final](references/audits/final-qa.md). Capturas 44 JPG/22 pares; LCP mediano 4,8–4,9 s acima da meta orientativa 2,5 s. Dois testes de aba realmente oculta e duas capturas Home opt-in foram pulados; não são passes. CI remoto, zoom real, hardware físico, leitor de tela e operação de formulários não certificados. Audit produção zero/dev cinco high; rever patches antes de publicação. Slug bem formado inexistente é 404; UTF-8 malformado pode gerar 500 no Next.
+
+### Rechecagem documental final — 11/10/2026
+
+Rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.

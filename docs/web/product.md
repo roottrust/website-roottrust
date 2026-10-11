@@ -1,6 +1,10 @@
 # Produto, conteúdo e jornadas
 
-**Atualizado:** 10/10/2026. A Home foi aprovada em 04/10. Os 12 exports aprovados (Home, três serviços, quatro ferramentas, três páginas de newsletter e 404) estão preservados em `references/claude-design/`; a auditoria de 09/10 está em `references/audits/`. F01–F29, S01–S16 e N01–N11 regem suas jornadas. A aprovação dos exports define a referência visual/conteúdo; não comprova cálculo auditado, integração ou operação. Marca oficial: [docs/design](../design/README.md).
+**Atualizado:** 11/10/2026. A Home (export) foi aprovada em 04/10. Os 12 exports aprovados (Home, três serviços, quatro ferramentas, três páginas de newsletter e 404) estão preservados em `references/claude-design/`; a auditoria de 09/10 está em `references/audits/`. F01–F29, S01–S16 e N01–N11 regem suas jornadas. A aprovação dos exports define a referência visual/conteúdo; não comprova cálculo auditado, integração ou operação. Marca oficial: [docs/design](../design/README.md).
+
+## Estado da entrega
+
+Frontend local implementado e validado em 11/10/2026. A Home nativa recebeu aprovação humana em 10/10; o aceite final do conjunto permanece pendente. Gates: lint, typecheck, 101 testes unitários, build de produção e 228 E2E aprovados, com quatro skips explicitados na [auditoria final](../../references/audits/final-qa.md). Não há integração operacional nem autorização de publicação. Slugs bem formados inexistentes retornam HTTP 404 antes de streaming. Encoding UTF-8 malformado pode retornar 500 no decodificador do Next antes da aplicação; limitação registrada para revisão antes da publicação.
 
 ## Público e posicionamento
 
@@ -10,7 +14,7 @@ Abordagens conceituais confirmadas: segurança desde a concepção; visão integ
 
 ## Contrato comum de serviços
 
-A decisão aprovada S01–S16 estabelece seis seções por serviço: abertura/CTA, situações, quatro frentes, método, FAQ e CTA/formulário final. S16 remove a seção e os links promocionais para ferramentas. S02 autoriza a Home escura com efeitos contidos, moldura e um objeto existente na abertura: chave, servidores ou módulos. S03 exige Nome, Empresa e WhatsApp, conversa inicial gratuita de qualificação e retorno por ligação ou WhatsApp no próximo dia útil. Retorno é promessa futura condicionada a recebimento real; o formulário demo nunca envia dados. Textos detalhados abaixo são propostas editoriais para aprovação.
+A decisão aprovada S01–S16 estabelece seis seções por serviço: abertura/CTA, situações, quatro frentes, método, FAQ e CTA/formulário final. S16 remove a seção e os links promocionais para ferramentas. S02 autoriza a Home escura com efeitos contidos, moldura e um objeto existente na abertura: chave, servidores ou módulos. S03 exige Nome, Empresa e WhatsApp, conversa inicial gratuita de qualificação e retorno por ligação ou WhatsApp no próximo dia útil. Retorno é promessa futura condicionada a recebimento real; o formulário demo nunca envia dados. Os blocos abaixo rotulados como proposta preservam o histórico editorial; os 12 exports aprovados e os contratos S/F/N orientam a implementação atual, sem criar aprovação comercial para alegações novas.
 ## Rotas desta entrega
 
 | Página | Rota |
@@ -29,7 +33,7 @@ A decisão aprovada S01–S16 estabelece seis seções por serviço: abertura/CT
 | Privacidade provisória | `/privacidade` |
 | 404 | Página não encontrada, com resposta HTTP 404 na aplicação |
 
-O hub de ferramentas e a página dedicada de diagnóstico estão adiados e não fazem parte destas rotas. A Home e cada página de serviço oferecem o formulário de contato local `#contato`. A navegação global mantém os destinos aprovados da Home; exports atuais ainda precisam de revisão de execução e portabilidade.
+O hub de ferramentas e a página dedicada de diagnóstico estão adiados e não fazem parte destas rotas. A Home e cada página de serviço oferecem o formulário de contato local `#contato`. A navegação global mantém os destinos aprovados da Home; a portabilidade Next e a revisão técnica local estão concluídas; o aceite humano final segue pendente.
 
 ## Home — textos e composição aprovados
 
@@ -736,3 +740,7 @@ A pesquisa apoia a organização editorial. As quatro frentes e os exemplos de e
 
 
 
+
+### Rechecagem documental final — 11/10/2026
+
+Rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.

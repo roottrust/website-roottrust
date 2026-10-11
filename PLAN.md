@@ -1,3 +1,205 @@
+# Correções de navegação, formulários, newsletter, E2E e LCP — plano de implementação
+
+**Estado: execução aprovada pelo usuário (Aplique o plano), 11/10/2026.** Este PLAN.md continua sendo a única fonte de tarefas. O plano anterior e suas evidências permanecem ao final como histórico; a aprovação anterior não autoriza a implementação destas novas tarefas. Nenhum código foi alterado ao preparar este plano.
+
+## 1. Problema e objetivo
+
+A revisão humana identificou cinco problemas de navegação/apresentação não resolvidos na entrega: saltos ao acessar âncoras pelo header, aviso inicial indesejado nos formulários, indicadores dos selects sem recuo, Newsletter com destino errado e conteúdo da newsletter preso à esquerda. Somam-se um E2E instável e LCP acima da meta orientativa. Corrigir os cinco pontos, estabilizar o teste sem enfraquecê-lo e melhorar o carregamento preservando marca, conteúdo, efeitos e contratos aprovados.
+
+Não inclui backend, integração de formulários, CMS, e-mail, persistência, analytics, dependências novas, deploy ou redesenho. Modelos F01–F29, serviços S01–S16 e newsletter N01–N11 permanecem. Mudanças atuais do usuário prevalecem sobre notas anteriores referentes ao aviso inicial, links do header e largura da newsletter.
+
+## 2. Pesquisa e evidências
+
+### Histórico e documentação
+
+Fontes: conversa atual, histórico preservado abaixo, AGENTS.md, seis documentos docs/web, exports imutáveis em references/claude-design e references/audits/final-qa.md. Não há ferramenta de session-store SQL disponível; não foi inventada consulta ao banco. Não criar cópia de sessão, plano concorrente ou SQL TODO: instrução específica do repositório exige apenas este PLAN.md. SATE/Ford não se aplica.
+
+Home nativa aprovada em 10/10. QA anterior: lint/tipos/101 unit/build/228 E2E, quatro skips. Última rechecagem documental: 227 E2E passes, quatro skips e uma falha no teste de contato; o mesmo teste passou 3/3 isoladamente sem mudanças. Logs final-delivery-gates.log e final-contact-recheck.log preservados. Isso não comprova nova execução completa verde.
+
+### Código e exports
+
+- **Navegação:** Header.tsx compartilha links desktop/mobile para /#servicos, /#ferramentas e /#newsletter; CTA vai a /#contato. globals.css tem scroll-padding/scroll-margin de 96px e override reduced-motion, mas não ativa scroll-behavior:smooth. Verificar soma dos offsets, altura efetiva do header e comportamento entre rotas, sem apenas adicionar CSS e presumir resolução.
+- **Referência Claude Design:** Home.dc.html usa âncoras locais; possui animação própria scrollToItem para seleções de serviços/processo, com redução de movimento. A busca estática não encontrou regra global smooth nos arquivos locais inspecionados. Portanto a transição do header relatada pelo usuário precisa de comparação executada com a baseline, não deve ser descrita como implementação literal já localizada. Não alterar exports, runtime ou usar scrollToItem de pinning indiscriminadamente para navegação.
+- **Formulários:** FormStatus.tsx concentra a frase exata solicitada para remoção. NewsletterForm tem apoio separado sobre indisponibilidade; avisos de demonstração, respostas pós-tentativa, validação e privacidade não são a frase solicitada. Remover o aviso inicial exato em todos os formulários sem substituí-lo por paráfrase equivalente nesse mesmo espaço. Não criar sucesso fictício.
+- **Selects:** tools.module.css aplica padding 12px 16px sem tratar appearance/indicador nativo; forms.module.css também estiliza selects de demonstração. Distinguir setas de select das setas de input numérico; inventariar todos os controles realmente presentes antes da correção.
+- **Newsletter:** heroText limita a abertura a 620px; reading limita artigo/card a 720px alinhados à esquerda. inner/wrap definem a moldura 1200/1320px. ArchivePage e PreviewPage usam essas classes; lista já ocupa seu contêiner. Medir DOM/CSS antes de alterar classes compartilhadas para não afetar a landing.
+- **E2E:** foundation.spec.ts:40 procura o botão Enviando após click; submitLocalForm resolve demo após somente 350ms. Falha observada é compatível com perder esse estado transitório sob carga, mas a causa final deve ser reproduzida/verificada. Não aumentar atraso do produto, remover assert, adicionar sleep/retries ou tornar cenário indisponível.
+- **LCP:** relatórios finais de produção móvel: Home 4876,8ms, Ciber 4800,5ms, ROSI 4875,2ms, newsletter 4860ms; CLS0, TBT114/452,5/452,5/112ms, JS172501/308149/315566/166400 bytes. Nos relatórios da primeira rodada, candidatos LCP são texto (h1/span/parágrafo), não objetos 3D. Render-blocking CSS aparece; fontes já usam swap e preload local. O breakdown observado usa timings diferentes da simulação final: investigar essa distinção e a rede/fontes/main thread antes de atribuir causalidade. Three já é carregado ao entrar na viewport; adiar mais gráficos sem evidência não garante resolver LCP.
+- **Estado da árvore:** mudanças documentais anteriores permanecem sem commit final. next-env.d.ts contém alteração gerada para .next/dev/types; não foi criada neste planejamento. Não reverter trabalho do usuário nem incluir gerados/segredos sem inspecionar.
+
+### Pesquisa externa — fontes oficiais consultadas
+
+- [Next Link](https://nextjs.org/docs/app/api-reference/components/link) e [data-scroll-behavior](https://nextjs.org/docs/messages/missing-data-scroll-behavior): considerar coordenação entre roteamento, hash e scroll suave; atributo não substitui política explícita para âncoras entre páginas.
+- [Playwright Clock](https://playwright.dev/docs/clock): relógio deve ser instalado antes de timers da aplicação; pause/runFor controlam o intervalo observado. Relógio também afeta requestAnimationFrame; isolar este teste dos asserts de animação.
+- [Otimização de LCP](https://web.dev/articles/optimize-lcp): identificar candidato e separar TTFB, descoberta/download e atraso de renderização. Não escolher otimização somente pelo tamanho do bundle.
+
+Consulta Firecrawl não foi necessária nem realizada nesta rodada. Não atribuir a ele evidências. Sem atualização de pacotes proposta.
+
+## 3. Registro de decisões
+
+| ID | Questão | Decisão | Motivo/fonte |
+|---|---|---|---|
+| D11 | Destino Newsletter no header | /newsletter no desktop e mobile, em todas as páginas | Pedido explícito atual; substitui /#newsletter apenas nesse contexto. |
+| D12 | Aviso inicial dos formulários | Remover a frase exata de FormStatus em todo o site; preservar feedback verdadeiro e aviso do modo demo | Pedido atual, sem ativar integrações ou sucesso simulado. |
+| D13 | Largura da newsletter | Toda a largura útil da moldura para conjunto/título/lista/card, parágrafos com largura confortável | Resposta Opção1 à entrevista; não esticar texto até a borda da tela. |
+| D14 | Movimento na navegação | Rolagem suave para âncoras, exceto reduced-motion/pausa global; links de página não recebem transição artificial | Proposta técnica para aprovação; sem nova biblioteca. |
+| D15 | Execução e custo | Sonnet implementa em tarefas pequenas e revisa em sessão distinta; GPT orquestra/gates/medições/PLAN. Haiku não é necessário nesta rodada; Opus só impasse complexo | Mantém D06 e autorização operacional; sem Fable. |
+| D16 | Meta de desempenho | Buscar LCP mediano ≤2,5s nas quatro rotas, CLS≤0,1; se não alcançar, apresentar medidas e consultar antes de aceitar exceção | Meta existente; não repetir encerramento com desvio silencioso. |
+
+D01–D10 continuam válidas, com substituições delimitadas acima. A aprovação deste plano valida D14–D16 e a abordagem abaixo; não autoriza commit final/push/deploy. Entrevista de largura resolvida; decisões de implementação restantes estão propostas para aprovação do plano, sem perguntas redundantes.
+
+## 4. Arquitetura e execução
+
+Correções nos componentes/CSS compartilhados; conteúdo essencial SSR, pequeno escopo cliente, native select preservado, sem pacote novo. Preferir scrolling nativo/CSS com ativação delimitada às âncoras de navegação; não impor smooth incondicional que altere todos os scrollTo/focos das suítes. Se houver atributo/classe no html, sua ativação respeita reduced-motion e estado de pausa SPA. se Next saltar diretamente ao hash entre rotas, coordenar chegada à Home e scroll após montagem com handler mínimo, preservando URL, histórico, modificadores e navegação sem JavaScript. Não bloquear rolagem natural ou inserir transição de página para /newsletter. Alvos podem mudar de posição com pinning/altura de serviços/processo: verificar destino depois da estabilização, com correção delimitada e sem loop infinito. Capturas e helpers de posicionamento usam rolagem instantânea/movimento reduzido quando aplicável; não desligar globalmente a animação nas suítes que verificam movimento. Apenas testes dedicados de navegação verificam posições intermediárias. Respeitar preferência reduzida dinâmica e pausa global, offsets e pinning.
+
+Select mantém elemento nativo, label/foco/teclado e disabled. Se necessário, appearance:none com chevron decorativo local e reserva de espaço à direita; suporte forced-colors sem duplicar setas. Corrigir os seletores de cenário e demo onde o defeito existir.
+
+Newsletter usa largura do contêiner, sem mudar a moldura geral. Parágrafos mantêm largura legível; título, estrutura editorial e card de inscrição se expandem, com distribuição responsiva para evitar vazio unilateral. Não replicar uma prévia inteira nem expor corpo editorial privado.
+
+Uma escrita Claude por vez. Antes de cada escrita: confirmar raiz Git, inspecionar git add -A --dry-run, parar se houver segredo, checkpoint WIP LOCAL autorizado (inclusive árvore suja), registrar hash/sessão/modelo. Claude não lê .env*, não faz commit/push/instalação nem inicia gates/servidores; GPT roda gates após terminal. Não sobrescrever processo de desenvolvimento do usuário: conferir ocupantes das portas e escolher porta livre ou consultar, sem matar processo desconhecido.
+
+Prompt sempre exige AGENTS.md/PLAN.md e arquivos do passo; escopo explícito. Rodapé obrigatório: Sessão headless: AskUserQuestion e sub-agents indisponíveis. Se faltar contexto, liste as dúvidas na resposta e pare. Não faça commit, push nem instale nada. Responda em pt-BR. Modelo sonnet explícito, confirmar modelo efetivo; esforço não configurável via ponte. Revisor em outra sessão, readonly, com diff delimitado (sem ler PLAN histórico inteiro). Sem workers adicionais nesta rodada para poupar cota.
+
+## 5. Fases e tarefas
+
+### Fase 7 — correções de interface
+
+#### P7.1 — Header, destinos e rolagem [claude:escreve] Sonnet
+
+**Dono:** Header.tsx, shell.module.css, globals.css, layout.tsx e testes de navegação afetados; pequeno componente auxiliar de âncora somente se comprovadamente necessário. GPT [codex] compara header da baseline em navegador e fornece observação delimitada ao Sonnet antes da escrita, sem modificar referência. Capturas/medidas de P7.2/P7.3 também são executadas exclusivamente pelo GPT após escrita terminal.
+**Dependência:** aprovação deste plano.
+
+- [ ] Newsletter desktop/mobile aponta /newsletter a partir da Home e das internas.
+- [ ] Serviços/Ferramentas/CTA chegam à seção correta da Home com posições intermediárias observáveis durante a rolagem normal, tanto na Home quanto partindo de interna.
+- [ ] Reduced-motion e pausa global removem animação; destino permanece visível abaixo do header. Voltar/avançar, hash inicial, teclado e Ctrl/Cmd-click mantêm comportamento esperado.
+- [ ] Menu fecha; clique repetido não deixa scroll pendente/callback após desmontagem. Nenhuma biblioteca nova ou scroll hijacking.
+
+#### P7.2 — Aviso inicial e indicadores dos selects [claude:escreve] Sonnet
+
+**Dono:** FormStatus.tsx, forms.module.css, tools.module.css, campos de ferramentas apenas se necessário e testes relacionados.
+**Dependência:** P7.1 terminal/gates; sem escrita concorrente.
+
+- [ ] Frase Este formulário ainda não recebe solicitações. Nenhum dado é enviado ou guardado. ausente do conteúdo público de todas as rotas, sem mera ocultação CSS.
+- [ ] Não substituir a frase por outro aviso inicial equivalente em FormStatus; manter rótulo demo, validação, erro/indisponibilidade após tentativa, nenhum envio/sucesso real.
+- [ ] Setas dos selects com recuo visual de 16px coerente com texto, espaço reservado para texto longo, sem indicadores duplicados, 320px/390px/desktop e smoke Firefox/WebKit.
+- [ ] Labels, teclado, foco, disabled e forced-colors preservados; respostas/cálculos e contratos não alterados.
+
+#### P7.3 — Largura do arquivo e prévias [claude:escreve] Sonnet
+
+**Dono:** ArchivePage.tsx, PreviewPage.tsx, newsletter.module.css e testes de newsletter/layout.
+**Dependência:** P7.2 terminal/gates.
+
+- [ ] /newsletter/edicoes usa toda a largura útil da moldura na abertura e seção de listagem, com layout distribuído em desktop, não apenas bloco estreito à esquerda.
+- [ ] /newsletter/edicoes/responsabilidades-na-nuvem e demais slugs compartilham título/estrutura/card expandidos; parágrafos permanecem legíveis. Não aplicar limite reading720 ao conjunto inteiro.
+- [ ] Landing /newsletter não sofre alteração incidental; filtros, paginação, edição escolhida, abertura pública e noindex preservados.
+- [ ] 320/390/1440px sem overflow/corte, semântica/ordem de leitura/foco corretos; capturas antes/depois identificam a nova adaptação aprovada.
+
+### Fase 8 — confiabilidade e desempenho
+
+#### P8.1 — Tornar o E2E de contato determinístico [claude:escreve] Sonnet
+
+**Dono:** foundation.spec.ts, teste unitário do adaptador se houver lacuna comprovada; não modificar timer/comportamento de produção para acomodar teste.
+**Dependência:** P7.2/P7.3 terminados.
+
+- [ ] Clock instalado antes de navegar; congelar/avançar tempo de forma que submitting permaneça observável e 350ms conclua deterministicamente. Não instalar clock após timers existentes.
+- [ ] Asserts preservam botão disabled/aria-busy, guarda de duplicidade, falha com campos preservados, nova tentativa aceita apenas localmente e ausência de envio/storage. Verificar duplicidade de maneira observável, não apenas pelo título do teste.
+- [ ] 10 repetições desktop e 10 mobile passam, retries0, sem sleep/aumento de timeout/delay do produto. Também passa na suíte completa com configuração de workers da CI/local registrada, sem reduzir concorrência para esconder falha. Regressão de cancelamento/unmount preservada.
+- [ ] Teste demonstra submitting antes de avançar o relógio e conclusão após runFor(350); controle temporal instalado antes de goto, pausado somente após página pronta. Guarda de duplicidade verificada por instrumentação restrita ao teste (por exemplo contador de agendamento do timer local de submissão), ou spy equivalente viável sem dependências novas, não apenas disabled. Não adicionar contador/endpoint ao produto.
+
+#### P8.2 — Diagnóstico reproduzível de LCP [codex] GPT; [claude:consulta] Sonnet
+
+**Dono GPT:** servidores, relatórios/logs e PLAN. **Sonnet readonly:** análise delimitada dos candidatos/trace e proposta mínima, sem executar comandos.
+**Dependência:** P8.1/gates; medir versão após correções de layout como baseline comparável.
+
+- [ ] Preservar baseline anterior antes de regenerar relatórios; produzir três rodadas por Home/Ciber/ROSI/newsletter, mesmo build de produção/ambiente/preset, sem concorrência de testes/capturas.
+- [ ] Registrar candidato LCP por rota, timing observado versus simulado, fontes requisitadas/tamanhos/preload, CSS bloqueante e trabalho main-thread/Canvas/Three. Hipótese inicial a verificar: piso compartilhado (fontes/CSS/TTFB/renderização) porque LCP é próximo nas quatro rotas apesar de JS/TBT distintos; isso não comprova causalidade. GPT entrega à consulta Sonnet pacote curto com candidatos, extratos de rede/fontes/CSS e timings observado/simulado, sem leitura de relatórios inteiros. Documentar hipótese causal sustentada por dados; não somar breakdown bruto como se fosse LCP simulado.
+- [ ] Definir conjunto mínimo de otimizações dentro do escopo SSR/fonts/CSS/carregamento inicial decorativo, com arquivos e dono no PLAN antes da escrita. Se exigir dependência, mudança de arquitetura/fontes/arte aprovada ou escopo, parar e consultar.
+
+#### P8.3 — Otimização medida sem perda visual [claude:escreve] Sonnet; medições [codex]
+
+**Dono:** somente arquivos identificados em P8.2 (layout/fonts, CSS, fronteiras cliente/runtime gráfico e scripts de medição se bug comprovado). Não pré-autoriza reescrita ampla.
+**Dependência:** P8.2 com hipótese/escopo registrados.
+
+- [ ] Correções sustentadas pelo diagnóstico; h1/texto/CTA essenciais continuam SSR, fontes oficiais/licenças preservadas e sem salto visual, flash artificial ou ocultação de candidato LCP.
+- [ ] Objetos/ASCII permanecem com fallback, primeiro quadro correto, pausa/redução/suspensão/dispose. Não remover efeito aprovado para obter pontuação.
+- [ ] Três rodadas por rota no mesmo protocolo evidenciam LCP menor que baseline pós-layout, buscando mediana≤2500ms e CLS≤0,1; registrar TBT/bytes JS e qualquer regressão. Registrar mínimo/máximo de cada trio; se diferença de mediana ficar dentro da variação das rodadas, classificá-la como inconclusiva e repetir somente a comparação necessária, dentro do limite de duas iterações. Não comparar apenas melhor rodada ou ambiente diferente.
+- [ ] Se meta não for atingida, não marcar otimização aceita: apresentar causas, melhoria medida e opções ao usuário. Limitar a duas iterações focadas antes de escalar decisão; evitar consumo aberto de cota.
+
+### Fase 9 — revisão, documentação e aceite
+
+#### P9.1 — Revisão independente e gates completos [claude:consulta] Sonnet; [codex] GPT
+
+**Dono revisão:** sessão Sonnet distinta dos escritores; diff limitado por tarefa. **Dono gates:** GPT.
+**Dependência:** P7/P8 concluídos ou exceção humana de desempenho registrada.
+
+- [ ] Revisão readonly de diff após mudanças em três ou mais arquivos, por lote; achados corrigidos pelo dono e comprovados. Claude não é o único verificador.
+- [ ] lint/typecheck/101 unitários existentes e novos/build/E2E completo passam com retries0. Skips anteriores separados de passes; não criar skips para mascarar regressões.
+- [ ] Navegação suave tem asserts de posições intermediárias e destino final, não somente CSS/hash; testes reduced-motion/pausa/cross-route/mobile e destino Newsletter. Layout tem medidas de largura útil e recuo do indicador, além de capturas.
+- [ ] Chromium desktop/mobile, Firefox/WebKit smoke, teclado, 320px/reflow e ausência de erros de console/rede/hidratação nas rotas testadas. Sem novos uploads privados/assets/corpos editoriais em build público.
+
+#### P9.2 — Alinhar contexto e registrar evidências [claude:escreve] Sonnet; PLAN [codex]
+
+**Dono:** seis docs/web, AGENTS.md e final-qa.md, apenas trechos alterados; Sonnet por tarefa curta, sem Haiku repetir leitura ampla. GPT atualiza este PLAN. Revisão documental readonly em sessão distinta.
+**Dependência:** P9.1 e medições finais disponíveis.
+
+- [ ] Documentar destino Newsletter, política de âncoras, remoção da frase inicial, largura da newsletter, fix determinístico e LCP real; eliminar contradições com notas anteriores identificando histórico. Atualizar explicitamente AGENTS.md e docs que exigem aviso inicial, sem retirar honestidade do modo demo e pós-tentativa. Migrar asserts da frase para o novo contrato, sem eliminar cobertura de estados/foco/erros/live region.
+- [ ] Preservar seis docs canônicos e 56 linhas F/S/N, licenças, exports e limites operacionais; conferir hashes e links.
+- [ ] Gates após escrita conforme protocolo; para documentação sem mudança de código não repetir capturas/Lighthouse. Resultados novos distinguem histórico; não chamar falha isolada aprovada de suite verde.
+
+#### P9.3 — Revisão humana e encerramento [codex] GPT + usuário
+
+**Dependência:** P9.1/P9.2, exceções explícitas se houver.
+
+- [ ] Apresentar prévia local verificável e resumo por cinco correções + E2E + LCP, com imagens/dados e limitações; usuário aprova o conjunto.
+- [ ] Só após aceite final arquivar este PLAN conforme regra do repositório; sem arquivo de plano concorrente antes disso.
+- [ ] Sem commit final, push, PR ou deploy sem autorização específica; WIP local segue exceção já autorizada.
+
+## 6. Testes e validação
+
+Comandos em web/: npm run lint, npm run typecheck, npm test, npm run build, npm run test:e2e. Teste focado via npx playwright test tests/e2e/foundation.spec.ts --project=chromium-desktop --grep 'contact validates' --repeat-each=10 e equivalente chromium-mobile. Gates sem capture; capturas via node scripts/qa-capture.mjs; Lighthouse via node scripts/lighthouse.mjs, sem concorrência e com diretório baseline preservado primeiro. Servidores de testes exclusivos 3100/3101, medição3200; não matar servidor desconhecido.
+
+Novos asserts devem provar regressões reais: movimento intermediário/endereço/destino, geometria do container e indicador, ausência da frase exata, estados submitting/duplicate/error/accepted sem tempo real frágil. Medidas visuais permitem tolerância de renderização declarada, sem pixel perfect; conservar navegabilidade sem JS, reduced-motion e guarda de dados. Reflow não certifica zoom real, smoke não certifica acessibilidade e laboratório não certifica INP de campo.
+
+## 7. Riscos e mitigação
+
+| Risco | Impacto | Mitigação |
+|---|---|---|
+| Next já salta ao hash antes da animação | Alto | Teste cross-route e coordenar scroll após montagem; preservar histórico/teclado, sem Lenis/GSAP. |
+| Scroll interfere no pinning ou viola redução | Alto | Testar serviços/processo, pausa/redução e navegação repetida; não copiar handler errado do export. |
+| Remover aviso parece habilitar backend | Médio | Visitante pode preencher antes de descobrir indisponibilidade: risco UX registrado em atendimento ao pedido explícito. Feedback honesto após tentativa, demo identificado; preservar D01/D09/D10 e privacidade. |
+| Select perde usabilidade nativa/forced-colors | Médio | Manter select nativo, chevron sem interação e fallback de contraste. |
+| Largura global altera landing/legibilidade | Médio | Classes delimitadas por página e parágrafos com limite; testar todos slugs. |
+| Clock interfere no Canvas/React | Médio | Instalar antes da página, isolar cenário temporal, avançar tempo explicitamente sem alterar produção. |
+| LCP alto vem da simulação/rede/fonts | Alto | Diagnóstico por candidato/trace, baseline comparável, mediana de três rodadas; sem garantia antes de medir. |
+| Claude consome cota em leitura ampla | Alto | Uma tarefa curta, escopo e recortes do PLAN, sem transcrição/exports completos; máximo duas iterações de desempenho antes de consultar. |
+| Árvore suja ou servidor do usuário | Alto | Inspeção WIP/segredos/gerados; não sobrescrever mudanças nem encerrar processo desconhecido. |
+
+## 8. Progresso e aprovação
+
+| Tarefa | Responsável | Estado | Evidência/dependência |
+|---|---|---|---|
+| Pesquisa e entrevista | GPT/usuário | Concluído | Fontes/código acima; largura Opção1 confirmada. |
+| Crítica deste plano | Sonnet5.5 readonly | Concluído com ajustes | Sessão00b6b993-cc46-4696-8187-5b2960ae9004 succeeded45s; cinco grupos de sugestões avaliados/incorporados. |
+| P7.1 Header/scroll | Sonnet | Em execução | Baseline comparada pelo GPT; escrita após checkpoint. |
+| P7.2 Aviso/select | Sonnet | Aguardando aprovação | P7.1. |
+| P7.3 Newsletter | Sonnet | Aguardando aprovação | P7.2. |
+| P8.1 E2E | Sonnet | Aguardando aprovação | P7. |
+| P8.2 Diagnóstico LCP | GPT + Sonnet consulta | Aguardando aprovação | P8.1. |
+| P8.3 Otimização | Sonnet + GPT gates | Aguardando aprovação | P8.2; consultar se sair do escopo. |
+| P9.1 Revisão/gates | Sonnet independente + GPT | Aguardando aprovação | P7/P8. |
+| P9.2 Contexto/evidências | Sonnet + GPT PLAN | Aguardando aprovação | P9.1. |
+| P9.3 Aceite | Usuário + GPT | Pendente | Sem antecipar aprovação. |
+
+**Revisão independente:** primeira inicialização falhou após30s e foi encerrada sem sessionId; usuário avisado antes da única nova tentativa. Sonnet5.5 sessão00b6b993-cc46-4696-8187-5b2960ae9004 succeeded45s, aprovou com limites e cinco grupos de ajustes. Leu somente bloco inicial do plano, sem verificar arquivos de código/testes. GPT incorporou isolamento do scroll, execução browser/medições por GPT, E2E completo e duplicidade observável, hipótese compartilhada de LCP/variabilidade e atualização dos contratos do aviso. Referência do revisor a Next14 não se aplica: projeto usa16.4.0; nenhuma troca de versão foi proposta. Não tratar hipóteses do revisor como defeitos comprovados.
+
+**Gate:** apresentar este plano após crítica independente; implementar somente após aprovação explícita do usuário. Este planejamento não significa que as cinco falhas já foram corrigidas nem que LCP/teste estejam resolvidos.
+
+---
+
+# Histórico preservado — migração Next anterior
+
+O conteúdo abaixo preserva aprovações, contratos e evidências anteriores. Seus estados de conclusão não representam aceite desta rodada de correções; usar as tarefas P7–P9 acima como trabalho ativo.
+
 # Desenvolvimento do frontend Root Trust em Next.js
 
 **Aprovado pelo usuário:** “Aplique o plano”, 10/10/2026. **Estado:** execução. Este arquivo é a fonte única de tarefas e evidências. A aprovação visual da Home é obrigatória antes das páginas internas.
@@ -23,7 +225,7 @@ A pesquisa observou Next 16.4.0/React 19.3, Three 0.184.0, Vitest 5.0.3 e Playwr
 | D03 | Somente tema escuro nesta entrega. |
 | D04 | Aplicação em `web/`; exports preservados em `references/claude-design/`. |
 | D05 | Exatamente seis documentos canônicos em `docs/web`; excluir substituídos após migrar informação única. Preservar marca/assets. |
-| D06 | GPT-6.1 Sol XHigh orquestra, mantém PLAN e decide escopo/arquitetura; todo desenvolvimento restante ocorre pelo MCP `claude-agent`, com Sonnet ou Haiku explícitos. Opus somente consulta complexa. Uma escrita ativa por vez; revisor independente. Atualizado pelo usuário em 10/10/2026; Fable excluído por indisponibilidade no plano Pro. |
+| D06 | GPT-6.1 Sol XHigh orquestra, mantém PLAN e decide escopo/arquitetura; todo desenvolvimento restante ocorre pelo MCP `claude-agent`, com Sonnet ou Haiku explícitos. Opus somente consulta complexa. Uma escrita ativa por vez; revisor independente. Atualizado pelo usuário em 10/10/2026; Fable excluído por indisponibilidade no plano Pro. Exceção autorizada em11/10 (Opção A): GPT atualiza somente documentação final; GPT também executa gates/servidores, sem implementar código do site. |
 | D07 | Aprovação humana da Home antes das internas; aceite humano final do conjunto. |
 | D08 | `/privacidade` temporária, descrevendo honestamente a operação local. |
 | D09 | Campos ativos, validação completa, preparados para futura integração. |
@@ -138,8 +340,8 @@ Fases concluídas não serão reexecutadas nem terão autoria histórica reatrib
 | P5.4 Revisão pública | Sonnet `[claude:consulta]` | Sessão independente; HTML/RSC/JS/maps/assets e evidências de inspeção. |
 | P6.1 CI local | Sonnet `[claude:escreve]` | Sonnet independente; scripts, lockfile, Node e workflow sem deploy. |
 | P6.2 QA integral | Sonnet `[claude:consulta]`; GPT executa gates `[codex]` | Revisor distinto; artefatos de browser, visual, matemática e medições. Novos testes/correções via dono de escrita original. |
-| P6.3 Aceite/entrega | GPT + usuário `[codex]` | Haiku escreve apenas documentos/evidências em P6.3-D; Sonnet revisa diff. |
-| P6.3-D Documentação final | Haiku `[claude:escreve]` | Após P6.2, antes do aceite final: seis docs/evidências, sem código nem alteração de escopo. GPT arquiva PLAN somente após aceite. |
+| P6.3 Aceite/entrega | GPT + usuário `[codex]` | GPT autorizado escreve apenas documentos/evidências em P6.3-D; Sonnet revisa diff. |
+| P6.3-D Documentação final | GPT `[codex]` autorizado em 11/10; Sonnet `[claude:consulta]` | Após P6.2, antes do aceite final: seis docs/evidências, sem código nem alteração de escopo. GPT arquiva PLAN somente após aceite. |
 
 ## 5. Fases, tarefas e Acceptance Criteria
 
@@ -312,8 +514,8 @@ Dependências: P4.4 e P5.4.
 
 #### P6.2 QA integral — [claude:consulta] Sonnet independente; [codex] gates determinísticos
 Dependência: P6.1.
-- [ ] Chromium desktop/mobile completo, Firefox/WebKit smoke; 320px/zoom/foco/teclado/erros.
-- [ ] Sem runtime/hidratação/recursos órfãos; desempenho medido com ambiente/limites e desvios resolvidos ou explicitamente decididos.
+- [x] Chromium desktop/mobile completo, Firefox/WebKit smoke; 320px/reflow/foco/teclado/erros. Limites de zoom real/Tab WebKit registrados.
+- [x] Sem runtime/hidratação/recursos órfãos; desempenho medido com ambiente/limites e desvios resolvidos ou explicitamente decididos. Evidência limitada às rotas/testes executados, sem certificação universal; descarte coberto. Decisão técnica GPT sobre LCP acima da meta sujeita ao aceite humano final P6.3.
 
 #### P6.3 Aceite e entrega — [codex] GPT + usuário
 Dependência: P6.2.
@@ -321,10 +523,10 @@ Dependência: P6.2.
 - [ ] Todas tarefas com evidência; somente após aceite final arquivar PLAN em docs/plans.
 - [ ] Nenhum commit/push/PR/deploy sem autorização específica.
 
-#### P6.3-D Documentação da entrega — [claude:escreve] Haiku
+#### P6.3-D Documentação da entrega — [codex] GPT autorizado; [claude:consulta] Sonnet
 Dependência: P6.2; concluir antes do aceite final P6.3. Limitar a documentação e evidências, sem alterar produto ou implementação.
-- [ ] Comandos/versões/limites reais atualizados; nenhum gate não executado declarado como sucesso.
-- [ ] Diff revisado por Sonnet em sessão independente; GPT registra resultado e pede aceite final.
+- [x] Comandos/versões/limites reais atualizados; nenhum gate não executado declarado como sucesso.
+- [x] Diff revisado por Sonnet em sessão independente; quatro correções documentais aplicadas. GPT registra resultado; apresentação do aceite final após gates em curso.
 
 ## 6. Testes e validação
 
@@ -369,9 +571,9 @@ Estados: pendente, em execução, em revisão, aguardando usuário, concluído. 
 | P5.1 | Concluído | Haiku5.5 sessão6c1f3a8e-2f47-40c6-909a-3faeb5af3932 succeeded187s:94unit/110E2E+4skip lint/type/build. Sonnet5.5 revisão23c26e7b-8401-4935-99c6-5c41a3de4b7d succeeded18s aprovou. GPT94unit/hash confirmados. |
 | P5.2–P5.4 | Concluído | P5.3 gates GPT101unit/148E2E+4skip; correção19ebf5fb Sonnet5.5 succeeded254s mesmos gates; revisor independente aaa7c823 follow-up32s aprovou. Limites em newsletter-native/public-routes. |
 | P6.1 | Concluído localmente | Workflow sem deploy, Node24.13.1/npmci e gates equivalentes locais aprovados; CI remoto não executado. |
-| P6.2 | Em finalização | Revisões independentes e gates101unit/228E2E4skips;44capturas regeneradas. Lighthouse final e consolidação em andamento. |
-| P6.3 | Aguardando preparação do aceite | Aceite humano final e arquivamento obrigatórios, sem commit final/push/deploy autorizados. |
-| P6.3-D | Pendente | Documentação Haiku após QA; revisão Sonnet antes do aceite. |
+| P6.2 | Concluído localmente com limites | Revisões independentes, lint/types/101unit/build/228E2E4skips;44capturas/22pares e12rodadas Lighthouse. LCP acima da meta registrado; não autoriza publicação. |
+| P6.3 | Aguardando aceite humano final | Aceite humano final e arquivamento obrigatórios, sem commit final/push/deploy autorizados. |
+| P6.3-D | Documentação concluída e revisada | GPT autorizado atualizou oito documentos; Sonnet5.5 revisou diff, quatro correções factuais aplicadas.56contratos intactos/seis docs/87links válidos. Código não alterado; lint/types/101unit/build passaram. E2E227pass/4skip/1falha transitória; rechecagem isolada3/3pass, sem nova rodada completa verde. |
 
 ### Registro de sessões da ponte
 
@@ -521,3 +723,23 @@ Usuário escolheu Opção1: GPT executa gates/medições e controla servidores; 
 **P6.3-D início:** checkpoint142dd975050bc2974078e35dd466847b9196f19b, pré-checagem sem sensíveis/gerados, evidências QA intencionais. Haiku escreve somente8documentos acima.
 
 **P6.3-D primeira resposta:** Haiku5.5 sessão922f843e-fc6a-404e-9218-7e4605935128 succeeded118s, compactedThisTurn=true, retornou checagem em vez de editar;0alteraçõesdocumentais. GPT avisou antes de correção focada mesma tarefa. Os dados finais embytes/medianas no último registroPLAN conferem comsummary; valores157KiB/baselineanteriores são históricos, não substituir esses registros como se fossem atuais. Seguir com escrita8docsautorizada usando resumoJSON atual, skipsnominais, gatesregistradosGPT (sem alegarlogsarquivadosquando sótooloutput),56linhastabelaspreservadas. Se houver algo não verificado peloHaiku, atribuirregistroGPT/PLAN e conservarlimite, não parar diante defatosjáregistrados. Sem código nem ampliaçãoescopo. Revisãoindependenteapósescrita, aceitefinalpermanecependente.
+
+**P6.3-D correção focada início:** checkpoint76e0239bb08d7b3cd5f32c611f009619d54ccb92, somentePLANalterado, escopo8docsinalterado. Haikuescritaexplicitamenteautorizada, semgatepróprio.
+
+## Consulta obrigatória sobre a ponte — 11/10/2026
+
+P6.3-D sessão Haiku5.5 922f843e-fc6a-404e-9218-7e4605935128: primeiroturno succeeded118s comcompactação, retornouauditoria semeditar. Follow-up focado explicitamenteautorizado cancelado peloGPT após203s, voltouacompactarcontexto semeditar; terminalcancelled em2026-10-11T14:02:36.193Z. Gitstatus confirma somentePLANmodificado desdecheckpoint76e0239;0alterações8docs. NenhumaescritaClaudeativa ou servidorresidual conhecido. Diante da instruçãodousuário de parar/consultar emproblemasdeutilizaçãoClaude, não abrirnova sessão antesdadecisão.
+
+Frontend eQA preservados/concluídostecnicamente:101unit/228E2E4skips,lint/types/build,capturas44JPG22pares,Lighthouse12rodadas, revisõesSonnetindependentes. Falta P6.3-D editar8documentos+revisãofinal, rechecagensdocumentais/gatesprevistos, disponibilizarprévia eaceitehumanoD07. LCP4,8–4,9s acimaorientativa2,5s, produçãoaudit0/dev5high, encodingUTF8malformado500 conhecido; semprontidãopublicação. Nenhumcommitfinal/push/deploy. Propostas para decisãousuário: GPTsomenteescrita factualdocfinal (exceção explícita àpropriedadeHaiku, códigoinalterado, revisãoSonnetmantida), ou escalar documentaçãoSonnetcomescopodelimitado. Não arquivarPLAN/registraraceitefinalantesdousuário.
+
+### P6.3-D autorização e execução documental — 11/10/2026
+
+Usuário escolheu Opção A: GPT conclui a escrita factual dos seis docs canônicos, AGENTS.md e final-qa.md; Sonnet revisa o diff em somente leitura. Exceção restrita à propriedade documental após Haiku sem edições, sem alteração do código do site. Usuário informou 14% de cota GPT e 26% Claude: uma revisão delimitada, gates determinísticos locais, sem nova pesquisa ou medições opcionais. Aceite final e arquivamento permanecem pendentes.
+
+**P6.3-D revisão independente:** sessão601114c3-8761-457b-a872-a5152f4dd99c Sonnet5.5 succeeded43s, sem bloqueador, quatro correções pequenas: D06 alinhada entre fontes; critério original P6.2 preservado com alcance medido e decisãoGPT sujeita ao aceitehumano; fallbackIntersectionObserver/formulárioslocais/limiteabaoculta esclarecidos; datasexportHome04/10 eHomeNext10/10 distintas. GPT aplicou correções sem código. Revisão estática do diff472linhas e greps pontuais, semrevalidar logs/metrics/hashes; essas evidências são GPT. Contratos56linhas intactos porSHA256, exatamenteseisdocs,87links locaissemfaltas. Gatefinalemexecução56926,logfinal-delivery-gates.log.
+
+**P6.3-D concluído:** oito documentos atualizados e revisados; seis canônicos,56contratos SHA256intactos e95links locais verificados semfaltas (incluindo auditoria). Nenhum código do site alterado. GatesGPT56926 exit1: lint/types/101unit/build passaram; E2E227pass/4skip/1falha no foundation.spec.ts:40, observação do botão transitório Enviando. Rechecagem58958 exit0: mesmo teste3/3pass sem mudanças. Causa não comprovada, instabilidade registrada em todosdocs e log preservado; não declarar rodadafinalcompletaverde. Nenhuma nova chamadaClaude ou medição opcional. Aceite humano final/arquivamento continuam pendentes; commitfinal/push/PR/deploy não autorizados.
+
+## Execução P7–P9 — 11/10/2026
+
+Aprovação explícita: Aplique o plano. GPT executou baseline Home.baseline via HTTP temporário/Chromium1440x1000/no-preference: header Serviços produziu27eventos scroll, amostras y2/8/16/28/45/67/97/136/188/258, finaly1698; scroll-behavior computedauto, hashvazio. Portanto runtime da baseline faz animação mesmo semCSSsmooth; reproduzir comportamento funcional, não importar runtime. Servidor3000 PID24392 preexistente preservado. next-env.d.ts gerado/devtypes não incluir no checkpoint; demais alterações documentais/evidências anteriores preservadas.

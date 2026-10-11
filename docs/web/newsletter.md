@@ -1,6 +1,6 @@
 # Newsletter Root Trust
 
-**Atualizado:** 10/10/2026. Os três exports aprovados seguem N01–N11 e foram auditados em 09/10. Preservar o visual/conteúdo exportado na portabilidade. Tema escuro aprovado; CMS e envio não estão integrados. Entrada: [README](README.md).
+**Atualizado:** 11/10/2026. Os três exports aprovados seguem N01–N11 e foram auditados em 09/10. Preservar o visual/conteúdo exportado na portabilidade. Tema escuro aprovado; CMS e envio não estão integrados. Entrada: [README](README.md).
 
 **Estado dos exports:** apresentação, arquivo e prévia estão preservados entre os 12 exports em `references/claude-design/`. A auditoria de 09/10 registra a análise estática e suas limitações. O Markdown editorial completo permanece em `references/editorial/`, fora do conteúdo publicável.
 
@@ -55,6 +55,12 @@ A abertura deve explicar assunto/contexto/relevância sem depender de trecho ocu
 
 Arquivo e amostra da landing usam o mesmo parágrafo. Não exigir outra lista pública de fontes: links na abertura permanecem clicáveis; fontes completas acompanham o e-mail. Não incluir conteúdo completo em HTML, JSON, bundle, atributos ou payload público para escondê-lo. O Markdown completo é anexo editorial, não asset publicável.
 
+## Estado implementado
+
+As três rotas estão implementadas em Next, com três amostras demonstrativas sem indexação, arquivo com dois itens por página e filtro que reinicia na página 1. O formulário exibe aviso de nenhum envio desde o estado inicial, inclusive com ajuda específica; preserva edição escolhida, ou seleciona a mais recente na origem geral. Metadata individual deriva somente da abertura pública, com corte de até 160 caracteres sem quebrar palavras.
+
+Aberturas e fontes são públicas; corpos completos permanecem fora da distribuição pública. Scan GPT de 230 arquivos e 11 trechos privados encontrou zero ocorrências, dentro desse recorte. Slug inexistente bem formado retorna 404; UTF-8 malformado pode resultar em 500 antes da aplicação. [QA final](../../references/audits/final-qa.md). Confirmação, entrega, cancelamento e CMS seguem pendentes; nenhum estado demo comprova essas operações.
+
 ## 4. Página A — apresentação/inscrição
 
 **Rota:** /newsletter. **Copy proposta:** [conteúdo](product.md#newsletter--newsletter).
@@ -85,9 +91,9 @@ Somente e-mail. Sem nome/empresa/telefone/interesses ou checkbox obrigatório pr
 - **Anterior**, página atual/total e **Próxima**, com extremos indisponíveis; mudar filtro volta à página 1.
 - Sem busca, scroll infinito, métricas sociais ou taxonomia adicional.
 
-As três amostras permitem **duas entradas por página apenas na demonstração**: página 1 com dois itens, página 2 com um; filtros por pilar com uma entrada. Tamanho de produção não está fixado. Estados vazios/erro são selecionáveis na revisão, sem criar artigos de preenchimento.
+As três amostras permitem **duas entradas por página apenas na demonstração**: página 1 com dois itens, página 2 com um; filtros por pilar com uma entrada. Tamanho de produção não está fixado. Na aplicação, catálogo estático local e estados vazios são cobertos por fixtures. O seletor de erro de catálogo pertencia à revisão do export; falha de rede do catálogo depende de futura integração, sem simulador adicional nesta entrega.
 
-Copy: **Ainda não há edições publicadas.**; **Nenhuma edição neste pilar por enquanto.** com **Ver todos os pilares**; **Não foi possível carregar as edições. Tente novamente.** Não tratar erro como arquivo vazio.
+Referência editorial de vazio geral: **Ainda não há edições publicadas.**; **Nenhuma edição neste pilar por enquanto.** com **Ver todos os pilares**; **Não foi possível carregar as edições. Tente novamente.** Não tratar erro como arquivo vazio.
 
 ## 6. Página C — prévia individual
 
@@ -178,3 +184,7 @@ Fornecedor, endpoint/API e integrações não foram escolhidos. Esta documentaç
 
 
 
+
+### Rechecagem documental final — 11/10/2026
+
+Rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.
