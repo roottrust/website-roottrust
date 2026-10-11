@@ -262,8 +262,8 @@ Dependência: piloto aprovado; P3.1–P3.3 implementados. Dono Sonnet; arquivos 
 
 #### P4.1 Três serviços — [claude:escreve] Sonnet
 Dependência: P3.4. Portar três rotas, seis seções, quatro frentes.
-- [ ] Restaurar vulnerabilidades/Red Team/compliance; preservar limites contratuais de Pentest/reteste/suporte.
-- [ ] Sem novos pilares, provas ou promessas; usar componentes/formulários/gráficos comuns.
+- [x] Restaurar vulnerabilidades/Red Team/compliance; preservar limites contratuais de Pentest/reteste/suporte.
+- [x] Sem novos pilares, provas ou promessas; componentes/formulários/gráficos comuns; moldura e símbolo CTA restaurados após revisão.
 
 #### P4.2 Modelos puros — [claude:escreve] Sonnet
 Dependência: P3.4. Extrair modelos F e fixtures independentes.
@@ -363,7 +363,8 @@ Estados: pendente, em execução, em revisão, aguardando usuário, concluído. 
 | P3.4 | Concluído | Usuário: “Sim, aprovo a home”, 10/10/2026. Revisão Sonnet independente e gates concluídos; P4/P5 liberados. Lacunas navegador real/SPA e QA integral permanecem obrigatórias em P6. |
 | P3.4-P | Concluído | Consulta Sonnet 5.5 concluída; parecer conferido, cobertura corrigida pelo GPT. Lint/typecheck/build e 15 unitários/16 e2e passaram. Usuário validou piloto em 10/10/2026. Sem aceite visual P3.4. |
 | P3.4-T | Concluído | Dois testes, relatório/45 capturas; sem alteração web/src. Gates originais confirmados GPT: 15 unitários/32 E2E. Correção focada: gates Sonnet 15 unitários/34 E2E+4 skips; novo teste HTTP confirmado GPT 2/2. Revisão independente e aceite Home concluídos. |
-| P4.1–P4.4 | Pendente | Após P3.4. |
+| P4.1 | Concluído | Sessão d9fac3af-1e3e-4e4d-b414-0980b0744b55: três serviços SSR,15unit/54E2E+4skip e lint/type/build; revisão 0981b385-3269-47ef-a462-980021713fee aprovou lifecycle/contratos/composição após correção (301s escritor,22s revisor). Revisor não releu testes/audit no follow-up; rechecagem integral em P4.4. |
+| P4.2–P4.4 | Pendente | Após aceite Home, já recebido. |
 | P5.1–P5.4 | Pendente | Após P3.4. |
 | P6.1–P6.3 | Pendente | — |
 | P6.3-D | Pendente | Documentação Haiku após QA; revisão Sonnet antes do aceite. |
@@ -388,6 +389,8 @@ Cada escrita exige linha com hash WIP antes da chamada. Consultas usam “não a
 SQL/session-store não disponíveis nesta sessão: este PLAN é o registro único, sem banco artificial ou cópia concorrente.
 
 **P4.1 início:** aceite Home recebido. Dono Sonnet; escopo três páginas de serviço, componentes/dados/CSS em features/services, rotas servicos e testes correspondentes; reutilizar gráficos/formulários. Checkpoint WIP `b69a452c9179d84f5a65ccd35ee23ff7dd3afee6`; pré-checagem sem arquivo sensível/gerado, servidor manual encerrado para liberar gates. Sem alteração de exports/marca/dependências/env/Home.
+
+**P4.1 revisão/correção:** escritor d9fac3af-1e3e-4e4d-b414-0980b0744b55, Sonnet5.5 succeeded518s;15unit/48E2E+4skip e lint/type/build. GPT confirmou14/14 serviços. Revisor 0981b385-3269-47ef-a462-980021713fee, Sonnet5.5 succeeded50s, contratos aprovados mas faltam símbolo CTA e moldura dos exports. Correção do mesmo dono autorizada também em novo graphics/FrameCanvas.tsx, reutilizando HomeAscii.drawFrame e lifecycle existente, sem alterar composição Home; atualizar serviços/CSS/testes/audit. Checkpoint WIP antes do follow-up: `7aef9c899aad5c70d5b95d5822d96f8a8f3c4967`. Revisão após correção obrigatória.
 
 **Revisão humana local:** Home demo disponível em `http://127.0.0.1:3100/`, processo exec 80151, HTTP 200 confirmado pelo GPT. Formulários não enviam dados. Encerrar esse servidor antes de executar novamente os E2E (porta exclusiva do runner). A disponibilidade depende da sessão local continuar ativa.
 

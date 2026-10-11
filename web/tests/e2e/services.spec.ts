@@ -61,3 +61,68 @@ test("default mode never claims successful receipt", async ({ page }) => {
   await form.getByRole("button", { name: "Solicitar diagnóstico" }).click();
   await expect(form.getByRole("status")).toHaveText("O envio ainda não está disponível. Nenhum dado foi enviado.");
 });
+
+test.describe("service graphics: frame and symbol", () => {
+  test("frame and CTA symbol render, with cuts and band marked", async ({ page }) => {
+    const errors = collectErrors(page);
+    await page.goto("/servicos/infraestrutura-em-nuvem");
+    await expect(page.locator("main [data-frame-cut]")).toHaveCount(5);
+    await expect(page.locator('[data-band="cta"]')).toHaveCount(1);
+    const frame = page.locator('canvas[data-graphic="frame"]');
+    await expect(frame).toHaveAttribute("data-graphic-status", "ready");
+    const symbol = page.locator('[data-graphic="symbol"]');
+    await symbol.scrollIntoViewIfNeeded();
+    await expect(symbol).toHaveAttribute("data-graphic-status", "ready");
+    const box = await symbol.boundingBox();
+    expect(box?.height ?? 0).toBeGreaterThan(100);
+    if ((page.viewportSize()?.width ?? 0) >= 960) {
+      await page.locator("#situacoes").scrollIntoViewIfNeeded();
+      await expect.poll(() => frame.evaluate((c: HTMLCanvasElement) => {
+        const data = c.getContext("2d")!.getImageData(0, 0, c.width, c.height).data;
+        for (let i = 3; i < data.length; i += 4) if (data[i] > 0) return true;
+        return false;
+      })).toBe(true);
+    }
+    expect(errors).toEqual([]);
+  });
+
+  test("Canvas 2D unavailable falls back without errors", async ({ page }) => {
+    const errors = collectErrors(page);
+    await page.addInitScript(() => {
+      const original = HTMLCanvasElement.prototype.getContext;
+      HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement, type: string, ...rest: unknown[]) {
+        return type === "2d" ? null : (original as (...args: unknown[]) => RenderingContext | null).call(this, type, ...rest);
+      } as typeof original;
+    });
+    await page.goto("/servicos/ciberseguranca");
+    await expect(page.locator('canvas[data-graphic="frame"]')).toHaveAttribute("data-graphic-status", "failed");
+    await expect(page.locator('canvas[data-graphic="frame"]')).toBeHidden();
+    const symbol = page.locator('[data-graphic="symbol"]');
+    await symbol.scrollIntoViewIfNeeded();
+    await expect(symbol).toHaveAttribute("data-graphic-status", "failed");
+    await expect(symbol.locator('[data-graphic-fallback="true"]')).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.getByRole("form", { name: "Solicitar diagnóstico" })).toBeVisible();
+    expect(errors).toEqual([]);
+  });
+
+  test("global pause stops drawing and keeps the frame ready", async ({ page }) => {
+    const errors = collectErrors(page);
+    await page.addInitScript(() => {
+      const w = window as unknown as { __raf: number };
+      w.__raf = 0;
+      const raf = window.requestAnimationFrame.bind(window);
+      window.requestAnimationFrame = cb => { w.__raf++; return raf(cb); };
+    });
+    await page.goto("/servicos/desenvolvimento-de-software");
+    await expect(page.locator('canvas[data-graphic="frame"]')).toHaveAttribute("data-graphic-status", "ready");
+    await page.getByRole("button", { name: "Pausar animações" }).click();
+    await page.waitForTimeout(400);
+    const before = await page.evaluate(() => (window as unknown as { __raf: number }).__raf);
+    await page.waitForTimeout(700);
+    const after = await page.evaluate(() => (window as unknown as { __raf: number }).__raf);
+    expect(after - before).toBeLessThanOrEqual(1);
+    await expect(page.locator('canvas[data-graphic="frame"]')).toHaveAttribute("data-graphic-status", "ready");
+    expect(errors).toEqual([]);
+  });
+});

@@ -51,6 +51,8 @@
 .faq p { margin:0 0 20px;max-width:720px;text-wrap:pretty; }
 .band { background:var(--rt-verde-raiz); }
 .contactColumns { margin-top:24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:48px 64px;align-items:start; }
+.symbolHost { display:flex;justify-content:center;align-self:center;width:100%; }
+.symbol { position:relative;width:min(100%,520px);aspect-ratio:566 / 506; }
 .contactText { margin:24px 0 0;max-width:420px;color:var(--rt-superficie); }
 .contactSection { padding:96px 0 110px; }
 @media (max-width: 720px) {

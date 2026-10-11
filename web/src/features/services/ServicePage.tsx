@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ContactForm } from "@/components/forms/ContactForm";
+import { FrameCanvas } from "@/features/graphics/FrameCanvas";
 import { PillarArt } from "@/features/graphics/PillarArt";
+import { SymbolAscii } from "@/features/graphics/SymbolAscii";
 import type { FormMode } from "@/lib/forms";
 import { stageNote, stages, type ServiceContent } from "./content";
 import styles from "./services.module.css";
@@ -26,6 +28,7 @@ export function ServicePage({ service, mode }: { service: ServiceContent; mode: 
   const { detail } = service;
   return (
     <main id="conteudo" data-graphics-root className={styles.root}>
+      <FrameCanvas />
       <section className={`${styles.wrap} ${styles.hero}`} aria-labelledby="titulo">
         <div className={styles.inner}>
           <nav aria-label="Trilha de navegação">
@@ -51,7 +54,7 @@ export function ServicePage({ service, mode }: { service: ServiceContent; mode: 
         </div>
       </section>
 
-      <section className={`${styles.wrap} ${styles.section}`} aria-labelledby="situacoes">
+      <section data-frame-cut="1" className={`${styles.wrap} ${styles.section}`} aria-labelledby="situacoes">
         <div className={styles.inner}>
           <Eyebrow>Quando faz sentido</Eyebrow>
           <Title lines={service.situationsTitle} id="situacoes" />
@@ -66,7 +69,7 @@ export function ServicePage({ service, mode }: { service: ServiceContent; mode: 
         </div>
       </section>
 
-      <section className={`${styles.wrap} ${styles.section}`} aria-labelledby="frentes">
+      <section data-frame-cut="1" className={`${styles.wrap} ${styles.section}`} aria-labelledby="frentes">
         <div className={styles.inner}>
           <Eyebrow>Frentes de atuação</Eyebrow>
           <Title lines={service.frentesTitle} id="frentes" />
@@ -129,7 +132,7 @@ export function ServicePage({ service, mode }: { service: ServiceContent; mode: 
         </div>
       </section>
 
-      <section className={`${styles.wrap} ${styles.section}`} aria-labelledby="metodo">
+      <section data-frame-cut="1" className={`${styles.wrap} ${styles.section}`} aria-labelledby="metodo">
         <div className={styles.inner}>
           <Eyebrow>Como trabalhamos</Eyebrow>
           <Title lines={service.methodTitle} id="metodo" />
@@ -146,7 +149,7 @@ export function ServicePage({ service, mode }: { service: ServiceContent; mode: 
         </div>
       </section>
 
-      <section className={`${styles.wrap} ${styles.section}`} aria-labelledby="faq">
+      <section data-frame-cut="1" className={`${styles.wrap} ${styles.section}`} aria-labelledby="faq">
         <div className={styles.inner}>
           <Eyebrow>Perguntas frequentes</Eyebrow>
           <h2 id="faq" className={styles.title}>Antes de conversar.</h2>
@@ -161,7 +164,7 @@ export function ServicePage({ service, mode }: { service: ServiceContent; mode: 
         </div>
       </section>
 
-      <div className={styles.band}>
+      <div data-band="cta" className={styles.band}>
         <section id="contato" className={`${styles.wrap} ${styles.contactSection}`} aria-labelledby="contato-titulo">
           <div className={styles.inner}>
             <Eyebrow>Próximo passo</Eyebrow>
@@ -171,10 +174,14 @@ export function ServicePage({ service, mode }: { service: ServiceContent; mode: 
                 <p className={styles.contactText}>{service.ctaText}</p>
                 <ContactForm mode={mode} variant="home" />
               </div>
+              <div role="img" aria-label="Símbolo roottrust" className={styles.symbolHost}>
+                <div className={styles.symbol}><SymbolAscii /></div>
+              </div>
             </div>
           </div>
         </section>
       </div>
+      <div data-frame-cut="1" />
     </main>
   );
 }
