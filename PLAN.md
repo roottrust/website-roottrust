@@ -390,6 +390,8 @@ Cada escrita exige linha com hash WIP antes da chamada. Consultas usam “não a
 
 SQL/session-store não disponíveis nesta sessão: este PLAN é o registro único, sem banco artificial ou cópia concorrente.
 
+**P5.2 início:** checkpointWIP `8be2c0359e83347ec5608cf6ba7b0716d92c8063`; sem segredos/gerados. Dono Sonnet rotas/newsletter,features/newsletter (catálogo preservado), extensão mínima NewsletterForm para destino/copy aprovados, testes e audit/newsletter-native.md. Reusar gráficos existentes, semcorposcompletos/env/deps/export/marca/Home. P5.3 privacidade/404 final será tarefa seguinte.
+
 **P5.1 início:** checkpointWIP `f3a128ae23b0d02d33e49abee2a2b84f1f75c0ee`, sem sensíveis/gerados. Dono Haiku catálogo público tipado features/newsletter/catalog.ts,unit/newsletter/catalog.test.ts,audit/newsletter-catalog.md. Fonte exclusiva pública references/claude-design/newsletter-edicoes.js, sem ler/copiar corpos completos/editorial/uploads. ModeloHaiku5.5/acesso confirmar primeira tarefa útil, semfallback.
 
 **P4.3 fechamento:** correção escritorbed215fd succeeded300s,82unit/108E2E+4skip; GPT confirmou82unit/54E2E ferramentas. Revisorea77d succeeded37s aprovou F11/F15/F16/F24/F27/F29 e services.spec/audit; F28 ajuda de cobertura ausente. GPT encontrou exactText com maximumFractionDigits100 convertendo1e-200em0. Última correção delimitada mesmosarquivos (format/MigrationTool/testes/audit), checkpoint `b4d0fbccc66c772d2fb4806cb8b460f9c8d02b6a`; usar dígitos significativos em serialização e testar subnormal/limites IEEE754. Não alterar modelos.
