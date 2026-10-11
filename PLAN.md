@@ -390,6 +390,8 @@ Cada escrita exige linha com hash WIP antes da chamada. Consultas usam “não a
 
 SQL/session-store não disponíveis nesta sessão: este PLAN é o registro único, sem banco artificial ou cópia concorrente.
 
+**P5.2 resultado/P5.3 início:** escritord29cba37-d561-40d0-8435-cb3b8815f814 Sonnet5.5 succeeded425s,101unit/136E2E+4skip,type/build; lintfalhou por linkHomepreexistenteagora detectado(nova rota). Não é bloqueio comercial: P5.3 autoriza correção mínima `<a>`→`Link` naHome, sem mudança visual, alémprivacidade/404/metadata/testes. CheckpointWIP `cd5f154ec121c926b42034995b2c92d970ead814`, pré-checagem sem segredos/gerados; revisãoP5.4 cobrirá P5.2/P5.3 juntos após escrita.
+
 **P5.2 início:** checkpointWIP `8be2c0359e83347ec5608cf6ba7b0716d92c8063`; sem segredos/gerados. Dono Sonnet rotas/newsletter,features/newsletter (catálogo preservado), extensão mínima NewsletterForm para destino/copy aprovados, testes e audit/newsletter-native.md. Reusar gráficos existentes, semcorposcompletos/env/deps/export/marca/Home. P5.3 privacidade/404 final será tarefa seguinte.
 
 **P5.1 início:** checkpointWIP `f3a128ae23b0d02d33e49abee2a2b84f1f75c0ee`, sem sensíveis/gerados. Dono Haiku catálogo público tipado features/newsletter/catalog.ts,unit/newsletter/catalog.test.ts,audit/newsletter-catalog.md. Fonte exclusiva pública references/claude-design/newsletter-edicoes.js, sem ler/copiar corpos completos/editorial/uploads. ModeloHaiku5.5/acesso confirmar primeira tarefa útil, semfallback.
@@ -419,3 +421,20 @@ SQL/session-store não disponíveis nesta sessão: este PLAN é o registro únic
 **P3.4-T revisão e correção focada:** consulta independente `a430cb46-0458-4b36-b688-86ab2af716e2`, Sonnet 5.5, succeeded (81 s), aprovou com limites e apontou tratamento de URL/contenção/cleanup no servidor de capturas. GPT repetiu lint/typecheck/unit/build/e2e: 15 unitários e 32 E2E passaram, 4 skips explícitos. Checkpoint local antes da correção: `e67d2dbc25889ae506244e39e53b370b4e7ce6d7`; follow-up de escrita restrito aos testes de captura e relatório, sem produção. Aceite humano Home permanece pendente.
 
 **Conclusão técnica da correção:** follow-up escritor `7b343f20-f2db-42c4-8644-7fc5dbb3ca0a`, Sonnet 5.5, succeeded (94 s), no checkpoint e67d2db; lint/typecheck/unit/build/e2e passaram (15 unitários, 34 E2E, 4 skips). Follow-up revisor independente `a430cb46-0458-4b36-b688-86ab2af716e2`, Sonnet 5.5, succeeded (13 s): aprovado sem bug novo. GPT conferiu diff e executou o teste HTTP afetado, 2/2. Capturas não regeneradas; novos campos de requestfailed não existem nas métricas antigas. Sem alteração de produção, push ou commit final; apenas checkpoints WIP locais autorizados. Inspeção visual GPT amostral incluiu hero desktop/baseline/mobile, pilares, serviços, processo, ferramentas mobile, newsletter desktop/baseline e CTA desktop/mobile. P3.4 aguarda aceite humano obrigatório D07.
+
+## Pausa solicitada pelo usuário — 10/10/2026
+
+Execução pausada até novo “ok” explícito, por limite informado de Claude (5%) e GPT (20%). Não iniciar novas sessões, desenvolvimento ou verificações durante a pausa.
+
+- A tentativa de cancelar a sessão P5.3 `1867aaf5-13c0-45f7-bb15-395cb4e11b61` encontrou a tarefa já encerrada: `succeeded`, Sonnet 5.5, 374 s, checkpoint WIP `cd5f154ec121c926b42034995b2c92d970ead814`. Nenhuma nova chamada de implementação foi aberta.
+- O escritor relata privacidade provisória, 404, metadata e correção do Link da Home implementados; lint/typecheck/build, 101 unitários e 148 E2E passaram, com 4 skips. Estes resultados finais ainda não foram repetidos nem revisados independentemente pelo orquestrador.
+- Limitação relatada: slug com percent-encoding malformado retorna 500 do Next; URLs inválidas comuns retornam 404. Avaliar na retomada, sem assumir necessária a solução sugerida pelo escritor.
+- Retomada: conferir diff e auditoria `references/audits/public-routes.md`; concluir validação P5.3 e revisão independente P5.4 (incluindo P5.2); depois executar P6 conforme critérios de aceite. Preservar a árvore atual e o aceite humano já concedido à Home. Aceite final continua pendente.
+
+## Retomada autorizada — 11/10/2026
+
+Usuário: “Ok para retomar o PLAN.md por completo até finaliza-lo”. Revoga a pausa anterior. P5.3 terminou antes da pausa; gates repetidos pelo GPT em andamento. P5.4 revisão independente Sonnet 5.5, sessão `aaa7c823-5b7c-418b-9d1c-9272cdda5be8`, somente leitura, em execução. Sem nova implementação enquanto revisamos esta entrega. Permanecem autorização apenas para checkpoints locais e necessidade de aceite humano final.
+
+**P5.4 revisão inicial:** Sonnet5.5 `aaa7c823-5b7c-418b-9d1c-9272cdda5be8` succeeded127s, aprovou com ressalvas. Correção focada P5.2/P5.3 [claude:escreve] Sonnet: aviso prévio de indisponibilidade em NewsletterForm inclusive quando support personalizado, metadata prévia usando abertura pública, rótulo demonstrativo no arquivo e copy vazia exata; testes e auditorias correspondentes. Não criar estado de falha de rede fictício para catálogo local estático: ausência/filtro vazio já têm fixtures unitárias. GPT conferiu FrameCanvas event-driven, somente moldura lateral, sem fundo contínuo de leitura. Busca em src/static/server newsletter não encontrou referências/editorial, newsletter-editorial, fonte de catálogo de referência ou imports Markdown; public contém só quatro assets aprovados. Inspeção complementar de respostas públicas integra QA.
+
+**Limite decidido pelo orquestrador:** percent-encoding UTF-8 inválido não é um slug válido inexistente; falha no decodificador do framework antes da página. Preservar HTTP404 para slugs bem formados inexistentes. Registrar caso malformado como risco conhecido de Next para revisão antes de publicação; não adicionar camada de roteamento nesta entrega local somente para mascarar falha do framework. Não tratar 500 como sucesso do gate404.

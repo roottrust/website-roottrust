@@ -1,0 +1,13 @@
+.root { position:relative; overflow:clip; background:#171717; color:var(--rt-superficie); font:400 18px/1.55 var(--font-body); min-height:100vh; }
+.wrap { max-width:1320px; margin:0 auto; padding:136px clamp(20px,4vw,60px) 64px; box-sizing:border-box; }
+.inner { max-width:1200px; margin:0 auto; display:flex; flex-direction:column; align-items:flex-start; gap:24px; }
+.eyebrowRow { display:flex; align-items:center; gap:16px; }
+.eyebrow { font:700 12px/1.4 var(--font-body); letter-spacing:.18em; text-transform:uppercase; color:var(--rt-menta); }
+.rule { width:40px; height:1px; background:var(--rt-musgo); }
+.h1 { margin:0; font:700 clamp(38px,4.6vw,64px)/1.04 var(--font-display); letter-spacing:-.02em; overflow-wrap:anywhere; }
+.accent { color:var(--rt-folha); }
+.lead { margin:0; text-wrap:pretty; }
+.actions { margin:0; display:flex; flex-wrap:wrap; align-items:center; gap:12px 24px; }
+.ghost { display:inline-flex; align-items:center; min-height:44px; font:600 15px/1.4 var(--font-body); color:var(--rt-menta); text-underline-offset:3px; }
+.art { display:block; width:100%; aspect-ratio:1200 / 380; margin-top:24px; pointer-events:none; }
+@media (max-width:720px) { .wrap { padding-top:110px; } }

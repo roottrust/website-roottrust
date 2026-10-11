@@ -1,5 +1,6 @@
 import { Fragment } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { HomeCanvas } from "@/features/graphics/HomeCanvas";
 import { PillarArt } from "@/features/graphics/PillarArt";
 import { ContactForm } from "@/components/forms/ContactForm";
@@ -108,7 +109,7 @@ export function Home({ mode }: {mode: FormMode}) { return <main id="conteudo" da
       <p className={(styles.paragraph)}>Insights práticos sobre segurança, nuvem, software e tecnologia para operações críticas.</p>
       <NewsletterForm mode={mode} variant="home" />
       
-      <a href="/newsletter/edicoes" className={(styles.archiveLink)}>Ver edições anteriores<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></a>
+      <Link href="/newsletter/edicoes" prefetch={false} className={(styles.archiveLink)}>Ver edições anteriores<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></Link>
     </div>
   </div>
 </section><div data-band="cta" className={(styles.greenBand)}>

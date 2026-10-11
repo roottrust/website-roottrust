@@ -5,7 +5,7 @@ import { EDICOES_PUBLICAS } from "@/features/newsletter/catalog";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "Prévias da newsletter — Root Trust",
+  title: { absolute: "Prévias da newsletter — Root Trust" },
   description: "Navegue pelas prévias aprovadas da newsletter da Root Trust e conheça temas, análises e fontes.",
   robots: { index: false, follow: false },
 };

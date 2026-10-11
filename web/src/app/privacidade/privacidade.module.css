@@ -1,0 +1,16 @@
+.root { position:relative; overflow:clip; background:#171717; color:var(--rt-superficie); font:400 18px/1.55 var(--font-body); min-height:100vh; }
+.wrap { max-width:1320px; margin:0 auto; padding:140px clamp(20px,4vw,60px) 88px; box-sizing:border-box; }
+.inner { max-width:860px; margin:0 auto; }
+.eyebrowRow { display:flex; align-items:center; gap:16px; }
+.eyebrow { font:700 12px/1.4 var(--font-body); letter-spacing:.18em; text-transform:uppercase; color:var(--rt-menta); }
+.rule { width:40px; height:1px; background:var(--rt-musgo); }
+.h1 { margin:24px 0 0; font:700 clamp(36px,5vw,64px)/1.05 var(--font-display); letter-spacing:-.02em; text-wrap:balance; overflow-wrap:anywhere; }
+.lead { margin:24px 0 0; text-wrap:pretty; }
+.status { margin:32px 0 0; padding:16px 20px; border:1px solid var(--rt-musgo); border-left:3px solid var(--rt-folha); background:#1f1f1f; }
+.block { margin-top:48px; border-top:1px solid var(--rt-rocha); padding-top:28px; }
+.block h2 { margin:0 0 12px; font:600 26px/1.2 var(--font-display); }
+.block p, .block li { text-wrap:pretty; }
+.block ul { margin:0; padding-left:1.2em; display:grid; gap:10px; }
+.block a { color:var(--rt-menta); text-underline-offset:3px; overflow-wrap:anywhere; }
+.back { margin:48px 0 0; }
+@media (max-width:720px) { .wrap { padding-top:110px; } }

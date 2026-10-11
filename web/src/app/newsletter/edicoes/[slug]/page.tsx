@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const edicao = getEdicaoBySlug((await params).slug);
   if (!edicao) notFound();
   return {
-    title: `${edicao.titulo} — Prévia · Root Trust`,
+    title: { absolute: `${edicao.titulo} — Prévia · Root Trust` },
     description: "Prévia demonstrativa da newsletter da Root Trust. Receba a edição completa por e-mail após confirmar seu endereço.",
     robots: { index: false, follow: false },
   };
