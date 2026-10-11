@@ -6,7 +6,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { sortedEdicoes } from "../../src/features/newsletter/catalog";
 
 /**
- * Evidence capture, not a regression check: is excluded by playwright.config.ts unless QA_CAPTURE=1 (see web/scripts/qa-capture.mjs).
+ * Evidence capture, not a regression check: is ignored by playwright.config.ts unless QA_CAPTURE=1 (see web/scripts/qa-capture.mjs).
  * Native route vs the approved export (served read-only), same viewport, reduced motion, fonts loaded.
  */
 test.use({ deviceScaleFactor: 1, reducedMotion: "reduce" });
@@ -50,9 +50,41 @@ function serveExports(): Promise<{ server: Server; origin: string }> {
   });
 }
 
-async function shoot(page: Page, file: string) {
+type GraphicState = { index: number; kind: string; status: string | null; fallback: boolean };
+
+/** Scrolls the whole page so off-screen graphics initialise, records each graphic's status (ready = rendered, failed + fallback = static fallback), returns to the top. */
+async function warmPage(page: Page, native: boolean) {
+  const seen = new Map<number, GraphicState>();
+  const timeouts: string[] = [];
+  const height = page.viewportSize()?.height ?? 800;
+  for (let step = 0, y = 0; step < 80; step++, y += Math.floor(height * 0.8)) {
+    const total = await page.evaluate(() => document.documentElement.scrollHeight);
+    if (y > total) break;
+    await page.evaluate(top => scrollTo(0, top), y);
+    if (native) {
+      try {
+        await page.waitForFunction(() => [...document.querySelectorAll("[data-graphic]")].every(el => {
+          const r = el.getBoundingClientRect();
+          return !(r.width > 0 && r.bottom > 0 && r.top < innerHeight) || el.getAttribute("data-graphic-status") !== "loading";
+        }), undefined, { timeout: 8000 });
+      } catch { timeouts.push(`scrollY=${y}: graphic still "loading" after 8s`); }
+      const states = await page.evaluate(() => [...document.querySelectorAll("[data-graphic]")].map((el, index) => {
+        const r = el.getBoundingClientRect();
+        return { index, kind: el.getAttribute("data-graphic") ?? "", status: el.getAttribute("data-graphic-status"), fallback: el.querySelector('[data-graphic-fallback="true"]') !== null || el.getAttribute("data-graphic-fallback") === "true", visible: r.width > 0 && r.bottom > 0 && r.top < innerHeight };
+      }));
+      for (const { visible, ...state } of states) if (visible) seen.set(state.index, state);
+    }
+    await page.waitForTimeout(400);
+  }
+  await page.evaluate(() => scrollTo(0, 0));
+  await page.waitForTimeout(300);
+  return { graphics: [...seen.values()], graphicTimeouts: timeouts };
+}
+
+async function shoot(page: Page, file: string, native: boolean) {
   await page.evaluate(() => document.fonts.ready.then(() => undefined));
-  await page.waitForTimeout(1200);
+  const warm = await warmPage(page, native);
+  await page.waitForTimeout(800);
   const metrics = await page.evaluate(() => ({
     documentHeight: document.documentElement.scrollHeight,
     overflowX: document.documentElement.scrollWidth > innerWidth,
@@ -61,7 +93,7 @@ async function shoot(page: Page, file: string) {
     fontsLoaded: [...document.fonts].filter(font => font.status === "loaded").map(font => `${font.family} ${font.weight}`),
   }));
   await page.screenshot({ path: join(OUT, file), type: "jpeg", quality: 60, fullPage: true });
-  return metrics;
+  return { ...metrics, ...warm };
 }
 
 test("capture native routes and approved exports", async ({ page, browser }, info) => {
@@ -72,7 +104,10 @@ test("capture native routes and approved exports", async ({ page, browser }, inf
   const report: Record<string, unknown> = { project: info.project.name, viewport: `${size?.width}x${size?.height}`, reducedMotion: "reduce", deviceScaleFactor: 1, pairs: {} };
   const pairs = report.pairs as Record<string, unknown>;
   const { server, origin } = await serveExports();
-  const context = await browser.newContext({ viewport: size ?? undefined, deviceScaleFactor: 1, reducedMotion: "reduce", isMobile: info.project.use.isMobile, hasTouch: info.project.use.hasTouch });
+  const userAgent = await page.evaluate(() => navigator.userAgent);
+  report.userAgent = userAgent;
+  report.isMobile = info.project.use.isMobile ?? false;
+  const context = await browser.newContext({ viewport: size ?? undefined, deviceScaleFactor: 1, reducedMotion: "reduce", isMobile: info.project.use.isMobile, hasTouch: info.project.use.hasTouch, userAgent });
   try {
     const base = await context.newPage();
     for (const pair of PAIRS) {
@@ -82,7 +117,7 @@ test("capture native routes and approved exports", async ({ page, browser }, inf
       await page.goto(pair.route);
       await expect(page.getByRole("heading", { level: 1 }).first()).toBeVisible();
       await page.waitForLoadState("networkidle");
-      const native = await shoot(page, `${viewport}-${pair.id}-native.jpg`);
+      const native = await shoot(page, `${viewport}-${pair.id}-native.jpg`, true);
       page.off("pageerror", onError);
 
       const baseErrors: string[] = [];
@@ -91,7 +126,7 @@ test("capture native routes and approved exports", async ({ page, browser }, inf
       const onFailed = (req: { url(): string }) => failed.push(req.url());
       base.on("pageerror", onBaseError); base.on("requestfailed", onFailed);
       await base.goto(`${origin}/${encodeURIComponent(pair.file)}`, { waitUntil: "networkidle", timeout: 60000 });
-      const baseline = await shoot(base, `${viewport}-${pair.id}-export.jpg`);
+      const baseline = await shoot(base, `${viewport}-${pair.id}-export.jpg`, false);
       base.off("pageerror", onBaseError); base.off("requestfailed", onFailed);
       pairs[pair.id] = { route: pair.route, export: pair.file, native: { ...native, pageErrors: errors }, exportPage: { ...baseline, pageErrors: baseErrors, failedRequests: failed } };
     }

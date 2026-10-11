@@ -2,6 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./tests/e2e",
+  testIgnore: process.env.QA_CAPTURE === "1" ? undefined : /qa-capture\.spec\.ts/,
   fullyParallel: false,
   retries: 0,
   reporter: process.env.CI ? [["list"], ["github"]] : "list",

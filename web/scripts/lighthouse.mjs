@@ -2,15 +2,16 @@
 // Starts its own production server (requires `npm run build`), runs ROUNDS per route, writes
 // raw reports + summary to references/audits/final-qa/lighthouse and always closes the server.
 import { spawn, spawnSync } from "node:child_process";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { cpus, platform, release, totalmem } from "node:os";
 import { fileURLToPath } from "node:url";
 
 const VERSION = "13.5.0";
 const PORT = Number(process.env.LH_PORT ?? 3200);
 const ROUNDS = Number(process.env.LH_ROUNDS ?? 3);
+const RUN_TIMEOUT_MS = 300_000;
 const ROUTES = [
   ["home", "/"],
   ["servico", "/servicos/ciberseguranca"],
@@ -35,13 +36,28 @@ async function waitForServer(url, child) {
 
 function closeServer(child) {
   if (child.exitCode !== null) return;
-  if (platform() === "win32") spawnSync("taskkill", ["/pid", String(child.pid), "/T", "/F"], { stdio: "ignore" });
-  else child.kill("SIGTERM");
+  if (platform() === "win32") {
+    const result = spawnSync("taskkill", ["/pid", String(child.pid), "/T", "/F"], { stdio: ["ignore", "ignore", "inherit"] });
+    if (result.error || result.status !== 0) console.error(`could not stop server pid ${child.pid}: ${result.error ?? `taskkill status ${result.status}`}`);
+  } else if (!child.kill("SIGTERM")) console.error(`could not signal server pid ${child.pid}`);
+}
+
+// npm-cli.js of the npm installed next to the running node: no .cmd shim, no shell, so --chrome-flags keeps its spaces.
+function resolveNpmCli() {
+  const candidates = [
+    process.env.npm_execpath,
+    join(dirname(process.execPath), "node_modules", "npm", "bin", "npm-cli.js"),
+    join(dirname(process.execPath), "..", "lib", "node_modules", "npm", "bin", "npm-cli.js"),
+  ].filter(candidate => candidate && candidate.endsWith("npm-cli.js") && existsSync(candidate));
+  if (!candidates.length) throw new Error("npm-cli.js not found next to node; run with the Node 24 distribution that ships npm");
+  return candidates[0];
 }
 
 const chromePath = process.env.CHROME_PATH ?? (await import("@playwright/test")).chromium.executablePath();
+if (!existsSync(chromePath)) throw new Error(`Chrome not found at ${chromePath} (set CHROME_PATH or install the Playwright Chromium)`);
+const npmCli = resolveNpmCli();
 const server = spawn(process.execPath, [require.resolve("next/dist/bin/next"), "start", "--hostname", "127.0.0.1", "--port", String(PORT)], {
-  cwd: webRoot, stdio: "ignore", env: { ...process.env, FORM_MODE: "" },
+  cwd: webRoot, stdio: ["ignore", "ignore", "inherit"], env: { ...process.env, FORM_MODE: "" },
 });
 for (const signal of ["SIGINT", "SIGTERM"]) process.on(signal, () => { closeServer(server); process.exit(130); });
 
@@ -52,12 +68,12 @@ try {
   for (const [name, path] of ROUTES) {
     for (let round = 1; round <= ROUNDS; round++) {
       const file = join(outDir, `${name}-${round}.json`);
-      const npm = platform() === "win32" ? "npm.cmd" : "npm";
-      const result = spawnSync(npm, ["exec", "--yes", `--package=lighthouse@${VERSION}`, "--", "lighthouse", `http://127.0.0.1:${PORT}${path}`,
+      const result = spawnSync(process.execPath, [npmCli, "exec", "--yes", `--package=lighthouse@${VERSION}`, "--", "lighthouse", `http://127.0.0.1:${PORT}${path}`,
         "--output=json", `--output-path=${file}`, "--only-categories=performance", "--quiet", "--chrome-flags=--headless=new --no-sandbox"], {
-        cwd: webRoot, stdio: "inherit", shell: platform() === "win32", env: { ...process.env, CHROME_PATH: chromePath },
+        cwd: webRoot, stdio: "inherit", timeout: RUN_TIMEOUT_MS, killSignal: "SIGKILL", env: { ...process.env, CHROME_PATH: chromePath },
       });
-      if (result.status !== 0) throw new Error(`lighthouse failed for ${path} round ${round} (status ${result.status})`);
+      if (result.error) throw new Error(`lighthouse could not run for ${path} round ${round}: ${result.error.message}`);
+      if (result.status !== 0) throw new Error(`lighthouse failed for ${path} round ${round} (status ${result.status}, signal ${result.signal})`);
       const lhr = JSON.parse(readFileSync(file, "utf8"));
       if (lhr.runtimeError) throw new Error(`lighthouse runtime error for ${path}: ${lhr.runtimeError.message}`);
       const scriptBytes = lhr.audits["network-requests"].details.items.filter(i => i.resourceType === "Script").reduce((sum, i) => sum + i.transferSize, 0);

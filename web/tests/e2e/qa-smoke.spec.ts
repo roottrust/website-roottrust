@@ -13,8 +13,8 @@ for (const route of ROUTES) {
     if (route.h1) await expect(h1).toContainText(route.h1);
     await page.waitForLoadState("networkidle");
     const skip = page.getByRole("link", { name: "Pular para o conteúdo" });
-    // Playwright WebKit (Windows) Tab skips links, like Safari defaults: there the link is focused programmatically, so Tab order is only verified in Chromium/Firefox.
-    if (browserName === "webkit") await skip.focus(); else await page.keyboard.press("Tab");
+    // Playwright WebKit on Windows skips links on Tab, like Safari defaults: only there the link is focused programmatically (this does NOT verify real Tab order); elsewhere Tab is pressed.
+    if (browserName === "webkit" && process.platform === "win32") await skip.focus(); else await page.keyboard.press("Tab");
     await expect(skip).toBeFocused();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     expect(issues).toEqual([]);

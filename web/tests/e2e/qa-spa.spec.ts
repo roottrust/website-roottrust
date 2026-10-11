@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { collectIssues, drawsDuring, instrument, ROUTES } from "./qa-shared";
+import { collectIssues, drawsDuring, findClipped, instrument, ROUTES } from "./qa-shared";
 
 /** Chromium-only QA (production build): SPA pause persistence, GPU disposal, zoom/reflow, keyboard, no-JS. */
 
@@ -14,6 +14,8 @@ test.describe("SPA graphics lifecycle", () => {
     await page.goto("/");
     await page.evaluate(() => { (window as unknown as { __spa: number }).__spa = 1; });
     await expect(page.locator("canvas").first()).toBeAttached();
+    // control: the instrumentation must see drawing before pause, otherwise "0 draws" after pause proves nothing
+    await expect.poll(() => drawsDuring(page, 500), { timeout: 10000 }).toBeGreaterThan(0);
     await pause(page).click();
     await expect(resume(page)).toHaveAttribute("aria-pressed", "true");
 
@@ -65,14 +67,15 @@ test.describe("SPA graphics lifecycle", () => {
 });
 
 const VIEWPORTS = [
-  { name: "200% zoom (640x512 CSS px)", width: 640, height: 512 },
-  { name: "400% zoom / 320px (320x256 CSS px)", width: 320, height: 256 },
-  { name: "320px phone", width: 320, height: 700 },
+  { name: "640x512 CSS px viewport (geometric equivalent of 200% zoom; not real browser zoom)", width: 640, height: 512 },
+  { name: "320x256 CSS px viewport (geometric equivalent of 400% zoom; not real browser zoom)", width: 320, height: 256 },
+  { name: "320x700 CSS px phone viewport", width: 320, height: 700 },
 ] as const;
 
 for (const viewport of VIEWPORTS) {
-  test(`reflow ${viewport.name}: every route stays inside the viewport, without runtime errors`, async ({ page }) => {
+  test(`reflow ${viewport.name}: no horizontal overflow or clipped main/footer content, without runtime errors`, async ({ page }) => {
     const issues = collectIssues(page);
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     const overflowing: string[] = [];
     for (const route of ROUTES) {
@@ -81,12 +84,14 @@ for (const viewport of VIEWPORTS) {
       await page.waitForLoadState("networkidle");
       const width = await page.evaluate(() => ({ scroll: document.documentElement.scrollWidth, inner: innerWidth }));
       if (width.scroll > width.inner) overflowing.push(`${route.path} ${width.scroll}>${width.inner}`);
+      for (const clipped of await findClipped(page)) overflowing.push(`${route.path} ${clipped}`);
     }
     expect(issues).toEqual([]);
     const notFound = await page.goto("/rota-inexistente-qa");
     expect(notFound?.status()).toBe(404);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)) overflowing.push("/rota-inexistente-qa");
+    for (const clipped of await findClipped(page)) overflowing.push(`/rota-inexistente-qa ${clipped}`);
     expect(overflowing).toEqual([]);
   });
 }
@@ -97,6 +102,7 @@ test("keyboard: every route has a finite tab order, visible focus indicators and
   for (const route of [...ROUTES, { path: "/rota-inexistente-qa" }]) {
     await page.goto(route.path);
     await page.waitForLoadState("networkidle");
+    await page.addStyleTag({ content: "*,*::before,*::after{transition:none!important;animation:none!important}" });
     const stops: string[] = [];
     let wrapped = false;
     for (let step = 0; step < 250; step++) {
@@ -106,14 +112,20 @@ test("keyboard: every route has a finite tab order, visible focus indicators and
         if (!el || el === document.body || el === document.documentElement) return { wrap: true as const };
         const rect = el.getBoundingClientRect();
         const style = getComputedStyle(el);
-        const ring = (style.outlineStyle !== "none" && parseFloat(style.outlineWidth) > 0) || style.boxShadow !== "none";
+        const paint = () => { const s = getComputedStyle(el); return `${s.outlineStyle}|${s.outlineWidth}|${s.outlineColor}|${s.outlineOffset}|${s.boxShadow}`; };
+        // a focus indicator is a paint change caused by focus (outline/box-shadow), not a decoration that is always there
+        const focused = paint();
+        el.blur();
+        const unfocused = paint();
+        el.focus();
+        const ring = focused !== unfocused && document.activeElement === el;
         const label = `${el.tagName.toLowerCase()}${el.id ? `#${el.id}` : ""} "${(el.getAttribute("aria-label") ?? el.textContent ?? "").trim().slice(0, 40)}"`;
         return { wrap: false as const, label, hidden: rect.width === 0 || rect.height === 0 || style.visibility === "hidden", ring };
       });
       if (stop.wrap) { wrapped = true; break; }
       stops.push(stop.label);
       if (stop.hidden) problems.push(`${route.path}: focus on hidden element ${stop.label}`);
-      if (!stop.ring) problems.push(`${route.path}: no focus indicator on ${stop.label}`);
+      if (!stop.ring) problems.push(`${route.path}: focus does not change outline/box-shadow on ${stop.label}`);
     }
     if (!wrapped) problems.push(`${route.path}: tab order did not leave the page within 250 stops`);
     if (stops.length < 3) problems.push(`${route.path}: only ${stops.length} tab stops`);
