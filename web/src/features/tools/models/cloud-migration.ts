@@ -1,4 +1,4 @@
-import { add, checkValue, div, inputState, mul } from "./numbers";
+import { add, checkValue, div, inputState, mul, sub } from "./numbers";
 import type { Input, MissingInput, ModelError, ModelOutcome } from "./numbers";
 
 export type MigrationHorizon = 12 | 36;
@@ -59,7 +59,7 @@ export function evaluateMigration(input: MigrationInputs): ModelOutcome<Migratio
 
   const a = input.keep as number;
   const migrate = add(input.operate as number, input.transition as number);
-  const difference = migrate === null ? null : add(a, -migrate);
+  const difference = migrate === null ? null : sub(a, migrate);
   if (migrate === null || difference === null) return { ok: true, result: { status: "overflow" } };
 
   let percent: Extract<MigrationResult, { status: "value" }>["percent"];

@@ -1,4 +1,4 @@
-import { add, checkValue, div, inputState, modelError, mul, OVERFLOW, undef, val } from "./numbers";
+import { add, checkValue, div, inputState, modelError, mul, OVERFLOW, sub, undef, val } from "./numbers";
 import type { Calc, Input, MissingInput, ModelError, ModelOutcome } from "./numbers";
 
 /** Quatro grupos monetários do auxiliar (F15 prejuízo / F16 custo). */
@@ -159,13 +159,13 @@ export function evaluateRosi(input: RosiInputs): ModelOutcome<RosiResult> {
 
   const residualLoss: Calc =
     referenceLoss.status === "value" && benefit.status === "value"
-      ? val(referenceLoss.value - benefit.value)
+      ? val(sub(referenceLoss.value, benefit.value) as number)
       : referenceLoss.status === "overflow" ? OVERFLOW
       : referenceLoss.status === "value" ? missingOf(benefitDeps) // L conhecido, falta redução/prazo
       : referenceLoss;
 
   let netBenefit: Calc;
-  if (benefit.status === "value" && typeof cost === "number") netBenefit = val(benefit.value - cost);
+  if (benefit.status === "value" && typeof cost === "number") netBenefit = val(sub(benefit.value, cost) as number);
   else if (benefit.status === "overflow") netBenefit = OVERFLOW;
   else {
     const deps: Dep[] = benefit.status === "missing" ? benefitDeps.filter(([, v]) => typeof v !== "number") : [];

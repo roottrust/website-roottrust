@@ -63,3 +63,34 @@ describe("Migração para nuvem", () => {
     expect(big.status === "value" && big.percent).toEqual({ status: "value", value: 100 });
   });
 });
+
+describe("Migração: cancelamento de ponto flutuante", () => {
+  const diff = (o: Partial<MigrationInputs>) => {
+    const r = run(o);
+    if (r.status !== "value") throw new Error(r.status);
+    return r;
+  };
+  it(".1+.2 vs .3 é igual", () => {
+    const r = diff({ keep: 0.3, operate: 0.1, transition: 0.2 });
+    expect(r).toMatchObject({ difference: 0, direction: "equal", percent: { status: "value", value: 0 } });
+    expect(Object.is(r.difference, -0)).toBe(false);
+  });
+  it("1000,30 vs 500,10+500,20 é igual", () => {
+    expect(diff({ keep: 1000.3, operate: 500.1, transition: 500.2 })).toMatchObject({ difference: 0, direction: "equal" });
+  });
+  it("diferença real subcentavo é preservada", () => {
+    const r = diff({ keep: 1000.3, operate: 500.1, transition: 500.201 });
+    expect(r.direction).toBe("costlier");
+    expect(r.difference).toBeCloseTo(-0.001, 9);
+    expect(diff({ keep: 0.3, operate: 0.1, transition: 0.199 }).direction).toBe("cheaper");
+  });
+  it("magnitudes grandes: igualdade de representação e diferença real", () => {
+    expect(diff({ keep: 3e15, operate: 1e15, transition: 2e15 })).toMatchObject({ difference: 0, direction: "equal" });
+    expect(diff({ keep: 1e15, operate: 1e15, transition: 100 }).direction).toBe("costlier");
+    expect(diff({ keep: 1e300, operate: 0.5e300, transition: 0.5e300 }).direction).toBe("equal");
+    expect(run({ keep: 1e308, operate: 1e308, transition: 1e308 })).toEqual({ status: "overflow" });
+  });
+  it("base zero continua sem percentual", () => {
+    expect(diff({ keep: 0, operate: 0, transition: 0 })).toMatchObject({ direction: "equal", percent: { status: "undefined", reason: "zero_base" } });
+  });
+});

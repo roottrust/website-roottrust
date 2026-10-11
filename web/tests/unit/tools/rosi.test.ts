@@ -169,3 +169,29 @@ describe("auxiliares F15/F16", () => {
     expect(over.ok ? [] : over.errors.map((e) => e.code)).toEqual(["overflow"]);
   });
 });
+
+describe("ROSI: cancelamento de ponto flutuante", () => {
+  it("equilíbrio decimal exato dá líquido 0 sem -R$ 0,00", () => {
+    const r = run({ loss: { direct: 0.3 }, frequency: 1, delayMonths: 0, reductionPercent: 70, cost: { direct: 0.21 } });
+    expect(r.netBenefit).toEqual({ status: "value", value: 0 });
+    expect(r.rosiPercent).toEqual({ status: "value", value: 0 });
+    expect(Object.is((r.netBenefit as { value: number }).value, -0)).toBe(false);
+  });
+  it("redução 100% zera a perda residual", () => {
+    const r = run({ loss: { direct: 0.3 }, frequency: 1, delayMonths: 0, reductionPercent: 100, cost: { direct: 1 } });
+    expect(r.residualLoss).toEqual({ status: "value", value: 0 });
+  });
+  it("diferença real subcentavo permanece negativa", () => {
+    const r = run({ loss: { direct: 1000.3 }, frequency: 1, delayMonths: 0, reductionPercent: 100, cost: { direct: 1000.301 } });
+    expect(num(r.netBenefit)).toBeCloseTo(-0.001, 9);
+    expect(num(r.rosiPercent)).toBeLessThan(0);
+  });
+  it("magnitudes grandes e custo zero mantêm contratos", () => {
+    const eq = run({ loss: { direct: 3e15 }, frequency: 1, delayMonths: 0, reductionPercent: 100, cost: { direct: 3e15 } });
+    expect(eq.netBenefit).toEqual({ status: "value", value: 0 });
+    expect(run({ cost: { direct: 0 } }).rosiPercent).toEqual({ status: "undefined", reason: "zero_cost" });
+    const neg = run({ delayMonths: 12 });
+    expect(num(neg.netBenefit)).toBe(-30000);
+    expect(run({ loss: { direct: 1e308 }, frequency: 10 }).netBenefit).toEqual({ status: "overflow" });
+  });
+});

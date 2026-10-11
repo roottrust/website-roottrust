@@ -110,3 +110,13 @@ export function safe(result: number, ...operands: number[]): number | null {
 export const mul = (a: number, b: number): number | null => safe(a * b, a, b);
 export const div = (a: number, b: number): number | null => safe(a / b, a);
 export const add = (a: number, b: number): number | null => safe(a + b);
+
+/** Múltiplo de Number.EPSILON tolerado como erro de representação em cadeias curtas de operações. */
+const CANCELLATION_ULPS = 16;
+
+/** a − b; diferença dentro do erro de representação dos operandos vira 0 exato (não arredonda a centavos). */
+export function sub(a: number, b: number): number | null {
+  const d = a - b;
+  if (!Number.isFinite(d)) return null;
+  return Math.abs(d) <= CANCELLATION_ULPS * Number.EPSILON * Math.max(Math.abs(a), Math.abs(b)) ? 0 : d;
+}
