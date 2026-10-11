@@ -43,6 +43,7 @@ for (const route of routes) {
 
   test(`${route.path}: report form is independent of the newsletter and local in demo mode`, async ({ page }) => {
     await page.goto(route.path);
+    await expect(page.locator("main")).toContainText("demonstração local e nenhum dado é enviado");
     const report = page.getByRole("form", { name: /^Receber relatório de/ });
     await expect(report).toContainText("não inscreve você na newsletter");
     await report.getByRole("button", { name: "Receber relatório" }).click();
@@ -56,6 +57,8 @@ for (const route of routes) {
 
   test(`${route.path}: default mode never claims receipt`, async ({ page }) => {
     await page.goto(`http://127.0.0.1:3101${route.path}`);
+    await expect(page.locator("main")).toContainText("envio do pedido de relatório indisponível");
+    await expect(page.locator("main")).not.toContainText("demonstração local");
     const report = page.getByRole("form", { name: /^Receber relatório de/ });
     await report.getByLabel("Seu e-mail").fill("pessoa@example.com");
     await report.getByRole("button", { name: "Receber relatório" }).click();
@@ -254,4 +257,79 @@ test("answers are not recovered after SPA navigation or history, and nothing is 
   await expect(box(page, /^Profissionais na equipe/)).toHaveValue("");
   expect(sent).toEqual([]);
   expect(errors).toEqual([]);
+});
+
+test("ROSI: scenario help follows the export and never fills user data", async ({ page }) => {
+  await page.goto("/ferramentas/rosi");
+  await expect(page.getByText("Escolha o evento que você quer avaliar.")).toBeVisible();
+  await page.getByLabel("Cenário de referência (opcional)").selectOption({ label: "Vazamento de dados" });
+  await expect(page.getByText("Considere resposta, notificações e efeitos comerciais, sem contar a mesma perda duas vezes.")).toBeVisible();
+  await page.getByLabel("Cenário de referência (opcional)").selectOption({ label: "Comprometimento de contas" });
+  await expect(page.getByText("Considere fraude, acesso indevido e o tempo até conter o problema.")).toBeVisible();
+  await expect(box(page, /^Prejuízo por incidente/)).toHaveValue("");
+  await expect(box(page, /^Custo adicional nos primeiros 12 meses/)).toHaveValue("");
+  await expect(page.getByLabel("Frequência de incidentes com prejuízo")).toHaveValue("");
+});
+
+test("ROSI: auxiliary total keeps sub-cent precision when transferred", async ({ page }) => {
+  await page.goto("/ferramentas/rosi");
+  const aux = page.locator("details").filter({ hasText: "Compor o prejuízo por partes" });
+  await aux.locator("summary").click();
+  await aux.getByRole("textbox", { name: /^Serviços externos/ }).fill("0,001");
+  for (const name of [/^Trabalho interno adicional/, /^Perda operacional/, /^Outros prejuízos/]) await aux.getByRole("textbox", { name }).fill("0");
+  await aux.getByRole("button", { name: "Usar este total" }).click();
+  await expect(box(page, /^Prejuízo por incidente/)).toHaveValue("0,001");
+  await aux.getByRole("textbox", { name: /^Trabalho interno adicional/ }).fill("0,1");
+  await aux.getByRole("button", { name: "Usar este total" }).click();
+  await expect(box(page, /^Prejuízo por incidente/)).toHaveValue("0,101");
+});
+
+test("ROSI: invalid auxiliary value is flagged, focused, described and recovers", async ({ page }) => {
+  await page.goto("/ferramentas/rosi");
+  const aux = page.locator("details").filter({ hasText: "Compor o prejuízo por partes" });
+  await aux.locator("summary").click();
+  await box(page, /^Prejuízo por incidente/).fill("999");
+  const external = aux.getByRole("textbox", { name: /^Serviços externos/ });
+  await external.fill("1.00");
+  for (const name of [/^Trabalho interno adicional/, /^Perda operacional/, /^Outros prejuízos/]) await aux.getByRole("textbox", { name }).fill("1");
+  await aux.getByRole("button", { name: "Usar este total" }).click();
+  await expect(aux).toContainText("Corrija os valores destacados");
+  await expect(external).toBeFocused();
+  await expect(external).toHaveAttribute("aria-invalid", "true");
+  const describedBy = await external.getAttribute("aria-describedby");
+  expect(describedBy).toMatch(/-error$/);
+  await expect(page.locator(`[id="${describedBy}"]`)).toBeVisible();
+  await expect(box(page, /^Prejuízo por incidente/)).toHaveValue("999");
+
+  await external.fill("1");
+  await expect(external).toHaveAttribute("aria-invalid", "false");
+  await aux.getByRole("button", { name: "Usar este total" }).click();
+  await expect(box(page, /^Prejuízo por incidente/)).toHaveValue("4");
+
+  await external.fill("1.00");
+  await aux.getByRole("button", { name: "Usar este total" }).click();
+  await expect(external).toHaveAttribute("aria-invalid", "true");
+  await page.getByRole("button", { name: "Limpar respostas" }).click();
+  await expect(external).toHaveValue("");
+  await expect(external).toHaveAttribute("aria-invalid", "false");
+});
+
+test("simulated persisted pageshow (not real BFcache) resets tool and report answers", async ({ page }) => {
+  await page.goto("/ferramentas/divida-tecnica");
+  await box(page, /^Profissionais na equipe/).fill("4");
+  await box(page, /^Custo médio mensal/).fill("10.000");
+  await box(page, /^Tempo total dedicado/).fill("30");
+  await box(page, /^Parcela dessa manutenção/).fill("50");
+  await page.getByRole("button", { name: "Estimar custo" }).click();
+  await expect(result(page)).toContainText(/R\$\s72\.000,00/);
+  await page.getByLabel("Seu e-mail").fill("pessoa@example.com");
+
+  await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent("pageshow", { persisted: false })));
+  await expect(box(page, /^Profissionais na equipe/)).toHaveValue("4");
+
+  await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent("pageshow", { persisted: true })));
+  await expect(box(page, /^Profissionais na equipe/)).toHaveValue("");
+  await expect(box(page, /^Custo médio mensal/)).toHaveValue("");
+  await expect(result(page)).toContainText("Preencha os campos");
+  await expect(page.getByLabel("Seu e-mail")).toHaveValue("");
 });

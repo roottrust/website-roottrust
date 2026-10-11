@@ -391,6 +391,8 @@ SQL/session-store não disponíveis nesta sessão: este PLAN é o registro únic
 
 **P4.3 início:** checkpoint WIP `db9e594804df19cbb2b535b1e61873db05c32b18`, pré-checagem sem segredos/gerados. Dono Sonnet interfaces/dados/CSS features/tools (modelos já aprovados, correção mínima somente se bug demonstrado), quatro rotas ferramentas, ReportForm local e testes/evidências correspondentes. Reutilizar FrameCanvas/PillarArt/adaptador. Sem dependências/env/exports/marca/Home/serviços/PLAN.
 
+**P4.3/P4.4 correção focada:** escritorbed215fd-28cd-431e-9d51-aefa679d16e9 Sonnet5.5 succeeded670s,69unit/100E2E+4skip. Revisorea77d631-7d51-42ae-9d13-74c5a42fe1a5 succeeded66s encontrou transferênciaaux arredondada, erroShadow silencioso e selo de formulário impreciso. GPT acrescentou validação/foco dos auxiliares, sinais pequenos e teste sintético pageshow; restaurar ajuda cenários export. Mesmo dono, checkpointWIP `24bb735fa014de5bcf240893cc9ea0e73d6dfbeb`. Revisor não conferiu fórmulas/exports/serviçostests nesta rodada; rechecagem específica pendente antes de concluir P4.4.
+
 **P4.2 ajuste indicado P0.2:** checkpoint WIP `606582b6a9e416c90c4ed9d9086f817c66f7f81f`, escopo já aprovado modelos/testes/audit. Follow-up mesmo dono Sonnet, revisão final agrupada P4.4; nenhuma entrada real armazenada.
 
 **P4.2 início:** checkpoint WIP `8cbd155dd870ff14dc13b90a6ef7bf7c4856010c`; pré-checagem sem segredos/gerados. Dono Sonnet para modelos/parsers TS puros em features/tools/models, testes unit/tools e audit/tools-models.md; interfaces ficam P4.3. Sem alterações de dependências/env/export/marca/Home.

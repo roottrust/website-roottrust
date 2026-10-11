@@ -13,10 +13,10 @@ export function ShadowAiTool() {
 
   function submit() {
     const out = evaluateShadowAi(values);
-    if (!out.ok) return;
-    const r = out.result;
-    if (r.complete) { form.submit({}, r); return; }
-    const errs = Object.fromEntries(r.pending.map((id) => [id, "Escolha uma resposta."]));
+    if (out.ok && out.result.complete) { form.submit({}, out.result); return; }
+    const errs: Record<string, string> = out.ok
+      ? Object.fromEntries((out.result.complete ? [] : out.result.pending).map((id) => [id, "Escolha uma resposta."]))
+      : Object.fromEntries(out.errors.map((e) => [e.field, e.message]));
     form.submit(errs, null);
     setTimeout(() => focusFirst(p, errs, SHADOW_QUESTIONS.map((q) => q.id)), 0);
   }

@@ -1,6 +1,6 @@
 # Auditoria P4.3 — interfaces nativas das quatro ferramentas
 
-Checkpoint de partida: `db9e594`. Escrita por Claude (Sonnet); sem commit.
+Checkpoint de partida: `db9e594`; correção focada a partir de `24bb735`. Escrita por Claude (Sonnet); sem commit.
 
 ## Entregue
 
@@ -24,8 +24,18 @@ Checkpoint de partida: `db9e594`. Escrita por Claude (Sonnet); sem commit.
 
 ## Limites / não verificado
 
-- BFcache real não é reproduzível no Playwright Chromium; coberto apenas pelo handler `pageshow` (revisão de código).
+- BFcache real não é reproduzível no Playwright Chromium. O teste dispara um `pageshow` com `persisted: true` sintético (simulação): prova que `ToolSession` reinicia ferramenta e relatório e que `persisted: false` não reinicia, mas não prova restauração real do navegador.
 - Firefox/WebKit, Lighthouse e comparação visual por seção contra os exports não foram executados nesta etapa.
 - Aprovação humana visual das páginas internas continua pendente.
 - Requisições `_rsc` de prefetch do Next (GET de navegação) são ignoradas no teste de "nada enviado".
-- Texto de ajuda do cenário ROSI é genérico (um só); os textos por cenário do export não foram replicados.
+- Ajuda por cenário ROSI restaurada conforme o export (`cenHelp`), sem preencher nenhum valor financeiro. A ajuda do campo de prejuízo agora é neutra (F07), não a do cenário.
+- Campo Shadow AI com `evaluateShadowAi` não-ok (`invalid_choice`) agora mostra erro e foca; o caminho é inalcançável pela UI (só rádios válidos) e não tem teste e2e nem de componente.
+- E2E: 4 testes ignorados por desenho, iguais aos já existentes: 2 de captura da Home (`home-capture.spec.ts`, exigem `HOME_QA_CAPTURE=1`) e 2 de aba em segundo plano real (`graphics-motion.spec.ts`, ignorados quando o navegador não reporta aba oculta). Nenhum é de ferramentas.
+
+## Correção focada (revisão P4.3)
+
+- Transferência do auxiliar ROSI: o total é serializado com `exactText` (`format.ts`), sem limite de 2 decimais; releitura por `parsePtBR` devolve o mesmo número (unit: 0, 0,001, 0,1+0,2, 1e-21, 1e21). Aux 0,001 transfere "0,001"; 0,001 + 0,1 transfere "0,101".
+- Auxiliar inválido: erro local em cada campo (`aria-invalid`, `aria-describedby`), foco no primeiro inválido, erro some ao editar o campo, e "Limpar respostas" zera erros e valores.
+- Selects de frequência/prazo exibem erro associado quando existir.
+- `brl`/`pct`: valor não nulo que arredondaria para zero usa limiar explícito ("< R$ 0,01", "> −R$ 0,01", "< 0,1%", "> −0,1%"); zero exato e −0 permanecem zero; sinal negativo nunca é omitido. Unit em `tests/unit/tools/format.test.ts`.
+- Selo da página: texto diferente para `FORM_MODE=demo` (demonstração local, nenhum dado enviado) e modo padrão (envio indisponível); coberto nos testes por rota.

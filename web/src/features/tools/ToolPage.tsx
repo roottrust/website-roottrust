@@ -37,7 +37,11 @@ export function ToolPage({ tool, mode, children }: { tool: ToolContent; mode: Fo
               <Eyebrow>{`Ferramenta · ${tool.label}`}</Eyebrow>
               <h1 id="titulo" className={svc.h1}>{tool.h1[0]} <span className={svc.accent}>{tool.h1[1]}</span></h1>
               <p className={svc.lead}>{tool.lead}</p>
-              <p className={styles.badge}>Protótipo — cálculos locais; formulários de envio indisponíveis.</p>
+              <p className={styles.badge}>
+                {mode === "demo"
+                  ? "Protótipo — cálculos locais; o pedido de relatório é uma demonstração local e nenhum dado é enviado."
+                  : "Protótipo — cálculos locais; envio do pedido de relatório indisponível."}
+              </p>
             </div>
             <div className={styles.art}><PillarArt kind={tool.kind} /></div>
           </div>

@@ -2,7 +2,7 @@
 
 import { useId } from "react";
 import { emptyField, Metric, NumField, readField, ResultBox, ToolForm, type FieldState } from "./fields";
-import { brl, num, pct } from "./format";
+import { brl, exactText, num, pct } from "./format";
 import {
   COST_AUX_LABELS, evaluateRosi, FREQUENCY_OPTIONS, LOSS_AUX_LABELS, resolveAux,
   type AuxTotals, type Calc, type Input, type RosiResult,
@@ -10,7 +10,14 @@ import {
 import { focusFirst, useToolForm } from "./useToolForm";
 import styles from "./tools.module.css";
 
-const SCENARIOS = ["Ransomware com interrupção", "Comprometimento de contas", "Vazamento de dados", "Exploração de falha em aplicação", "Outro"] as const;
+const SCENARIOS = [
+  { label: "Ransomware com interrupção", help: "Considere a interrupção, a recuperação e os efeitos sobre a operação." },
+  { label: "Comprometimento de contas", help: "Considere fraude, acesso indevido e o tempo até conter o problema." },
+  { label: "Vazamento de dados", help: "Considere resposta, notificações e efeitos comerciais, sem contar a mesma perda duas vezes." },
+  { label: "Exploração de falha em aplicação", help: "Considere correção emergencial, indisponibilidade e impacto sobre clientes." },
+  { label: "Outro", help: "Descreva o evento que você quer avaliar, sem dados sensíveis." },
+] as const;
+const SCENARIO_DEFAULT_HELP = "Escolha o evento que você quer avaliar. Serve só para organizar o seu raciocínio; não altera o cálculo.";
 const FIELD_LABELS: Record<string, string> = {
   loss: "prejuízo por incidente", frequency: "frequência", cost: "custo adicional", delayMonths: "prazo até a proteção estar efetiva", reductionPercent: "redução esperada",
 };
@@ -24,14 +31,13 @@ interface State {
   delay: string; delayCustom: FieldState;
   lossAux: FieldState[]; costAux: FieldState[];
   auxMessage: { loss?: string; cost?: string };
+  auxErrors: Record<string, string>;
 }
 const initial = (): State => ({
   scenario: "", other: "", loss: emptyField(), cost: emptyField(), reduction: emptyField(),
   frequency: "", frequencyCustom: emptyField(), delay: "", delayCustom: emptyField(),
-  lossAux: EMPTY_AUX(), costAux: EMPTY_AUX(), auxMessage: {},
+  lossAux: EMPTY_AUX(), costAux: EMPTY_AUX(), auxMessage: {}, auxErrors: {},
 });
-
-const asText = (n: number) => new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 2, useGrouping: true }).format(n);
 
 function missingText(calc: Calc): string {
   if (calc.status !== "missing") return "";
@@ -95,21 +101,26 @@ export function RosiTool() {
 
   function setAux(kind: "lossAux" | "costAux", index: number, next: FieldState) {
     const list = v[kind].map((item, i) => (i === index ? next : item));
-    form.edit({ [kind]: list, auxMessage: { ...v.auxMessage, [kind === "lossAux" ? "loss" : "cost"]: undefined } });
+    const auxErrors = { ...v.auxErrors };
+    delete auxErrors[`${kind === "lossAux" ? "loss" : "cost"}-aux-${index}`];
+    form.edit({ [kind]: list, auxErrors, auxMessage: { ...v.auxMessage, [kind === "lossAux" ? "loss" : "cost"]: undefined } });
   }
 
   function transfer(kind: "loss" | "cost") {
     const auxKey = kind === "loss" ? "lossAux" : "costAux";
     const items = v[auxKey].map((f) => readField(f));
-    const bad = items.findIndex((i) => i.error);
+    const auxErrors = Object.fromEntries(Object.entries(v.auxErrors).filter(([key]) => !key.startsWith(`${kind}-aux-`)));
+    items.forEach((item, i) => { if (item.error) auxErrors[`${kind}-aux-${i}`] = item.error; });
     let message: string;
-    let patch: Partial<State> = {};
-    if (bad >= 0) message = "Corrija os valores destacados antes de usar o total.";
-    else {
+    let patch: Partial<State> = { auxErrors };
+    if (Object.keys(auxErrors).some((key) => key.startsWith(`${kind}-aux-`))) {
+      message = "Corrija os valores destacados antes de usar o total.";
+      setTimeout(() => focusFirst(p, auxErrors, items.map((_, i) => `${kind}-aux-${i}`)), 0);
+    } else {
       const res = resolveAux(items.map((i) => i.input) as unknown as AuxTotals);
       if (res.status === "complete") {
         message = `Total de ${brl(res.total)} aplicado ao campo principal. Ele substitui o valor anterior.`;
-        patch = { [kind]: { text: asText(res.total), unknown: false } };
+        patch = { ...patch, [kind]: { text: exactText(res.total), unknown: false } };
       } else if (res.status === "overflow") message = "Algum valor é grande demais para calcular. Revise os números informados.";
       else {
         const labels = kind === "loss" ? LOSS_AUX_LABELS : COST_AUX_LABELS;
@@ -149,7 +160,9 @@ export function RosiTool() {
       if (!out.ok) {
         for (const e of out.errors) {
           const head = e.field.split(".")[0];
-          const key = head === "frequency" && v.frequency === "custom" ? "frequency-custom" : head === "delayMonths" ? "delay-custom" : head === "reductionPercent" ? "reduction" : head;
+          const key = head === "frequency" ? (v.frequency === "custom" ? "frequency-custom" : "frequency")
+            : head === "delayMonths" ? (v.delay === "custom" ? "delay-custom" : "delay")
+            : head === "reductionPercent" ? "reduction" : head;
           errs[key] = e.message;
         }
       } else if (out.result.mode === "insufficient") {
@@ -175,7 +188,7 @@ export function RosiTool() {
         <summary>{kind === "loss" ? "Compor o prejuízo por partes (opcional)" : "Compor o custo por partes (opcional)"}</summary>
         <div>
           {labels.map((label, i) => (
-            <NumField key={label} id={`${p}-${kind}-aux-${i}`} label={label} unit="R$" value={v[key][i]} allowUnknown={false}
+            <NumField key={label} id={`${p}-${kind}-aux-${i}`} label={label} unit="R$" value={v[key][i]} allowUnknown={false} error={v.auxErrors[`${kind}-aux-${i}`]}
               onChange={(next) => setAux(key, i, next)} />
           ))}
           <button type="button" className={styles.secondary} onClick={() => transfer(kind)}>Usar este total</button>
@@ -191,29 +204,31 @@ export function RosiTool() {
         formError={hasErrors ? "Corrija os campos destacados para calcular." : undefined}>
         <div className={styles.select}>
           <label htmlFor={`${p}-scenario`}>Cenário de referência (opcional)</label>
-          <select id={`${p}-scenario`} value={v.scenario} onChange={(e) => form.edit({ scenario: e.target.value })}>
+          <select id={`${p}-scenario`} aria-describedby={`${p}-scenario-help`} value={v.scenario} onChange={(e) => form.edit({ scenario: e.target.value })}>
             <option value="">Selecione</option>
-            {SCENARIOS.map((s) => <option key={s} value={s}>{s}</option>)}
+            {SCENARIOS.map((s) => <option key={s.label} value={s.label}>{s.label}</option>)}
           </select>
           {v.scenario === "Outro" ? (
             <input className={styles.other} type="text" maxLength={120} autoComplete="off" aria-label="Descreva o cenário, sem dados sensíveis"
               placeholder="Descreva, sem dados sensíveis" value={v.other} onChange={(e) => form.edit({ other: e.target.value })} />
           ) : null}
-          <p className={styles.help}>Serve só para organizar o seu raciocínio; não altera o cálculo.</p>
+          <p className={styles.help} id={`${p}-scenario-help`}>{SCENARIOS.find((s) => s.label === v.scenario)?.help ?? SCENARIO_DEFAULT_HELP}</p>
         </div>
 
         <NumField id={`${p}-loss`} label="Prejuízo por incidente" unit="R$" value={v.loss} error={errors.loss}
-          help="Considere a interrupção, a recuperação e os efeitos sobre a operação." onChange={(next) => form.edit({ loss: next }, "loss")} />
+          help="Estime efeitos não sobrepostos; perda comercial não é automaticamente receita bruta." onChange={(next) => form.edit({ loss: next }, "loss")} />
         {auxBlock("loss")}
 
         <div className={styles.select}>
           <label htmlFor={`${p}-frequency`}>Frequência de incidentes com prejuízo</label>
-          <select id={`${p}-frequency`} value={v.frequency} onChange={(e) => form.edit({ frequency: e.target.value }, "frequency-custom")}>
+          <select id={`${p}-frequency`} value={v.frequency} aria-invalid={Boolean(errors.frequency)} aria-describedby={errors.frequency ? `${p}-frequency-error` : undefined}
+            onChange={(e) => form.edit({ frequency: e.target.value }, "frequency", "frequency-custom")}>
             <option value="">Selecione</option>
             {FREQUENCY_OPTIONS.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
             <option value="custom">Personalizar</option>
             <option value="nao-sei">Não sei</option>
           </select>
+          {errors.frequency ? <p className={styles.error} id={`${p}-frequency-error`}>{errors.frequency}</p> : null}
         </div>
         {v.frequency === "custom" ? (
           <NumField id={`${p}-frequency-custom`} label="Incidentes com prejuízo por ano" unit="por ano" allowUnknown={false} value={v.frequencyCustom}
@@ -226,12 +241,14 @@ export function RosiTool() {
 
         <div className={styles.select}>
           <label htmlFor={`${p}-delay`}>Prazo até a proteção estar efetiva</label>
-          <select id={`${p}-delay`} value={v.delay} onChange={(e) => form.edit({ delay: e.target.value }, "delay-custom")}>
+          <select id={`${p}-delay`} value={v.delay} aria-invalid={Boolean(errors.delay)} aria-describedby={errors.delay ? `${p}-delay-error` : undefined}
+            onChange={(e) => form.edit({ delay: e.target.value }, "delay", "delay-custom")}>
             <option value="">Selecione</option>
             <option value="imediato">Imediatamente</option>
             <option value="custom">Informar prazo</option>
             <option value="nao-sei">Não sei</option>
           </select>
+          {errors.delay ? <p className={styles.error} id={`${p}-delay-error`}>{errors.delay}</p> : null}
         </div>
         {v.delay === "custom" ? (
           <NumField id={`${p}-delay-custom`} label="Meses até a proteção estar efetiva" unit="meses" allowUnknown={false} value={v.delayCustom}
