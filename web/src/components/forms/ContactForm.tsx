@@ -1,8 +1,9 @@
 "use client";
 
-import { useId, useState, type FormEvent } from "react";
-import { validateContact, type ContactErrors, type ContactValues, type FormMode } from "@/lib/forms";
+import { useEffect, useId, useRef, useState, type FormEvent } from "react";
+import { validateContact, type ContactErrors, type ContactFormConfig, type ContactValues } from "@/lib/forms";
 import { DemoControls, FormStatus } from "./FormStatus";
+import { TurnstileWidget } from "./TurnstileWidget";
 import { useLocalSubmission } from "./useLocalSubmission";
 import styles from "./forms.module.css";
 
@@ -12,12 +13,28 @@ const fields = [
   { name: "whatsapp", label: "WhatsApp", autocomplete: "tel", type: "tel", placeholder: "(00) 00000-0000" },
 ] as const;
 
-export function ContactForm({ mode, variant }: { mode: FormMode; variant?: "home" }) {
+export function ContactForm({ config, variant }: { config: ContactFormConfig; variant?: "home" }) {
+  const { mode, siteKey } = config;
   const id = useId();
   const [values, setValues] = useState<ContactValues>({ name: "", company: "", whatsapp: "" });
   const [errors, setErrors] = useState<ContactErrors>({});
+  const [token, setToken] = useState<string | null>(null);
+  const [challengeRound, setChallengeRound] = useState(0);
+  const formRef = useRef<HTMLFormElement>(null);
+  const [near, setNear] = useState(false);
   const submission = useLocalSubmission(mode);
   const busy = submission.status === "submitting";
+  const pilot = mode === "pilot" && Boolean(siteKey);
+  const challengeStatusId = `${id}-challenge`;
+
+  useEffect(() => {
+    const form = formRef.current;
+    if (!pilot || near || !form) return;
+    if (typeof IntersectionObserver === "undefined") return; // without it, focus (onFocusCapture) still activates the challenge
+    const observer = new IntersectionObserver((entries) => { if (entries.some((entry) => entry.isIntersecting)) setNear(true); }, { rootMargin: "200px" });
+    observer.observe(form);
+    return () => observer.disconnect();
+  }, [pilot, near]);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -28,11 +45,17 @@ export function ContactForm({ mode, variant }: { mode: FormMode; variant?: "home
       document.getElementById(`${id}-${first.name}`)?.focus();
       return;
     }
-    void submission.submit({ kind: "contact", values: { ...values } });
+    if (pilot && !token) return;
+    void submission.submit({ kind: "contact", values: { ...values } }, token ?? undefined);
+    if (pilot) {
+      // Tokens are single-use: a fresh challenge is required after every attempt; field values stay untouched.
+      setToken(null);
+      setChallengeRound((round) => round + 1);
+    }
   }
 
   return (
-    <form className={`${styles.form} ${variant === "home" ? styles.homeContact : ""}`} noValidate onSubmit={handleSubmit} aria-label="Solicitar diagnóstico" aria-busy={busy}>
+    <form ref={formRef} onFocusCapture={pilot ? () => setNear(true) : undefined} className={`${styles.form} ${variant === "home" ? styles.homeContact : ""}`} noValidate onSubmit={handleSubmit} aria-label="Solicitar diagnóstico" aria-busy={busy}>
       <div className={styles.fields}>
         {fields.map((field) => (
           <div className={styles.field} key={field.name}>
@@ -47,8 +70,9 @@ export function ContactForm({ mode, variant }: { mode: FormMode; variant?: "home
         ))}
       </div>
       {mode === "demo" ? <DemoControls id={id} outcome={submission.outcome} onChange={submission.setOutcome} disabled={busy} /> : null}
-      <button className="button" type="submit" disabled={!submission.ready || busy}>{busy ? "Enviando solicitação…" : "Solicitar diagnóstico"}{variant === "home" ? <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg> : null}</button>
-      <FormStatus mode={mode} status={submission.status} kind="contact" />
+      {pilot && siteKey ? <TurnstileWidget siteKey={siteKey} action="diagnostico" active={near} statusId={challengeStatusId} resetKey={challengeRound} onToken={setToken} /> : null}
+      <button className="button" type="submit" aria-describedby={pilot && !token ? challengeStatusId : undefined} disabled={!submission.ready || busy || (pilot && !token)}>{busy ? "Enviando solicitação…" : "Solicitar diagnóstico"}{variant === "home" ? <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg> : null}</button>
+      <FormStatus mode={mode} status={submission.status} kind="contact" reference={submission.reference} />
       <p className={styles.channels}>Fale com a Root Trust: <a href="mailto:contato@roottrust.com.br">contato@roottrust.com.br</a> ou <a href="tel:+5511940084692">11 94008-4692</a>.</p>
     </form>
   );

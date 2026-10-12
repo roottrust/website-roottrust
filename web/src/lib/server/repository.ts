@@ -1,8 +1,9 @@
-import { randomUUID } from "node:crypto";
+import { randomInt, randomUUID } from "node:crypto";
 import { opaqueId } from "./ids";
+import { enqueueJob } from "./jobs";
 import type { Denied, Gate } from "./limits";
 import type { Store, Tx } from "./store";
-import { COLLECTIONS, type LeadEventRecord, type LeadRecord, type SubscriptionRecord, type SubscriptionStatus, type ToolId } from "./types";
+import { COLLECTIONS, JOB_KINDS, type DiagnosticRecord, type LeadEventRecord, type LeadRecord, type SubscriptionRecord, type SubscriptionStatus, type ToolId } from "./types";
 
 async function touchLead(
   tx: Tx,
@@ -11,6 +12,7 @@ async function touchLead(
   origin: string,
   at: string,
   commercialConsent: boolean,
+  requestId?: string,
 ): Promise<void> {
   const current = await tx.get<LeadRecord>(COLLECTIONS.leads, id);
   const lead: LeadRecord = {
@@ -30,12 +32,24 @@ async function touchLead(
     leadId: id,
     origin,
     at,
+    ...(requestId ? { requestId } : {}),
     ...(origin.startsWith("relatorio:") ? { commercialConsent } : {}),
   };
   tx.set(COLLECTIONS.leads, id, lead);
   tx.set(COLLECTIONS.leadEvents, eventId, event);
 }
 
+const REQUEST_ID_ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+export const DIAGNOSTIC_ID = /^DG-[0-9A-HJKMNP-TV-Z]{10}$/;
+
+// Short, typeable, random: the team quotes it from Discord; it reveals nothing about the person.
+function newDiagnosticId(): string {
+  return `DG-${Array.from({ length: 10 }, () => REQUEST_ID_ALPHABET[randomInt(REQUEST_ID_ALPHABET.length)]).join("")}`;
+}
+
+// Every accepted request gets its own record (ID unique per request) and its own Discord outbox job, committed together:
+// a 202 means the request is stored and its notification is queued. The lead keeps the latest contact fields and its
+// history (origins, event per request, counters); earlier names/companies stay on their own request records.
 // `gate` (rate limits) runs inside the same transaction as the write: limit consumption and persistence commit together,
 // and a request denied by this gate writes nothing (the earlier IP gate in http.ts is a separate transaction).
 export async function recordDiagnostic(
@@ -45,11 +59,18 @@ export async function recordDiagnostic(
   now: Date,
   gate?: Gate,
 ): Promise<{ ok: true; id: string } | Denied> {
-  const id = opaqueId(secret, "ld", `whatsapp:${value.whatsapp}`);
+  const leadId = opaqueId(secret, "ld", `whatsapp:${value.whatsapp}`);
+  const at = now.toISOString();
   return store.transaction(async (tx) => {
     const denied = await gate?.(tx);
     if (denied) return denied;
-    await touchLead(tx, id, value, "diagnostico", now.toISOString(), false);
+    let id = newDiagnosticId();
+    for (let attempt = 0; attempt < 5 && (await tx.get(COLLECTIONS.diagnostics, id)); attempt += 1) id = newDiagnosticId();
+    if (await tx.get(COLLECTIONS.diagnostics, id)) throw new Error("diagnostic_id_collision");
+    await touchLead(tx, leadId, value, "diagnostico", at, false, id);
+    const record: DiagnosticRecord = { id, leadId, ...value, createdAt: at };
+    tx.set(COLLECTIONS.diagnostics, id, record);
+    await enqueueJob(tx, secret, { kind: JOB_KINDS.diagnosticDiscord, key: id, payload: { requestId: id }, maxAttempts: 8 }, now);
     return { ok: true as const, id };
   });
 }

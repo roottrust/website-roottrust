@@ -117,17 +117,21 @@ describe("body size cap", () => {
 });
 
 describe("persistence", () => {
-  it("diagnostic: 202 with a stable opaque ID; repeats update the same lead", async () => {
+  it("diagnostic: 202 with a unique request ID per submission; repeats update the same lead", async () => {
     const { deps, store } = setup();
     const first = await handleDiagnostic(post(contact), deps);
     const second = await handleDiagnostic(post({ ...contact, whatsapp: "11940084692" }), deps);
     expect(first.status).toBe(202);
     const { id } = (await first.json()) as { id: string };
-    expect(id).toMatch(/^ld_[\w-]{32}$/);
+    const { id: secondId } = (await second.json()) as { id: string };
+    expect(id).toMatch(/^DG-[0-9A-HJKMNP-TV-Z]{10}$/);
     expect(id).not.toContain("94008");
-    expect(((await second.json()) as { id: string }).id).toBe(id);
-    expect(store.dump("leads")[id]).toMatchObject({ name: "Pessoa de teste", whatsapp: "11940084692", interactionCount: 2, commercialConsent: false });
+    expect(secondId).not.toBe(id);
+    const [leadId, ...otherLeads] = Object.keys(store.dump("leads"));
+    expect(otherLeads).toHaveLength(0);
+    expect(store.dump("leads")[leadId]).toMatchObject({ name: "Pessoa de teste", whatsapp: "11940084692", interactionCount: 2, commercialConsent: false });
     expect(Object.keys(store.dump("lead_events"))).toHaveLength(2);
+    expect(Object.keys(store.dump("diagnostics")).sort()).toEqual([id, secondId].sort());
   });
 
   it("concurrent identical diagnostics keep one lead and count every interaction", async () => {

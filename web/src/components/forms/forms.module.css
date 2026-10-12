@@ -10,6 +10,8 @@
 .error { color: var(--rt-terracota); font-size: 14px; margin: 0; }
 .notice, .channels { color: var(--rt-menta); font-size: 14px; margin: 0; max-width: 65ch; overflow-wrap: anywhere; }
 .status { min-height: 1.5em; margin: 0; color: var(--rt-superficie); }
+.challenge { display: flex; flex-direction: column; gap: 8px; max-width: 100%; }
+.retry { align-self: flex-start; min-height: 44px; padding: 0 16px; background: transparent; color: inherit; border: 1px solid currentColor; border-radius: 8px; font: inherit; cursor: pointer; }
 .demoControl { display: flex; flex-direction: column; gap: 8px; max-width: 100%; }
 @media (max-width: 760px) { .fields { grid-template-columns: 1fr; } }
 

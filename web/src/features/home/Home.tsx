@@ -5,6 +5,7 @@ import { HomeCanvas } from "@/features/graphics/HomeCanvas";
 import { PillarArt } from "@/features/graphics/PillarArt";
 import { ContactForm } from "@/components/forms/ContactForm";
 import { NewsletterForm } from "@/components/forms/NewsletterForm";
+import { contactAvailability } from "@/app/api/diagnostico/availability";
 import type { FormMode } from "@/lib/forms";
 import { pillars as pilares, tools as ferramentas } from "./content";
 import { Services } from "./Services";
@@ -123,7 +124,7 @@ export function Home({ mode }: {mode: FormMode}) { return <main id="conteudo" da
       <div>
         <h2 className={(styles.sectionTitle)}>Vamos cuidar <span className={(styles.accentLine)}>da sua base.</span></h2>
         <p className={(styles.contactDescription)}>Conversa inicial gratuita de qualificação. Retorno por ligação ou WhatsApp no próximo dia útil após recebimento.</p>
-        <ContactForm mode={mode} variant="home" />
+        <ContactForm config={contactAvailability()} variant="home" />
       </div>
       <div role="img" aria-label="Símbolo roottrust" className={(styles.symbolHost)}>
         <div data-sec="ctasym" aria-hidden="true" className={(styles.symbol)}></div>

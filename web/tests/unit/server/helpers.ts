@@ -1,6 +1,7 @@
 import { vi } from "vitest";
 import type { Deps } from "../../../src/lib/server/http";
 import { DEFAULT_LIMITS, type Limits } from "../../../src/lib/server/limits";
+import type { DiagnosticConfig } from "../../../src/lib/server/diagnostic";
 import type { DefenseConfig } from "../../../src/lib/server/defense";
 import { createMemoryStore } from "../../../src/lib/server/store";
 
@@ -8,6 +9,7 @@ export const SECRET = "s".repeat(32);
 export const NOW = new Date("2026-10-12T12:00:00.000Z");
 export const ORIGIN = "https://roottrust.test";
 export const HOSTNAME = "roottrust.test";
+export const WEBHOOK_URL = "https://discord.com/api/webhooks/123456789012345678/test-token_abc";
 export const IP_HEADER = "x-real-ip";
 
 export interface Clock {
@@ -18,7 +20,7 @@ export interface Clock {
 // bad! (success=false), down! (HTTP 502), wrong-host!, wrong-action!, stale! (challenge older than 5 min), internal! (internal-error).
 export function fakeSiteverify(clock: Clock) {
   const calls: URLSearchParams[] = [];
-  const fn = vi.fn(async (_url: unknown, init?: RequestInit) => {
+  const fn = vi.fn<typeof fetch>(async (_url, init) => {
     const form = new URLSearchParams(String(init?.body));
     calls.push(form);
     const token = form.get("response") ?? "";
@@ -52,8 +54,10 @@ export function setup(options: { mode?: Deps["mode"]; idSecret?: string | undefi
     fetch: siteverify as unknown as typeof fetch,
     turnstileTimeoutMs: 50,
   };
-  const deps: Deps = { mode, idSecret, getStore, now: () => clock.now, ...(withDefense ? { defense } : {}) };
-  return { store, getStore, deps, clock, siteverify, defense };
+  const discord = vi.fn<typeof fetch>(async () => new Response(null, { status: 204 }));
+  const diagnostic: DiagnosticConfig = { webhookUrl: WEBHOOK_URL, fetch: discord };
+  const deps: Deps = { mode, idSecret, getStore, now: () => clock.now, diagnostic, internalKeys: { jobs: ["j".repeat(32)] }, ...(withDefense ? { defense } : {}) };
+  return { store, getStore, deps, clock, siteverify, defense, discord };
 }
 
 let counter = 0;

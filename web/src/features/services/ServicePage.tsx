@@ -3,7 +3,7 @@ import { ContactForm } from "@/components/forms/ContactForm";
 import { FrameCanvas } from "@/features/graphics/FrameCanvas";
 import { PillarArt } from "@/features/graphics/PillarArt";
 import { SymbolAscii } from "@/features/graphics/SymbolAscii";
-import type { FormMode } from "@/lib/forms";
+import { contactAvailability } from "@/app/api/diagnostico/availability";
 import { stageNote, stages, type ServiceContent } from "./content";
 import styles from "./services.module.css";
 
@@ -40,7 +40,7 @@ function Check() {
   return <span aria-hidden="true" className={styles.check}>√</span>;
 }
 
-export function ServicePage({ service, mode }: { service: ServiceContent; mode: FormMode }) {
+export function ServicePage({ service }: { service: ServiceContent }) {
   const { detail } = service;
   return (
     <main id="conteudo" data-graphics-root className={styles.root}>
@@ -231,7 +231,7 @@ export function ServicePage({ service, mode }: { service: ServiceContent; mode: 
               <div className={styles.contactMain}>
                 <Title lines={service.ctaTitle} id="contato-titulo" variant="cta" />
                 <p className={styles.contactText}>{service.ctaText}</p>
-                <ContactForm mode={mode} variant="home" />
+                <ContactForm config={contactAvailability()} variant="home" />
               </div>
               <div role="img" aria-label="Símbolo roottrust" className={styles.symbolHost}>
                 <div className={styles.symbol}><SymbolAscii /></div>

@@ -1,4 +1,5 @@
 import { clientIpKey, hasIdSecret, isTrustedOrigin, loadDefenseConfig, verifyTurnstile, type DefenseConfig } from "./defense";
+import { createDiagnosticHandler, loadDiagnosticConfig, type DiagnosticConfig } from "./diagnostic";
 import { authenticateInternal, loadInternalKeys, type InternalKeys } from "./internal-auth";
 import { processJobs, purgeExpired, type JobHandlers } from "./jobs";
 import {
@@ -16,6 +17,7 @@ import { resolveBackendMode, type BackendMode } from "./mode";
 import { recordDiagnostic, recordReportRequest, requestSubscription } from "./repository";
 import { logEvent, safeErrorCode } from "./safe";
 import { loadFirestoreStore, type Store } from "./store";
+import { JOB_KINDS } from "./types";
 import { MAX_BODY_BYTES, parseDiagnostic, parseReport, parseSubscription, type Parsed } from "./validation";
 
 if (typeof window !== "undefined") throw new Error("lib/server must not be imported in the browser");
@@ -29,19 +31,27 @@ export interface Deps {
   defense?: DefenseConfig;
   internalKeys?: InternalKeys;
   jobHandlers?: JobHandlers;
+  // Diagnostic receipt is operational only with a private webhook and the follow-up statement; absent => 503.
+  diagnostic?: DiagnosticConfig;
 }
 
 let firestoreStore: Store | undefined;
 
 export function defaultDeps(env: Record<string, string | undefined> = process.env): Deps {
+  const getStore = async () => (firestoreStore ??= loadFirestoreStore());
+  const now = () => new Date();
+  const diagnostic = loadDiagnosticConfig(env);
   return {
     mode: resolveBackendMode(env.BACKEND_MODE),
     idSecret: env.DATA_ID_SECRET,
-    getStore: async () => (firestoreStore ??= loadFirestoreStore()),
-    now: () => new Date(),
+    getStore,
+    now,
     defense: loadDefenseConfig(env).config,
     internalKeys: loadInternalKeys(env),
-    jobHandlers: {},
+    diagnostic,
+    jobHandlers: diagnostic
+      ? { [JOB_KINDS.diagnosticDiscord]: (job, context) => getStore().then((store) => createDiagnosticHandler(store, diagnostic, now)(job, context)) }
+      : {},
   };
 }
 
@@ -88,6 +98,7 @@ async function readJson(request: Request): Promise<{ ok: true; body: unknown } |
 }
 
 interface Operation<T> {
+  requires?: (deps: Deps) => boolean; // pilot only: false => 503 "not_operational" before anything is read
   action: string; // Turnstile action the widget must have been rendered with
   parse: (body: unknown) => Parsed<T>;
   limits: (value: T, limits: Limits) => ReturnType<typeof diagnosticLimitSpecs>;
@@ -108,6 +119,7 @@ async function handle<T>(request: Request, deps: Deps, operation: Operation<T>):
       return unavailable("misconfigured");
     }
     if (!isTrustedOrigin(request, deps.defense.trustedOrigins)) return json(403, { code: "forbidden_origin" });
+    if (operation.requires && !operation.requires(deps)) return unavailable("not_operational");
   }
   const read = await readJson(request);
   if (!read.ok) return json(400, { code: "invalid_request" });
@@ -154,6 +166,7 @@ async function handle<T>(request: Request, deps: Deps, operation: Operation<T>):
 
 export const handleDiagnostic = (request: Request, deps: Deps = defaultDeps()) =>
   handle(request, deps, {
+    requires: (current) => current.diagnostic !== undefined && Boolean(current.internalKeys?.jobs?.length),
     action: "diagnostico",
     parse: parseDiagnostic,
     limits: (value, limits) => diagnosticLimitSpecs(value.whatsapp, limits),

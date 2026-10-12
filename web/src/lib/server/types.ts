@@ -2,6 +2,7 @@
 export const COLLECTIONS = {
   leads: "leads",
   leadEvents: "lead_events",
+  diagnostics: "diagnostics",
   subscriptions: "subscriptions",
   rateLimits: "rate_limits",
   replays: "replays",
@@ -31,6 +32,7 @@ export interface LeadEventRecord {
   id: string;
   leadId: string;
   origin: string;
+  requestId?: string;
   commercialConsent?: boolean;
   at: string;
 }
@@ -75,4 +77,18 @@ export interface JobRecord {
   lastError?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export const JOB_KINDS = { diagnosticDiscord: "diagnostic.discord" } as const;
+
+// One record per diagnostic request, keyed by its team-visible ID, so repeated requests from the same WhatsApp keep
+// their own Name/Company. `notifiedAt` is set once the private Discord message is confirmed.
+export interface DiagnosticRecord {
+  id: string;
+  leadId: string;
+  name: string;
+  company: string;
+  whatsapp: string;
+  createdAt: string;
+  notifiedAt?: string;
 }

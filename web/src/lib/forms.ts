@@ -6,7 +6,11 @@ export type FormRequest =
   | { kind: "contact"; values: ContactValues }
   | { kind: "newsletter"; email: string; editionSlug?: string }
   | { kind: "report"; email: string; toolId: string };
-export type SubmissionResult = "accepted" | "error" | "unavailable";
+export type SubmissionResult = "accepted" | "error" | "unavailable" | "invalid" | "rate_limited" | "challenge" | "forbidden";
+
+// "pilot" is the only mode that talks to the backend; it exists for the contact form alone.
+export type ContactMode = FormMode | "pilot";
+export type ContactFormConfig = { mode: ContactMode; siteKey?: string };
 
 export function resolveFormMode(value: string | undefined): FormMode {
   return value === "demo" ? "demo" : "unavailable";
@@ -70,4 +74,45 @@ export async function submitLocalForm(
     signal.addEventListener("abort", abort, { once: true });
   });
   return outcome === "error" ? "error" : "accepted";
+}
+
+export type DiagnosticOutcome = { result: SubmissionResult; reference?: string; retryAfter?: number };
+
+const DIAGNOSTIC_REFERENCE = /^DG-[0-9A-Z]{10}$/;
+
+// Real transport for the contact form (pilot only). A network failure is "error": the outcome is unknown, never success.
+export async function submitDiagnostic(
+  values: ContactValues,
+  token: string,
+  signal: AbortSignal,
+  fetchFn: typeof fetch = fetch,
+): Promise<DiagnosticOutcome> {
+  if (signal.aborted) throw new DOMException("Submission cancelled", "AbortError");
+  let response: Response;
+  try {
+    response = await fetchFn("/api/diagnostico", {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-turnstile-token": token },
+      body: JSON.stringify({ name: values.name, company: values.company, whatsapp: values.whatsapp }),
+      cache: "no-store",
+      credentials: "same-origin",
+      signal,
+    });
+  } catch (error) {
+    if (signal.aborted || (error instanceof DOMException && error.name === "AbortError")) throw error;
+    return { result: "error" };
+  }
+  const body: unknown = await response.json().catch(() => undefined);
+  const field = (name: string): unknown => (typeof body === "object" && body !== null ? (body as Record<string, unknown>)[name] : undefined);
+  if (response.status === 202) {
+    const id = field("id");
+    return { result: "accepted", ...(typeof id === "string" && DIAGNOSTIC_REFERENCE.test(id) ? { reference: id } : {}) };
+  }
+  if (response.status === 400) return { result: "invalid" };
+  if (response.status === 403) return { result: field("code") === "challenge_failed" ? "challenge" : "forbidden" };
+  if (response.status === 429) {
+    const wait = field("retryAfter");
+    return { result: "rate_limited", ...(typeof wait === "number" && Number.isFinite(wait) && wait > 0 ? { retryAfter: wait } : {}) };
+  }
+  return { result: response.status === 503 ? "unavailable" : "error" };
 }
