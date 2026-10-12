@@ -182,8 +182,8 @@ Novos asserts devem provar regressões reais: movimento intermediário/endereço
 | Crítica deste plano | Sonnet5.5 readonly | Concluído com ajustes | Sessão00b6b993-cc46-4696-8187-5b2960ae9004 succeeded45s; cinco grupos de sugestões avaliados/incorporados. |
 | P7.1 Header/scroll | Sonnet | Concluído | Gates69932 lint/types/101unit/build/266E2E6skip; revisão independente aprovada. |
 | P7.2 Aviso/select | Sonnet | Concluído | Gates34414 lint/types/101unit/build/270E2E6skip; revisão6d65922a e geometria320/390/1440 aprovadas. |
-| P7.3 Newsletter | Sonnet | Em execução | Medida antes: arquivo lista1200,hero620; préviaarticle720 emcontainer1200. |
-| P8.1 E2E | Sonnet | Aguardando aprovação | P7. |
+| P7.3 Newsletter | Sonnet | Gates concluídos | Exec57880 lint/types/101unit/build/284E2E6skip; captura/revisão consolidada emP9.1. |
+| P8.1 E2E | Sonnet | Em execução | P7 gates concluídos; checkpoint antes da escrita. |
 | P8.2 Diagnóstico LCP | GPT + Sonnet consulta | Aguardando aprovação | P8.1. |
 | P8.3 Otimização | Sonnet + GPT gates | Aguardando aprovação | P8.2; consultar se sair do escopo. |
 | P9.1 Revisão/gates | Sonnet independente + GPT | Aguardando aprovação | P7/P8. |
@@ -760,3 +760,7 @@ P7.2 concluído: gates34414 exit0 lint/types/101unit/build/270E2E6skip logp7-2-g
 P7.3 checkpoint: d3f69ff7b1f976c22e1dd030ad465379aefe3d28. Pré-checagem sem segredos/gerados.
 P7.3 escritaeac6e9ad-6955-4b89-a940-8c57349e2c7f Sonnet5.5 succeeded90s, CSSnewsletter e novo newsletter-layout.spec.ts. Semgates próprios; GPT valida geometria/capturas e revisão P9.1.
 P7.3 gates34388 lint/types/101unit/build passou; E2E280pass6skip4fail título #titulo shrink1078/1106 em2slugs desktop (duplicadosprojetomobile viewport1440). Artigo1200 passou; corrigir .previewTitle width100%, não reduzirassert. Sem outrasfalhas.
+P7.3 correção checkpoint: 5b75c6f534334a1b266c1cb137fa006e8cee3bb3. Pré-checagem sem segredos/gerados.
+P7.3 correção same-session succeeded14s: previewTitlewidth100/minwidth0, parágrafo65ch preservado. GPTgates após escrita, semalterarassert.
+
+P7.3 gates finais57880 exit0 lint/typecheck/101unit/build/284E2E6skip. Logp7-3-final-gates.log. Artigo/title/card1200 eparagraphlegível nas3prévias,landingpreservada e320/390semoverflow cobertos. Capturas/revisão independente consolidamP9.1. Nenhumcorpoeditorialextra exposto.
