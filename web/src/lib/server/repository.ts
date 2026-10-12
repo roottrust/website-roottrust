@@ -1,11 +1,8 @@
-import { createHmac, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
+import { opaqueId } from "./ids";
+import type { Denied, Gate } from "./limits";
 import type { Store, Tx } from "./store";
 import { COLLECTIONS, type LeadEventRecord, type LeadRecord, type SubscriptionRecord, type SubscriptionStatus, type ToolId } from "./types";
-
-// Opaque, stable ID: the same identity always maps to the same document, and it cannot be reversed without the secret.
-export function opaqueId(secret: string, prefix: string, identity: string): string {
-  return `${prefix}_${createHmac("sha256", secret).update(`${prefix}:${identity}`).digest("base64url").slice(0, 32)}`;
-}
 
 async function touchLead(
   tx: Tx,
@@ -39,15 +36,22 @@ async function touchLead(
   tx.set(COLLECTIONS.leadEvents, eventId, event);
 }
 
+// `gate` (rate limits) runs inside the same transaction as the write: limit consumption and persistence commit together,
+// and a request denied by this gate writes nothing (the earlier IP gate in http.ts is a separate transaction).
 export async function recordDiagnostic(
   store: Store,
   secret: string,
   value: { name: string; company: string; whatsapp: string },
   now: Date,
-): Promise<string> {
+  gate?: Gate,
+): Promise<{ ok: true; id: string } | Denied> {
   const id = opaqueId(secret, "ld", `whatsapp:${value.whatsapp}`);
-  await store.transaction((tx) => touchLead(tx, id, value, "diagnostico", now.toISOString(), false));
-  return id;
+  return store.transaction(async (tx) => {
+    const denied = await gate?.(tx);
+    if (denied) return denied;
+    await touchLead(tx, id, value, "diagnostico", now.toISOString(), false);
+    return { ok: true as const, id };
+  });
 }
 
 export async function recordReportRequest(
@@ -55,11 +59,15 @@ export async function recordReportRequest(
   secret: string,
   value: { email: string; toolId: ToolId; commercialConsent: boolean },
   now: Date,
-): Promise<void> {
+  gate?: Gate,
+): Promise<{ ok: true } | Denied> {
   const id = opaqueId(secret, "ld", `email:${value.email}`);
-  await store.transaction((tx) =>
-    touchLead(tx, id, { email: value.email }, `relatorio:${value.toolId}`, now.toISOString(), value.commercialConsent),
-  );
+  return store.transaction(async (tx) => {
+    const denied = await gate?.(tx);
+    if (denied) return denied;
+    await touchLead(tx, id, { email: value.email }, `relatorio:${value.toolId}`, now.toISOString(), value.commercialConsent);
+    return { ok: true as const };
+  });
 }
 
 // Confirmed and cancelled records are left untouched: re-confirmation and delivery belong to the confirmation flow.
@@ -68,12 +76,15 @@ export async function requestSubscription(
   secret: string,
   value: { email: string; editionSlug?: string },
   now: Date,
-): Promise<void> {
+  gate?: Gate,
+): Promise<{ ok: true } | Denied> {
   const id = opaqueId(secret, "sb", `email:${value.email}`);
   const at = now.toISOString();
-  await store.transaction(async (tx) => {
+  return store.transaction(async (tx) => {
+    const denied = await gate?.(tx);
+    if (denied) return denied;
     const current = await tx.get<SubscriptionRecord>(COLLECTIONS.subscriptions, id);
-    if (current && current.status !== "pending") return;
+    if (current && current.status !== "pending") return { ok: true as const };
     const slug = value.editionSlug ?? current?.requestedEditionSlug;
     const record: SubscriptionRecord = {
       id,
@@ -84,6 +95,7 @@ export async function requestSubscription(
       updatedAt: at,
     };
     tx.set(COLLECTIONS.subscriptions, id, record);
+    return { ok: true as const };
   });
 }
 

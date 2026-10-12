@@ -1,5 +1,20 @@
+import { clientIpKey, hasIdSecret, isTrustedOrigin, loadDefenseConfig, verifyTurnstile, type DefenseConfig } from "./defense";
+import { authenticateInternal, loadInternalKeys, type InternalKeys } from "./internal-auth";
+import { processJobs, purgeExpired, type JobHandlers } from "./jobs";
+import {
+  consumeLimits,
+  diagnosticLimitSpecs,
+  gateOf,
+  ipLimitSpecs,
+  reportLimitSpecs,
+  subscriptionLimitSpecs,
+  type Denied,
+  type Gate,
+  type Limits,
+} from "./limits";
 import { resolveBackendMode, type BackendMode } from "./mode";
 import { recordDiagnostic, recordReportRequest, requestSubscription } from "./repository";
+import { logEvent, safeErrorCode } from "./safe";
 import { loadFirestoreStore, type Store } from "./store";
 import { MAX_BODY_BYTES, parseDiagnostic, parseReport, parseSubscription, type Parsed } from "./validation";
 
@@ -10,26 +25,41 @@ export interface Deps {
   idSecret: string | undefined;
   getStore(): Promise<Store>;
   now(): Date;
+  // Pilot needs all of these; when absent the pilot fails closed (503) instead of accepting unprotected requests.
+  defense?: DefenseConfig;
+  internalKeys?: InternalKeys;
+  jobHandlers?: JobHandlers;
 }
 
 let firestoreStore: Store | undefined;
 
-export function defaultDeps(): Deps {
+export function defaultDeps(env: Record<string, string | undefined> = process.env): Deps {
   return {
-    mode: resolveBackendMode(process.env.BACKEND_MODE),
-    idSecret: process.env.DATA_ID_SECRET,
+    mode: resolveBackendMode(env.BACKEND_MODE),
+    idSecret: env.DATA_ID_SECRET,
     getStore: async () => (firestoreStore ??= loadFirestoreStore()),
     now: () => new Date(),
+    defense: loadDefenseConfig(env).config,
+    internalKeys: loadInternalKeys(env),
+    jobHandlers: {},
   };
 }
 
-const MIN_SECRET_LENGTH = 32;
+const TURNSTILE_HEADER = "x-turnstile-token";
+const JOBS_LEASE_MS = 60_000;
+const JOBS_HANDLER_TIMEOUT_MS = 20_000;
+const JOBS_BATCH = 5;
+const JOBS_BUDGET_MS = 50_000; // must stay below maxDuration of the jobs route
+const PURGE_BATCH = 25;
+const JOBS_MAX_BODY_BYTES = 1024;
 
-function json(status: number, body: Record<string, unknown>): Response {
-  return Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
+function json(status: number, body: Record<string, unknown>, headers: Record<string, string> = {}): Response {
+  return Response.json(body, { status, headers: { "Cache-Control": "no-store", ...headers } });
 }
 
 const unavailable = (code: string) => json(503, { code });
+const rateLimited = (denied: Denied) =>
+  json(429, { code: "rate_limited", retryAfter: denied.retryAfterSec }, { "Retry-After": String(denied.retryAfterSec) });
 
 // Content-Length is only a fast path; the stream is counted so a missing or spoofed header cannot buffer more than the cap.
 async function readJson(request: Request): Promise<{ ok: true; body: unknown } | { ok: false }> {
@@ -57,44 +87,129 @@ async function readJson(request: Request): Promise<{ ok: true; body: unknown } |
   }
 }
 
-// off: 503, body never read. demo: validates only, then 503 (never a fictitious success). pilot: 202 only after commit.
-async function handle<T>(
-  request: Request,
-  deps: Deps,
-  parse: (body: unknown) => Parsed<T>,
-  persist: (store: Store, secret: string, value: T, now: Date) => Promise<Record<string, unknown>>,
-): Promise<Response> {
+interface Operation<T> {
+  action: string; // Turnstile action the widget must have been rendered with
+  parse: (body: unknown) => Parsed<T>;
+  limits: (value: T, limits: Limits) => ReturnType<typeof diagnosticLimitSpecs>;
+  persist: (store: Store, secret: string, value: T, now: Date, gate: Gate) => Promise<({ ok: true } & Record<string, unknown>) | Denied>;
+}
+
+// The IP limiter runs before Turnstile verification on purpose (cheap abuse shield), so requests later rejected by
+// Turnstile (or by a storage/provider failure) still count against the IP ceilings; identity limits count only
+// requests that passed Turnstile and are not consumed when the identity gate denies.
+// off: 503, body never read. demo: validates only, then 503 (never a fictitious success).
+// pilot, in order: config (503) → origin (403) → body/validation (400) → trusted IP (503) → IP limits (429) →
+// Turnstile (403/503) → identity limits + persistence in one transaction (429/202). 202 only after commit.
+async function handle<T>(request: Request, deps: Deps, operation: Operation<T>): Promise<Response> {
   if (deps.mode === "off") return unavailable("unavailable");
+  if (deps.mode === "pilot") {
+    if (!deps.defense || !hasIdSecret(deps.idSecret)) {
+      logEvent("error", "pilot_misconfigured", { action: operation.action });
+      return unavailable("misconfigured");
+    }
+    if (!isTrustedOrigin(request, deps.defense.trustedOrigins)) return json(403, { code: "forbidden_origin" });
+  }
   const read = await readJson(request);
   if (!read.ok) return json(400, { code: "invalid_request" });
-  const parsed = parse(read.body);
+  const parsed = operation.parse(read.body);
   if (!parsed.ok) return json(400, { code: "invalid_request", fields: parsed.fields });
   if (deps.mode === "demo") return unavailable("demo_mode");
-  const secret = deps.idSecret;
-  if (!secret || secret.length < MIN_SECRET_LENGTH) return unavailable("misconfigured");
+
+  const defense = deps.defense as DefenseConfig;
+  const secret = deps.idSecret as string;
+  const ipKey = clientIpKey(request, defense.ipHeader);
+  if (!ipKey) {
+    logEvent("error", "client_ip_unavailable", { action: operation.action });
+    return unavailable("ip_unavailable");
+  }
   try {
-    const result = await persist(await deps.getStore(), secret, parsed.value, deps.now());
-    return json(202, { status: "accepted", ...result });
+    const store = await deps.getStore();
+    const ipDenied = await store.transaction((tx) => consumeLimits(tx, secret, ipLimitSpecs(ipKey, defense.limits), deps.now()));
+    if (ipDenied) return rateLimited(ipDenied);
+
+    const challenge = await verifyTurnstile({
+      store,
+      secret,
+      config: defense,
+      token: request.headers.get(TURNSTILE_HEADER),
+      action: operation.action,
+      remoteIp: request.headers.get(defense.ipHeader)?.trim(),
+      now: deps.now(),
+    });
+    if (challenge === "unavailable") return unavailable("challenge_unavailable");
+    if (challenge === "rejected") return json(403, { code: "challenge_failed" });
+
+    const now = deps.now();
+    const gate = gateOf(secret, operation.limits(parsed.value, defense.limits), now);
+    const result = await operation.persist(store, secret, parsed.value, now, gate);
+    if (!result.ok) return rateLimited(result);
+    const rest: Record<string, unknown> = { ...result };
+    delete rest.ok;
+    return json(202, { status: "accepted", ...rest });
   } catch (error) {
-    console.error("persistence_failed", error instanceof Error ? error.name : "unknown");
+    logEvent("error", "persistence_failed", { action: operation.action, error: safeErrorCode(error) });
     return unavailable("storage_unavailable");
   }
 }
 
 export const handleDiagnostic = (request: Request, deps: Deps = defaultDeps()) =>
-  handle(request, deps, parseDiagnostic, async (store, secret, value, now) => ({
-    id: await recordDiagnostic(store, secret, value, now),
-  }));
+  handle(request, deps, {
+    action: "diagnostico",
+    parse: parseDiagnostic,
+    limits: (value, limits) => diagnosticLimitSpecs(value.whatsapp, limits),
+    persist: recordDiagnostic,
+  });
 
 // Same body for new, pending, confirmed and cancelled addresses (anti-enumeration).
 export const handleSubscription = (request: Request, deps: Deps = defaultDeps()) =>
-  handle(request, deps, parseSubscription, async (store, secret, value, now) => {
-    await requestSubscription(store, secret, value, now);
-    return {};
+  handle(request, deps, {
+    action: "newsletter-inscricao",
+    parse: parseSubscription,
+    limits: subscriptionLimitSpecs,
+    persist: requestSubscription,
   });
 
 export const handleReport = (request: Request, deps: Deps = defaultDeps()) =>
-  handle(request, deps, parseReport, async (store, secret, value, now) => {
-    await recordReportRequest(store, secret, value, now);
-    return {};
+  handle(request, deps, {
+    action: "relatorio",
+    parse: parseReport,
+    limits: reportLimitSpecs,
+    persist: recordReportRequest,
   });
+
+// Internal, scope "jobs": claims a small batch of due jobs and sweeps expired counters. No body is expected.
+// Authentication failures share one generic 401 so callers learn nothing about which check failed.
+export async function handleJobsProcess(request: Request, deps: Deps = defaultDeps()): Promise<Response> {
+  if (deps.mode !== "pilot") return unavailable("unavailable");
+  if (!hasIdSecret(deps.idSecret) || !deps.internalKeys?.jobs?.length) {
+    logEvent("error", "pilot_misconfigured", { action: "jobs" });
+    return unavailable("misconfigured");
+  }
+  try {
+    const store = await deps.getStore();
+    const auth = await authenticateInternal(request, {
+      scope: "jobs",
+      keys: deps.internalKeys,
+      store,
+      idSecret: deps.idSecret,
+      now: deps.now(),
+      maxBodyBytes: JOBS_MAX_BODY_BYTES,
+    });
+    if (!auth.ok) {
+      logEvent("warn", "internal_auth_failed", { scope: "jobs", reason: auth.reason });
+      return auth.status === 401 ? json(401, { code: "unauthorized" }) : json(auth.status, { code: auth.reason });
+    }
+    const summary = await processJobs(store, deps.jobHandlers ?? {}, {
+      now: deps.now,
+      limit: JOBS_BATCH,
+      leaseMs: JOBS_LEASE_MS,
+      handlerTimeoutMs: JOBS_HANDLER_TIMEOUT_MS,
+      budgetMs: JOBS_BUDGET_MS,
+    });
+    const purged = await purgeExpired(store, deps.now(), PURGE_BATCH);
+    return json(200, { ...summary, purged });
+  } catch (error) {
+    logEvent("error", "jobs_failed", { error: safeErrorCode(error) });
+    return unavailable("storage_unavailable");
+  }
+}

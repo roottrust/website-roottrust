@@ -1,23 +1,15 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
-import { handleDiagnostic, handleReport, handleSubscription, type Deps } from "../../../src/lib/server/http";
+import { handleDiagnostic, handleReport, handleSubscription } from "../../../src/lib/server/http";
+import { opaqueId } from "../../../src/lib/server/ids";
 import { resolveBackendMode } from "../../../src/lib/server/mode";
-import { opaqueId, requestSubscription, transitionSubscription } from "../../../src/lib/server/repository";
+import { requestSubscription, transitionSubscription } from "../../../src/lib/server/repository";
 import { createMemoryStore } from "../../../src/lib/server/store";
+import { NOW, ORIGIN, SECRET, postDiagnostic, postReport, postSubscription, setup } from "./helpers";
 
-const SECRET = "s".repeat(32);
-const NOW = new Date("2026-10-12T12:00:00.000Z");
-
-function setup(mode: Deps["mode"] = "pilot", idSecret: string | undefined = SECRET) {
-  const store = createMemoryStore();
-  const getStore = vi.fn(async () => store);
-  const deps: Deps = { mode, idSecret, getStore, now: () => NOW };
-  return { store, getStore, deps };
-}
-
-const post = (body: unknown, headers: Record<string, string> = { "content-type": "application/json" }) =>
-  new Request("http://localhost/api/x", { method: "POST", headers, body: typeof body === "string" ? body : JSON.stringify(body) });
+// Limits are relaxed in setup() so these tests exercise validation and persistence; defense.test.ts covers the ceilings.
+const post = postDiagnostic;
 
 const contact = { name: " Pessoa de teste ", company: "Empresa", whatsapp: "+55 (11) 94008-4692" };
 
@@ -29,7 +21,7 @@ describe("backend mode", () => {
   });
 
   it("off: 503 without reading the body or touching storage", async () => {
-    const { deps, getStore } = setup("off");
+    const { deps, getStore } = setup({ mode: "off" });
     const request = post(contact);
     const response = await handleDiagnostic(request, deps);
     expect(response.status).toBe(503);
@@ -38,7 +30,7 @@ describe("backend mode", () => {
   });
 
   it("demo: validates (400) but never persists nor reports success", async () => {
-    const { deps, getStore, store } = setup("demo");
+    const { deps, getStore, store } = setup({ mode: "demo" });
     expect((await handleDiagnostic(post({ ...contact, whatsapp: "1" }), deps)).status).toBe(400);
     const response = await handleDiagnostic(post(contact), deps);
     expect(response.status).toBe(503);
@@ -52,7 +44,7 @@ describe("pilot boundaries", () => {
   it("rejects wrong content type, bad JSON, oversize and non-object bodies with 400", async () => {
     const { deps } = setup();
     const cases = [
-      post(contact, { "content-type": "text/plain" }),
+      post(contact, { headers: { "content-type": "text/plain" } }),
       post("{not json"),
       post({ ...contact, company: "x".repeat(9000) }),
       post([contact]),
@@ -63,17 +55,17 @@ describe("pilot boundaries", () => {
 
   it("rejects extra keys so tool answers/results cannot be stored", async () => {
     const { deps, store } = setup();
-    const response = await handleReport(post({ email: "a@example.com", toolId: "rosi", result: { rosi: 3 }, answers: [1] }), deps);
+    const response = await handleReport(postReport({ email: "a@example.com", toolId: "rosi", result: { rosi: 3 }, answers: [1] }), deps);
     expect(response.status).toBe(400);
     expect(await response.json()).toMatchObject({ fields: ["result", "answers"] });
     expect(store.dump("leads")).toEqual({});
-    expect((await handleReport(post({ email: "a@example.com", toolId: "unknown" }), deps)).status).toBe(400);
-    expect((await handleReport(post({ email: "a@example.com", toolId: "rosi", commercialConsent: "yes" }), deps)).status).toBe(400);
+    expect((await handleReport(postReport({ email: "a@example.com", toolId: "unknown" }), deps)).status).toBe(400);
+    expect((await handleReport(postReport({ email: "a@example.com", toolId: "rosi", commercialConsent: "yes" }), deps)).status).toBe(400);
   });
 
   it("503 when the secret is missing/short or storage fails; never 202", async () => {
-    expect((await handleDiagnostic(post(contact), { ...setup().deps, idSecret: undefined })).status).toBe(503);
-    expect((await handleDiagnostic(post(contact), setup("pilot", "short").deps)).status).toBe(503);
+    expect((await handleDiagnostic(post(contact), setup({ idSecret: undefined }).deps)).status).toBe(503);
+    expect((await handleDiagnostic(post(contact), setup({ idSecret: "short" }).deps)).status).toBe(503);
     const failing = setup().deps;
     failing.getStore = async () => {
       throw new Error("boom with contact@example.com");
@@ -103,7 +95,7 @@ describe("body size cap", () => {
     });
     const request = new Request("http://localhost/api/x", {
       method: "POST",
-      headers: { "content-type": "application/json", "content-length": "10" },
+      headers: { "content-type": "application/json", "content-length": "10", origin: ORIGIN, "x-real-ip": "203.0.113.7", "x-turnstile-token": "diagnostico:stream" },
       body,
       duplex: "half",
     } as RequestInit);
@@ -119,7 +111,7 @@ describe("body size cap", () => {
     const pad = " ".repeat(8 * 1024 - JSON.stringify(contact).length);
     expect((await handleDiagnostic(post(JSON.stringify(contact) + pad), deps)).status).toBe(202);
     expect((await handleDiagnostic(post(JSON.stringify(contact) + pad + " "), deps)).status).toBe(400);
-    const bad = new Request("http://localhost/api/x", { method: "POST", headers: { "content-type": "application/json" }, body: new Uint8Array([0x7b, 0xff, 0x7d]) });
+    const bad = new Request("http://localhost/api/x", { method: "POST", headers: { "content-type": "application/json", origin: ORIGIN, "x-real-ip": "203.0.113.7", "x-turnstile-token": "diagnostico:utf8" }, body: new Uint8Array([0x7b, 0xff, 0x7d]) });
     expect((await handleDiagnostic(bad, deps)).status).toBe(400);
   });
 });
@@ -139,7 +131,7 @@ describe("persistence", () => {
   });
 
   it("concurrent identical diagnostics keep one lead and count every interaction", async () => {
-    const { deps, store } = setup();
+    const { deps, store } = setup({ limits: { diagnosticWhatsappDaily: 100 } });
     await Promise.all(Array.from({ length: 10 }, () => handleDiagnostic(post(contact), deps)));
     const leads = Object.values(store.dump("leads")) as { interactionCount: number }[];
     expect(leads).toHaveLength(1);
@@ -149,10 +141,10 @@ describe("persistence", () => {
   it("report: stores only email/tool origin; absent consent is never authorization and is never revoked silently", async () => {
     const { deps, store } = setup();
     const id = opaqueId(SECRET, "ld", "email:leitor@example.com");
-    expect((await handleReport(post({ email: " Leitor@Example.com ", toolId: "rosi" }), deps)).status).toBe(202);
+    expect((await handleReport(postReport({ email: " Leitor@Example.com ", toolId: "rosi" }), deps)).status).toBe(202);
     expect(store.dump("leads")[id]).toMatchObject({ commercialConsent: false, origins: ["relatorio:rosi"] });
-    await handleReport(post({ email: "leitor@example.com", toolId: "shadow-ai", commercialConsent: true }), deps);
-    await handleReport(post({ email: "leitor@example.com", toolId: "shadow-ai" }), deps);
+    await handleReport(postReport({ email: "leitor@example.com", toolId: "shadow-ai", commercialConsent: true }), deps);
+    await handleReport(postReport({ email: "leitor@example.com", toolId: "shadow-ai" }), deps);
     const lead = store.dump("leads")[id] as { commercialConsent: boolean; origins: string[]; commercialConsentAt: string };
     expect(lead).toMatchObject({ commercialConsent: true, origins: ["relatorio:rosi", "relatorio:shadow-ai"], commercialConsentAt: NOW.toISOString() });
     expect(Object.keys(lead)).not.toContain("answers");
@@ -161,21 +153,21 @@ describe("persistence", () => {
   it("diagnostic and report identities are not merged", async () => {
     const { deps, store } = setup();
     await handleDiagnostic(post(contact), deps);
-    await handleReport(post({ email: "a@example.com", toolId: "rosi" }), deps);
+    await handleReport(postReport({ email: "a@example.com", toolId: "rosi" }), deps);
     expect(Object.keys(store.dump("leads"))).toHaveLength(2);
   });
 
   it("subscription: identical 202 body for new and existing addresses; confirmed/cancelled are untouched", async () => {
     const { deps, store } = setup();
     const body = { email: "leitor@example.com", editionSlug: "backup-e-recuperacao" };
-    const first = await handleSubscription(post(body), deps);
+    const first = await handleSubscription(postSubscription(body), deps);
     const id = opaqueId(SECRET, "sb", "email:leitor@example.com");
     expect(await transitionSubscription(store, id, "pending", "confirmed", NOW)).toBe("ok");
-    const again = await handleSubscription(post({ email: "leitor@example.com", editionSlug: "outra-edicao" }), deps);
+    const again = await handleSubscription(postSubscription({ email: "leitor@example.com", editionSlug: "outra-edicao" }), deps);
     expect(first.status).toBe(202);
     expect(await again.json()).toEqual(await first.json());
     expect(store.dump("subscriptions")[id]).toMatchObject({ status: "confirmed", requestedEditionSlug: "backup-e-recuperacao" });
-    expect((await handleSubscription(post({ email: "a@example.com", editionSlug: "Bad Slug" }), deps)).status).toBe(400);
+    expect((await handleSubscription(postSubscription({ email: "a@example.com", editionSlug: "Bad Slug" }), deps)).status).toBe(400);
   });
 
   it("pending subscription keeps the latest requested edition", async () => {
