@@ -1,0 +1,105 @@
+import { createHmac, randomUUID } from "node:crypto";
+import type { Store, Tx } from "./store";
+import { COLLECTIONS, type LeadEventRecord, type LeadRecord, type SubscriptionRecord, type SubscriptionStatus, type ToolId } from "./types";
+
+// Opaque, stable ID: the same identity always maps to the same document, and it cannot be reversed without the secret.
+export function opaqueId(secret: string, prefix: string, identity: string): string {
+  return `${prefix}_${createHmac("sha256", secret).update(`${prefix}:${identity}`).digest("base64url").slice(0, 32)}`;
+}
+
+async function touchLead(
+  tx: Tx,
+  id: string,
+  fields: Pick<LeadRecord, "name" | "company" | "whatsapp" | "email">,
+  origin: string,
+  at: string,
+  commercialConsent: boolean,
+): Promise<void> {
+  const current = await tx.get<LeadRecord>(COLLECTIONS.leads, id);
+  const lead: LeadRecord = {
+    ...current,
+    ...fields,
+    id,
+    origins: current?.origins.includes(origin) ? current.origins : [...(current?.origins ?? []), origin],
+    commercialConsent: commercialConsent || current?.commercialConsent === true,
+    firstSeenAt: current?.firstSeenAt ?? at,
+    lastInteractionAt: at,
+    interactionCount: (current?.interactionCount ?? 0) + 1,
+  };
+  if (commercialConsent && !current?.commercialConsent) lead.commercialConsentAt = at;
+  const eventId = `ev_${randomUUID()}`;
+  const event: LeadEventRecord = {
+    id: eventId,
+    leadId: id,
+    origin,
+    at,
+    ...(origin.startsWith("relatorio:") ? { commercialConsent } : {}),
+  };
+  tx.set(COLLECTIONS.leads, id, lead);
+  tx.set(COLLECTIONS.leadEvents, eventId, event);
+}
+
+export async function recordDiagnostic(
+  store: Store,
+  secret: string,
+  value: { name: string; company: string; whatsapp: string },
+  now: Date,
+): Promise<string> {
+  const id = opaqueId(secret, "ld", `whatsapp:${value.whatsapp}`);
+  await store.transaction((tx) => touchLead(tx, id, value, "diagnostico", now.toISOString(), false));
+  return id;
+}
+
+export async function recordReportRequest(
+  store: Store,
+  secret: string,
+  value: { email: string; toolId: ToolId; commercialConsent: boolean },
+  now: Date,
+): Promise<void> {
+  const id = opaqueId(secret, "ld", `email:${value.email}`);
+  await store.transaction((tx) =>
+    touchLead(tx, id, { email: value.email }, `relatorio:${value.toolId}`, now.toISOString(), value.commercialConsent),
+  );
+}
+
+// Confirmed and cancelled records are left untouched: re-confirmation and delivery belong to the confirmation flow.
+export async function requestSubscription(
+  store: Store,
+  secret: string,
+  value: { email: string; editionSlug?: string },
+  now: Date,
+): Promise<void> {
+  const id = opaqueId(secret, "sb", `email:${value.email}`);
+  const at = now.toISOString();
+  await store.transaction(async (tx) => {
+    const current = await tx.get<SubscriptionRecord>(COLLECTIONS.subscriptions, id);
+    if (current && current.status !== "pending") return;
+    const slug = value.editionSlug ?? current?.requestedEditionSlug;
+    const record: SubscriptionRecord = {
+      id,
+      email: value.email,
+      status: "pending",
+      ...(slug ? { requestedEditionSlug: slug } : {}),
+      createdAt: current?.createdAt ?? at,
+      updatedAt: at,
+    };
+    tx.set(COLLECTIONS.subscriptions, id, record);
+  });
+}
+
+// Compare-and-set: of N concurrent callers with the same `from`, exactly one gets "ok".
+export async function transitionSubscription(
+  store: Store,
+  id: string,
+  from: SubscriptionStatus,
+  to: SubscriptionStatus,
+  now: Date,
+): Promise<"ok" | "not_found" | "conflict"> {
+  return store.transaction(async (tx) => {
+    const current = await tx.get<SubscriptionRecord>(COLLECTIONS.subscriptions, id);
+    if (!current) return "not_found";
+    if (current.status !== from) return "conflict";
+    tx.set(COLLECTIONS.subscriptions, id, { ...current, status: to, updatedAt: now.toISOString() });
+    return "ok";
+  });
+}
