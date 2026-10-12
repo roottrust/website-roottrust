@@ -20,10 +20,10 @@ Use os rótulos **aprovado**, **proposta**, **demonstração**, **histórico** e
 
 ## Estado técnico
 
-Frontend local implementado e validado em 11/10/2026. A Home nativa recebeu aprovação humana em 10/10; o aceite final do conjunto permanece pendente. Gates: lint, typecheck, 101 testes unitários, build de produção e 228 E2E aprovados, com quatro skips explicitados na [auditoria final](../../references/audits/final-qa.md). Não há integração operacional nem autorização de publicação.
+Frontend local implementado e validado em 11/10/2026. A Home nativa recebeu aprovação humana em 10/10; o aceite final do conjunto permanece pendente. Gates finais atuais (P8.3, retries 0): lint, typecheck, 107 testes unitários em 13 arquivos, build de produção e 284 E2E aprovados, com 6 skips explicitados na [auditoria final](../../references/audits/final-qa.md). LCP mediano de laboratório 2,73–2,87 s (melhoria de 41–43%), CLS 0; a meta orientativa de 2,5 s não foi atingida e o ganho foi mantido como exceção local aprovada (D16), sem ser publicação nem aceite final visual. Não há integração operacional nem autorização de publicação. Os números 101 unit/228 E2E/quatro skips/LCP 4,8 s são histórico.
 
 As seis páginas desta documentação são o contexto canônico. Resultados detalhados, capturas e limites estão na auditoria final; tarefas e decisões continuam exclusivamente no PLAN.
 
 ### Rechecagem documental final — 11/10/2026
 
-Rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.
+**Histórico, superado pelos gates P8.3 acima:** rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.

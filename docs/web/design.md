@@ -52,7 +52,7 @@ Chrome testado em 1440×1000 e 390×844, sem overflow horizontal observado. Refl
 
 ### Cabeçalho e moldura
 
-Assinatura negativa oficial; Serviços → `#servicos`, Ferramentas → `#ferramentas`, Newsletter → `#newsletter`, CTA → `#contato`. Moldura escolhida: linhas, divisórias, cantoneiras e símbolos G3 reativos nas margens. Canvas fixo decorativo sem foco/interceptação, ausente no mobile e recortado nas faixas verdes.
+Assinatura negativa oficial; Serviços → `#servicos`, Ferramentas → `#ferramentas`, Newsletter → `/newsletter` em desktop e mobile, em todas as páginas (D11; o footer e a âncora `#newsletter` da Home permanecem inalterados), CTA → `#contato`. Âncoras da Home e entre rotas usam rolagem por rAF de 350–900 ms, destino adaptativo, offset 96 e interrupção por interação do usuário; reduced-motion e pausa global rolam instantaneamente e não há CSS `scroll-behavior: smooth` global (D14); links de página não recebem transição artificial. Moldura escolhida: linhas, divisórias, cantoneiras e símbolos G3 reativos nas margens. Canvas fixo decorativo sem foco/interceptação, ausente no mobile e recortado nas faixas verdes.
 
 ### Hero
 
@@ -155,6 +155,7 @@ Três internas no mesmo projeto: apresentação/inscrição, arquivo de prévias
 - **Apresentação:** formulário na abertura e pequeno símbolo ASCII existente, seguidos de amostra, benefícios, curadoria/FAQ; não replicar hero G4 gigante.
 - **Arquivo:** destaque compacto e lista cronológica, filtro por pilar, paginação; sem imagens obrigatórias, busca ou métricas sociais.
 - **Prévia:** título/data/pilar/Curadoria Root Trust, primeiro parágrafo completo e formulário, com retorno ao arquivo. Coluna proposta próxima de 65 caracteres por linha; não comprimir fonte para acomodar texto.
+- **Largura (D13):** na estrutura, título, lista e card do arquivo/prévia usar a largura útil de 1200 px em 1440; parágrafos de leitura ficam em 65ch; grade a partir de 960 px; landing inalterada. Select nativo com `appearance: none`, chevron à direita de 16 px e padding-right 44 px; forced-colors permanece nativo.
 - **Leitura:** margens discretas, sem movimento atrás dos textos; mobile empilhado/filtros quebrando linhas. Conteúdo/controles HTML, sem hover obrigatório.
 - **Movimento:** fallback estático, redução dinâmica, pausa se houver animação contínua e suspensão em aba oculta. Sem novo objeto 3D obrigatório, árvore/raízes, fotos ou terminal editorial.
 
@@ -171,4 +172,4 @@ S01 + S16 definem seis seções: abertura, situações, quatro frentes, método,
 
 ### Rechecagem documental final — 11/10/2026
 
-Rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.
+**Histórico, superado pelos gates P8.3 (ver [development.md](development.md)):** rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.

@@ -1,8 +1,29 @@
 # QA final — frontend local Root Trust
 
-**Atualizado: 11/10/2026.** Implementação e QA locais concluídos tecnicamente; Home aprovada em 10/10. Aceite humano final pendente. Sem autorização de commit final, push, PR ou deploy. Operação de backend/CMS/e-mail/analytics fora do escopo.
+**Atualizado: 11/10/2026 (P9.2).** Implementação e QA locais concluídos tecnicamente; Home aprovada em 10/10. Seções marcadas como **histórico** abaixo descrevem rodadas anteriores (101 unit, 228/227 E2E, quatro skips, LCP 4,8 s) e foram superadas pela seção “Estado atual — P8.3/P9”. Aceite humano final pendente. Sem autorização de commit final, push, PR ou deploy. Operação de backend/CMS/e-mail/analytics fora do escopo.
 
-## Gates e evidências
+## Estado atual — P8.3/P9
+
+- **Gates finais P8.3** ([log](final-qa/logs/p8-3-final-gates.log), exit 0, retries 0): lint, typecheck, **107 unitários em 13 arquivos** (101 anteriores + 6 de cobertura de fontes), build e **284 E2E aprovados / 6 skips**. Skips: 2 capturas Home opt-in, 2 de aba realmente oculta em headless e 2 de modifier mobile inaplicável; não são passes.
+- **Decisões D11–D16 refletidas:** header Newsletter → `/newsletter` (desktop/mobile; footer e `#newsletter` inalterados); âncoras por rAF 350–900 ms, destino adaptativo, offset 96, aborto por interação, instantâneas em reduced-motion/pausa, sem CSS smooth global; removida somente a frase inicial exata de FormStatus (sem ocultar por CSS nem substituir), demo e feedback pós-tentativa honestos mantidos; select nativo `appearance: none`, chevron direito 16 px, padding-right 44 px, forced-colors nativo; newsletter com estrutura/título/lista/card em 1200 px úteis em 1440, parágrafos 65ch, grade ≥960, landing inalterada.
+- **E2E de contato:** `contactClock` instalado antes do goto, controle de 350 ms, duplicidade (2 submits → 1 timer); 10 repetições desktop + 10 mobile passaram, sem retries nem delay em produção.
+- **Fontes:** WOFF2 locais das mesmas famílias/versões/pesos, Latin+ (→√≥), Archivo com largura padrão 100, TTF+OFL intactos, teste de cobertura futura, sem rede externa; procedência em `font-optimization.json`. GPT mediu 14 comparações de fontes/pesos 100–900 com delta 0 e rede com 2 WOFF2 locais (`p9-visual-checks.json`), sem overflow em 960/1024 px.
+- **Capturas P9:** 44 JPG/22 pares, 11 rotas desktop/mobile, 2 execuções pass sem issues, mais 5 extras (tablets 960/1024 arquivo/prévia e hero Home) em `final-qa/captures`.
+- **Integridade** (`p9-integrity.json`): 158 exports, 10 assets/fontes/licenças e 56 contratos sem divergência. **Scan privado** (`p9-private-scan.json`): 430 arquivos, 11 âncoras privadas, 0 ocorrências, recorte limitado.
+- **LCP** (Lighthouse 13.5 mobile, 4× CPU, slow 4G, mesmo protocolo, 3 rodadas por rota; baselines `lighthouse-before-p7` e `lighthouse-before-p8-fonts`, resultado `final-after-fonts` + `lighthouse/summary.json`, comparativo `logs/p8-lcp-comparison.json`):
+
+| Rota | LCP antes → depois (ms, mediana) | Intervalo depois | CLS | TBT final (ms) | JS (bytes, inalterado) |
+|---|---|---|---:|---:|---:|
+| Home | 4875,840 → 2808,533 | 2808,029–2898,5 | 0 | 59,5 | 173328 |
+| Cibersegurança | 4800,737 → 2726,4505 | 2716,864–2727,239 | 0 | 459 | 308974 |
+| ROSI | 4878,077 → 2873,0245 | 2867,496–2969 | 0 | 453,5 | 316395 |
+| Newsletter | 4860 → 2783 | 2719,477–2812 | 0 | 119 | 167217 |
+
+Transferência de fontes 517372 → 75484 B (com headers). Melhoria de 41–43%, **meta ≤2500 ms NÃO atingida**. Variações pequenas de TBT não comprovam causalidade. Em D16 o usuário aprovou a Opção 1: manter o ganho como exceção local e concluir QA/documentação; isso não é publicação nem aceite final visual. Sonnet implementou e revisou em sessões distintas; GPT executou gates e medições.
+
+Riscos mantidos (histórico, sem novo audit): audit dev cinco high / produção zero. CI remoto, hardware físico, zoom real, leitor de tela e INP de campo seguem sem certificação. Sem backend, commit final, push ou deploy.
+
+## Gates e evidências — histórico (11/10, antes de P8.3)
 
 GPT executou lint, typecheck, **101 unitários em 12 arquivos**, build de produção e **228 E2E aprovados / quatro skips** após a última alteração de código. Sonnet implementou e revisou em sessões distintas; não foi o único verificador de seu trabalho.
 
@@ -12,7 +33,7 @@ GPT executou lint, typecheck, **101 unitários em 12 arquivos**, build de produ�
 - [Audit produção](final-qa/logs/audit-production.json): zero advisories. [Audit completo](final-qa/logs/audit-all.json): cinco high na cadeia de desenvolvimento ESLint/fast-glob/micromatch/braces (GHSA-vfj7-8cjw-p6xm). Não aplicado --force, que ofereceu downgrade Next.
 - Integridade conferida pelo GPT: 158 arquivos de export e oito cópias públicas/fontes/licenças sem divergência de hash. Scan de 230 arquivos src/public/build e 11 trechos de corpos editoriais privados: zero ocorrências nesse recorte; não prova ausência universal de vazamento.
 
-Após a atualização documental, lint/tipos/101 unit/build passaram novamente. E2E completo: **227 passes, quatro skips, uma falha** ao observar o botão transitório “Enviando…” do contato. Repetição isolada: **3/3 passaram**, sem alteração de código ou testes. Causa não comprovada; instabilidade registrada, sem declarar nova rodada completa verde. [Log completo](final-qa/logs/final-delivery-gates.log) e [rechecagem isolada](final-qa/logs/final-contact-recheck.log). Registros em [PLAN.md](../../PLAN.md). CI está configurado sem deploy; execução remota não realizada, pois não houve push autorizado.
+**Histórico, superado pelos gates P8.3:** após a atualização documental, lint/tipos/101 unit/build passaram novamente. E2E completo: **227 passes, quatro skips, uma falha** ao observar o botão transitório “Enviando…” do contato. Repetição isolada: **3/3 passaram**, sem alteração de código ou testes. Causa não comprovada; instabilidade registrada, sem declarar nova rodada completa verde. [Log completo](final-qa/logs/final-delivery-gates.log) e [rechecagem isolada](final-qa/logs/final-contact-recheck.log). Registros em [PLAN.md](../../PLAN.md). CI está configurado sem deploy; execução remota não realizada, pois não houve push autorizado.
 
 ## Comandos reproduzíveis
 
@@ -30,7 +51,7 @@ node scripts/lighthouse.mjs
 
 Instalar navegadores uma vez: npx playwright install chromium firefox webkit. E2E usa portas 3100/3101; Lighthouse usa 3200. Verificar portas livres e não executar medições junto aos testes. Captura define QA_CAPTURE=1; captura não faz parte do gate comum. Lighthouse 13.5.0 efêmero não é dependência do app nem execução offline fixada.
 
-## Medições finais de laboratório
+## Medições de laboratório — histórico (antes da otimização de fontes; atuais na seção “Estado atual”)
 
 Windows 10.0.26200, Ryzen 7 5800X (16 CPUs lógicas), 11,9 GiB, Node 24.13.1, Chromium Playwright 1248. Lighthouse 13.5.0 em build Next de produção, loopback, FORM_MODE ausente, emulação móvel padrão com CPU 4× e slow 4G. Sem testes/capturas concorrentes.
 
@@ -48,7 +69,7 @@ LCP variou aproximadamente 4800–4935 ms e TBT 107–602,5 ms entre rodadas. **
 GPT inspecionou amostras nativo/export de serviços, ferramentas, newsletter e 404, desktop/mobile. A revisão visual é amostral, sem igualdade pixel a pixel ou aceite humano final implícito.
 
 - Serviços: frentes 2×2, situações numeradas abertas, detalhe em duas colunas, método e FAQ restaurados; conteúdos contratuais preservados.
-- Newsletter: landing com amostra/benefícios/curadoria/FAQ, arquivo editorial e destaque antes dos filtros, prévia em coluna de leitura. Formulário avisa ausência de envio desde o início; metadata só usa abertura pública.
+- Newsletter: landing com amostra/benefícios/curadoria/FAQ, arquivo editorial e destaque antes dos filtros, prévia em coluna de leitura. Histórico: o formulário avisava ausência de envio desde o início; por D12 a frase inicial exata de FormStatus foi removida, mantendo o aviso demo e o feedback pós-tentativa. Metadata só usa abertura pública.
 - Ferramentas: pares de campos e auxiliares ROSI, breadcrumb, rótulos antes do cálculo sem números fictícios, gutters mobile e objetos contidos. Seletor de cenário, estados desconhecidos/personalizados, ajudas, método em acordeão e resultado não fixado são adaptações funcionais documentadas; podem alterar altura/posição do export.
 - 404 recebeu moldura e arte, com retorno à Home. Privacidade é provisória e verdadeira. Slugs bem formados inexistentes retornam HTTP 404 antes de streaming. Encoding UTF-8 malformado pode gerar 500 no Next antes da aplicação; revisar antes de publicação.
 

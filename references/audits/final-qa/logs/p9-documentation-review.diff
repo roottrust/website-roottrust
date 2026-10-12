@@ -1,0 +1,249 @@
+diff --git a/AGENTS.md b/AGENTS.md
+index a904edd..b1c7d57 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -41,7 +41,7 @@ Tom técnico, próximo, sem medo, jargão sem explicação ou promessa genérica
+ 
+ ## Formulários, dados e gráficos
+ 
+-Campos ativos e validação completa; adaptador interno único para futura integração. Sem configuração, nunca produzir sucesso simulado. `FORM_MODE=demo` ativa explicitamente carregamento, pedido aceito aguardando confirmação e erro locais; sucesso do pedido não é confirmação da inscrição ou recebimento. Aviso informa “nenhum dado foi enviado”. Confirmação de endereço, entrega ou cancelamento exigem operação real. Não criar endpoint, persistência ou analytics.
++Campos ativos e validação completa; adaptador interno único para futura integração. Sem configuração, nunca produzir sucesso simulado. `FORM_MODE=demo` ativa explicitamente carregamento, pedido aceito aguardando confirmação e erro locais; sucesso do pedido não é confirmação da inscrição ou recebimento. D12: a frase inicial exata de FormStatus foi removida do site (não oculta por CSS nem substituída); o aviso do modo demo e o feedback pós-tentativa permanecem honestos e informam “nenhum dado foi enviado”. Confirmação de endereço, entrega ou cancelamento exigem operação real. Não criar endpoint, persistência ou analytics.
+ 
+ Diagnóstico: Nome, Empresa e WhatsApp obrigatórios, sem e-mail/escolha de canal. Preservar copy aprovada de retorno por ligação ou WhatsApp no próximo dia útil, mas confirmar recebimento real apenas quando houver integração. Foco/erros associados, guarda contra duplicidade e preservação após falha são obrigatórios. Newsletter: pedido aceito não significa endereço confirmado nem entrega. Relatório: somente contato e ID da ferramenta, nunca respostas/resultados; newsletter é independente.
+ 
+@@ -49,6 +49,8 @@ Ferramentas: cálculo local em modelos TS puros conforme F01–F29; ROSI/equilí
+ 
+ Newsletter: apenas metadados, fontes e primeiro parágrafo editorial completo com links no conjunto público. Corpos completos nunca em HTML/RSC/JS/maps/assets/uploads publicáveis, nem escondidos por CSS. Preserve edição escolhida; pedido geral escolhe mais recente aprovada; filtro reinicia página 1 e arquivo usa dois itens por página. Sem login, exposição cadastral ou reativação silenciosa; comunicação pública enfatiza curadoria Root Trust sem IA e revisão humana permanece interna. Demos sem indexação; slug inválido retorna HTTP 404 antes de streaming.
+ 
++Navegação (D11/D14): o item Newsletter do header leva a `/newsletter` em desktop e mobile; o link do footer e `#newsletter` da Home ficam inalterados. Âncoras da Home e entre rotas rolam por rAF (350–900 ms, destino adaptativo, offset 96, interrupção por interação do usuário); reduced-motion e pausa global rolam instantaneamente; não há CSS `scroll-behavior: smooth` global. Newsletter (D13): estrutura/título/lista/card usam 1200 px úteis em 1440, parágrafos ficam em 65ch, grade em ≥960 px; landing inalterada. Select nativo com `appearance: none`, chevron direito de 16 px e padding-right 44 px; forced-colors permanece nativo. Fontes locais: WOFF2 Latin+ (→√≥) das mesmas famílias/versões/pesos, TTF+OFL intactos, Archivo com largura padrão 100, teste de cobertura futura, sem rede externa; procedência em `references/audits/font-optimization.json`.
++
+ Pausa global acessível na sessão SPA, redução dinâmica, suspensão real em aba oculta e fora de tela, fallback estático e descarte de GPU/listeners/loops. Inicializações tardias não ressuscitam componentes desmontados. Conteúdo essencial e CTA funcionam sem gráficos; teclado, menu/Escape/foco, seletores e anúncio agregado do terminal devem atender os contratos auditados.
+ 
+ ## Execução atual e propriedade
+@@ -96,7 +98,9 @@ Tipos válidos: `feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `ci`.
+ 
+ ## Build, testes e validação
+ 
+-A fundação Next está inicializada em `web/`, com lockfile, fontes locais, shell e formulários locais. Use os scripts reais de `web/package.json`, documentados em `docs/web/development.md`: dev/build/start/typecheck/lint/test/test:e2e. A Home nativa foi aprovada em 10/10/2026 e as internas foram implementadas; gates locais em 11/10: lint/tipos/101 unit/build/228 E2E, quatro skips conhecidos. Aceite humano final permanece pendente no PLAN; servir exports por HTTP não é build Next. Evidências em `references/audits/frontend-foundation.md`.
++A fundação Next está inicializada em `web/`, com lockfile, fontes locais, shell e formulários locais. Use os scripts reais de `web/package.json`, documentados em `docs/web/development.md`: dev/build/start/typecheck/lint/test/test:e2e. A Home nativa foi aprovada em 10/10/2026 e as internas foram implementadas; gates finais P8.3 (atuais): lint/tipos/107 unit em 13 arquivos/build/284 E2E, 6 skips, retries 0 (`logs/p8-3-final-gates.log`); os 6 skips são 2 capturas Home opt-in, 2 de aba oculta em headless e 2 de modifier mobile inaplicável. Histórico 11/10 anterior: 101 unit/228 E2E/quatro skips. Aceite humano final permanece pendente no PLAN; servir exports por HTTP não é build Next. Evidências em `references/audits/frontend-foundation.md`.
++
++E2E de contato usa `contactClock` instalado antes do goto, com controle de 350 ms e checagem de duplicidade (2 submits → 1 timer); 10 repetições desktop + 10 mobile passaram, sem retries nem delay em produção.
+ 
+ Vitest Node verifica modelos/parsers/fixtures; Playwright verifica build/start de produção. Gates incluem lint, typecheck, unit, build, e2e; Chromium desktop/mobile, Firefox/WebKit smoke, 320px/zoom/teclado. Comparar visual por seção com fontes/viewport/estado estáveis; CSS animations disabled não congela Canvas. Não alegar acessibilidade/desempenho certificados. Registrar medições Lighthouse e limitações; TBT de laboratório não certifica INP de campo.
+ 
+@@ -110,8 +114,8 @@ Revalidar registry, peers, advisories e Node no bootstrap; versões de CDN/expor
+ 
+ ## Limites da entrega local
+ 
+-Ver [QA final](references/audits/final-qa.md). Capturas 44 JPG/22 pares; LCP mediano 4,8–4,9 s acima da meta orientativa 2,5 s. Dois testes de aba realmente oculta e duas capturas Home opt-in foram pulados; não são passes. CI remoto, zoom real, hardware físico, leitor de tela e operação de formulários não certificados. Audit produção zero/dev cinco high; rever patches antes de publicação. Slug bem formado inexistente é 404; UTF-8 malformado pode gerar 500 no Next.
++Ver [QA final](references/audits/final-qa.md). Capturas P9: 44 JPG/22 pares, 11 rotas desktop/mobile, 2 execuções pass sem issues, mais 5 extras (tablets 960/1024 arquivo/prévia e hero Home). LCP mediano atual (Lighthouse 13.5, mobile, 4× CPU, slow 4G, 3 rodadas por rota): Home 2808,5 ms, Cibersegurança 2726,5, ROSI 2873,0, Newsletter 2783; CLS 0. Melhoria de 41–43% sobre o baseline pós-layout (4,8–4,9 s, histórico), **mas a meta orientativa de 2,5 s NÃO foi atingida**; o usuário aprovou em D16 (Opção 1) manter o ganho como exceção local e concluir QA/docs, sem ser publicação nem aceite final visual. Skips (6) não são passes: 2 capturas Home opt-in, 2 de aba oculta em headless, 2 de modifier mobile inaplicável. CI remoto, zoom real, hardware físico, leitor de tela e operação de formulários não certificados. Audit produção zero/dev cinco high; rever patches antes de publicação. Slug bem formado inexistente é 404; UTF-8 malformado pode gerar 500 no Next.
+ 
+ ### Rechecagem documental final — 11/10/2026
+ 
+-Rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.
++**Histórico, superado pelos gates P8.3 acima (não é estado atual):** rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.
+diff --git a/docs/web/README.md b/docs/web/README.md
+index ffd79af..14752ea 100644
+--- a/docs/web/README.md
++++ b/docs/web/README.md
+@@ -20,10 +20,10 @@ Use os rótulos **aprovado**, **proposta**, **demonstração**, **histórico** e
+ 
+ ## Estado técnico
+ 
+-Frontend local implementado e validado em 11/10/2026. A Home nativa recebeu aprovação humana em 10/10; o aceite final do conjunto permanece pendente. Gates: lint, typecheck, 101 testes unitários, build de produção e 228 E2E aprovados, com quatro skips explicitados na [auditoria final](../../references/audits/final-qa.md). Não há integração operacional nem autorização de publicação.
++Frontend local implementado e validado em 11/10/2026. A Home nativa recebeu aprovação humana em 10/10; o aceite final do conjunto permanece pendente. Gates finais atuais (P8.3, retries 0): lint, typecheck, 107 testes unitários em 13 arquivos, build de produção e 284 E2E aprovados, com 6 skips explicitados na [auditoria final](../../references/audits/final-qa.md). LCP mediano de laboratório 2,73–2,87 s (melhoria de 41–43%), CLS 0; a meta orientativa de 2,5 s não foi atingida e o ganho foi mantido como exceção local aprovada (D16), sem ser publicação nem aceite final visual. Não há integração operacional nem autorização de publicação. Os números 101 unit/228 E2E/quatro skips/LCP 4,8 s são histórico.
+ 
+ As seis páginas desta documentação são o contexto canônico. Resultados detalhados, capturas e limites estão na auditoria final; tarefas e decisões continuam exclusivamente no PLAN.
+ 
+ ### Rechecagem documental final — 11/10/2026
+ 
+-Rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.
++**Histórico, superado pelos gates P8.3 acima:** rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.
+diff --git a/docs/web/design.md b/docs/web/design.md
+index 653082c..984f1ce 100644
+--- a/docs/web/design.md
++++ b/docs/web/design.md
+@@ -52,7 +52,7 @@ Chrome testado em 1440×1000 e 390×844, sem overflow horizontal observado. Refl
+ 
+ ### Cabeçalho e moldura
+ 
+-Assinatura negativa oficial; Serviços → `#servicos`, Ferramentas → `#ferramentas`, Newsletter → `#newsletter`, CTA → `#contato`. Moldura escolhida: linhas, divisórias, cantoneiras e símbolos G3 reativos nas margens. Canvas fixo decorativo sem foco/interceptação, ausente no mobile e recortado nas faixas verdes.
++Assinatura negativa oficial; Serviços → `#servicos`, Ferramentas → `#ferramentas`, Newsletter → `/newsletter` em desktop e mobile, em todas as páginas (D11; o footer e a âncora `#newsletter` da Home permanecem inalterados), CTA → `#contato`. Âncoras da Home e entre rotas usam rolagem por rAF de 350–900 ms, destino adaptativo, offset 96 e interrupção por interação do usuário; reduced-motion e pausa global rolam instantaneamente e não há CSS `scroll-behavior: smooth` global (D14); links de página não recebem transição artificial. Moldura escolhida: linhas, divisórias, cantoneiras e símbolos G3 reativos nas margens. Canvas fixo decorativo sem foco/interceptação, ausente no mobile e recortado nas faixas verdes.
+ 
+ ### Hero
+ 
+@@ -155,6 +155,7 @@ Três internas no mesmo projeto: apresentação/inscrição, arquivo de prévias
+ - **Apresentação:** formulário na abertura e pequeno símbolo ASCII existente, seguidos de amostra, benefícios, curadoria/FAQ; não replicar hero G4 gigante.
+ - **Arquivo:** destaque compacto e lista cronológica, filtro por pilar, paginação; sem imagens obrigatórias, busca ou métricas sociais.
+ - **Prévia:** título/data/pilar/Curadoria Root Trust, primeiro parágrafo completo e formulário, com retorno ao arquivo. Coluna proposta próxima de 65 caracteres por linha; não comprimir fonte para acomodar texto.
++- **Largura (D13):** na estrutura, título, lista e card do arquivo/prévia usar a largura útil de 1200 px em 1440; parágrafos de leitura ficam em 65ch; grade a partir de 960 px; landing inalterada. Select nativo com `appearance: none`, chevron à direita de 16 px e padding-right 44 px; forced-colors permanece nativo.
+ - **Leitura:** margens discretas, sem movimento atrás dos textos; mobile empilhado/filtros quebrando linhas. Conteúdo/controles HTML, sem hover obrigatório.
+ - **Movimento:** fallback estático, redução dinâmica, pausa se houver animação contínua e suspensão em aba oculta. Sem novo objeto 3D obrigatório, árvore/raízes, fotos ou terminal editorial.
+ 
+@@ -171,4 +172,4 @@ S01 + S16 definem seis seções: abertura, situações, quatro frentes, método,
+ 
+ ### Rechecagem documental final — 11/10/2026
+ 
+-Rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.
++**Histórico, superado pelos gates P8.3 (ver [development.md](development.md)):** rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.
+diff --git a/docs/web/development.md b/docs/web/development.md
+index bea77f6..8c67235 100644
+--- a/docs/web/development.md
++++ b/docs/web/development.md
+@@ -80,12 +80,14 @@ Verificar `npm audit` e `npm audit --omit=dev`. Em 11/10/2026, o audit de produ
+ 
+ ## Entrega local verificada em 11/10/2026
+ 
+-Frontend local implementado e validado em 11/10/2026. A Home nativa recebeu aprovação humana em 10/10; o aceite final do conjunto permanece pendente. Gates: lint, typecheck, 101 testes unitários, build de produção e 228 E2E aprovados, com quatro skips explicitados na [auditoria final](../../references/audits/final-qa.md). Não há integração operacional nem autorização de publicação.
++Frontend local implementado e validado em 11/10/2026. A Home nativa recebeu aprovação humana em 10/10; o aceite final do conjunto permanece pendente. Gates finais atuais (P8.3, retries 0, `logs/p8-3-final-gates.log`): lint, typecheck, 107 testes unitários em 13 arquivos, build de produção e 284 E2E aprovados, com 6 skips explicitados na [auditoria final](../../references/audits/final-qa.md): 2 capturas Home opt-in, 2 de aba oculta em headless e 2 de modifier mobile inaplicável. Os números 101 unit/228 E2E/quatro skips são histórico. Não há integração operacional nem autorização de publicação.
++
++O E2E de contato instala `contactClock` antes do goto, com controle de 350 ms e checagem de duplicidade (2 submits → 1 timer); 10 repetições desktop + 10 mobile passaram, sem retries nem delay em produção. Fontes: WOFF2 locais Latin+ (→√≥) das mesmas famílias, versões e pesos, TTF+OFL intactos, Archivo com largura padrão 100, teste de cobertura futura e nenhuma rede externa; procedência em `references/audits/font-optimization.json`. D11–D16 estão no PLAN; D16 (Opção 1): manter o ganho de LCP como exceção local e concluir QA/documentação, sem publicação nem aceite final visual.
+ 
+ Versões fixadas: Next 16.4.0, React/React DOM 19.3.0, TypeScript 5.9.3, Three 0.184.0, Vitest 5.0.3, Playwright 1.64.0 e ESLint 9.39.5. Ambiente observado: Node 24.13.1/npm 11.8.0. Scripts de captura/medição, após build e com portas livres: `node scripts/qa-capture.mjs` e `node scripts/lighthouse.mjs`; Lighthouse usa porta 3200 e pacote 13.5.0 efêmero, sem dependência nova no app. Não executar medições junto aos testes.
+ 
+-CI GitHub contém os mesmos gates e browsers, sem deploy; execução remota não realizada. Produção local foi medida: CLS 0, LCP mediano 4,80–4,88 s (meta orientativa 2,5 s não atingida), TBT 112–452,5 ms. São medidas de laboratório, não INP de campo. Revisar desempenho em hardware real, advisories/patches e integrações antes de futura publicação. Não aplicar audit --force que ofereceu downgrade Next.
++CI GitHub contém os mesmos gates e browsers, sem deploy; execução remota não realizada. Produção local foi medida (Lighthouse 13.5, mobile, 4× CPU, slow 4G, 3 rodadas por rota): CLS 0 em todas; LCP mediano antes→depois das fontes: Home 4875,8→2808,5 ms (2808,0–2898,5), Cibersegurança 4800,7→2726,5 (2716,9–2727,2), ROSI 4878,1→2873,0 (2867,5–2969), Newsletter 4860→2783 (2719,5–2812). Melhoria de 41–43%; **meta orientativa de 2,5 s NÃO atingida**. TBT final 59,5/459/453,5/119 ms; JS transferido 173328/308974/316395/167217 bytes, inalterado; transferência de fontes 517372→75484 B (com headers). Medições anteriores de LCP 4,80–4,88 s são histórico. Baselines em `lighthouse-before-p7`, `lighthouse-before-p8-fonts`, `final-after-fonts` e `logs/p8-lcp-comparison.json`. São medidas de laboratório, não INP de campo. Revisar desempenho em hardware real, advisories/patches e integrações antes de futura publicação. Não aplicar audit --force que ofereceu downgrade Next.
+ 
+ ### Rechecagem documental final — 11/10/2026
+ 
+-Rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.
++**Histórico, superado pelos gates P8.3 acima:** rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.
+diff --git a/docs/web/newsletter.md b/docs/web/newsletter.md
+index 24400c9..0599457 100644
+--- a/docs/web/newsletter.md
++++ b/docs/web/newsletter.md
+@@ -57,9 +57,9 @@ Arquivo e amostra da landing usam o mesmo parágrafo. Não exigir outra lista p
+ 
+ ## Estado implementado
+ 
+-As três rotas estão implementadas em Next, com três amostras demonstrativas sem indexação, arquivo com dois itens por página e filtro que reinicia na página 1. O formulário exibe aviso de nenhum envio desde o estado inicial, inclusive com ajuda específica; preserva edição escolhida, ou seleciona a mais recente na origem geral. Metadata individual deriva somente da abertura pública, com corte de até 160 caracteres sem quebrar palavras.
++As três rotas estão implementadas em Next, com três amostras demonstrativas sem indexação, arquivo com dois itens por página e filtro que reinicia na página 1. Histórico: o formulário exibia o aviso inicial de nenhum envio; por D12 a frase inicial exata de FormStatus foi removida (sem ocultar por CSS nem substituir), mantendo o aviso do modo demo e o feedback pós-tentativa honestos. O formulário preserva edição escolhida, ou seleciona a mais recente na origem geral. Metadata individual deriva somente da abertura pública, com corte de até 160 caracteres sem quebrar palavras.
+ 
+-Aberturas e fontes são públicas; corpos completos permanecem fora da distribuição pública. Scan GPT de 230 arquivos e 11 trechos privados encontrou zero ocorrências, dentro desse recorte. Slug inexistente bem formado retorna 404; UTF-8 malformado pode resultar em 500 antes da aplicação. [QA final](../../references/audits/final-qa.md). Confirmação, entrega, cancelamento e CMS seguem pendentes; nenhum estado demo comprova essas operações.
++Layout (D13): título, lista e card do arquivo usam 1200 px úteis em 1440, parágrafos de leitura em 65ch, grade a partir de 960 px e landing inalterada. O item Newsletter do header leva a `/newsletter` (D11). Aberturas e fontes são públicas; corpos completos permanecem fora da distribuição pública. Scan GPT atual (P9) de 430 arquivos e 11 âncoras privadas encontrou zero ocorrências, dentro desse recorte limitado (histórico: 230 arquivos). Slug inexistente bem formado retorna 404; UTF-8 malformado pode resultar em 500 antes da aplicação. [QA final](../../references/audits/final-qa.md). Confirmação, entrega, cancelamento e CMS seguem pendentes; nenhum estado demo comprova essas operações.
+ 
+ ## 4. Página A — apresentação/inscrição
+ 
+@@ -187,4 +187,4 @@ Fornecedor, endpoint/API e integrações não foram escolhidos. Esta documentaç
+ 
+ ### Rechecagem documental final — 11/10/2026
+ 
+-Rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.
++**Histórico, superado pelos gates P8.3 (ver [development.md](development.md)):** rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.
+diff --git a/docs/web/product.md b/docs/web/product.md
+index 6174087..8c2c8fc 100644
+--- a/docs/web/product.md
++++ b/docs/web/product.md
+@@ -4,7 +4,7 @@
+ 
+ ## Estado da entrega
+ 
+-Frontend local implementado e validado em 11/10/2026. A Home nativa recebeu aprovação humana em 10/10; o aceite final do conjunto permanece pendente. Gates: lint, typecheck, 101 testes unitários, build de produção e 228 E2E aprovados, com quatro skips explicitados na [auditoria final](../../references/audits/final-qa.md). Não há integração operacional nem autorização de publicação. Slugs bem formados inexistentes retornam HTTP 404 antes de streaming. Encoding UTF-8 malformado pode retornar 500 no decodificador do Next antes da aplicação; limitação registrada para revisão antes da publicação.
++Frontend local implementado e validado em 11/10/2026. A Home nativa recebeu aprovação humana em 10/10; o aceite final do conjunto permanece pendente. Gates finais atuais (P8.3, retries 0): lint, typecheck, 107 testes unitários, build de produção e 284 E2E aprovados, com 6 skips explicitados na [auditoria final](../../references/audits/final-qa.md); 101 unit/228 E2E/quatro skips são histórico. Não há integração operacional nem autorização de publicação. Slugs bem formados inexistentes retornam HTTP 404 antes de streaming. Encoding UTF-8 malformado pode retornar 500 no decodificador do Next antes da aplicação; limitação registrada para revisão antes da publicação.
+ 
+ ## Público e posicionamento
+ 
+@@ -388,13 +388,13 @@ Oferta visível: **conversa inicial gratuita de qualificação**; retorno por li
+ | Falha | “Não foi possível enviar sua solicitação. Tente novamente ou use outro canal de contato.” Preservar campos. |
+ | Sem integração | “Este formulário ainda não recebe solicitações. Fale com a Root Trust pelos canais de contato.” |
+ 
+-O protótipo demonstra os estados localmente com aviso **“Demonstração — nenhum dado é enviado.”** Usar dados fictícios e controles de revisão identificados; não transmitir ou persistir entradas nem simular uma operação real sem aviso. Focar o primeiro campo inválido e anunciar o resultado de forma acessível.
++D12: o aviso inicial exato de FormStatus foi removido do site (sem ocultar por CSS nem substituir); o aviso do modo demo e o feedback pós-tentativa honestos permanecem. O protótipo demonstra os estados localmente com aviso **“Demonstração — nenhum dado é enviado.”** Usar dados fictícios e controles de revisão identificados; não transmitir ou persistir entradas nem simular uma operação real sem aviso. Focar o primeiro campo inválido e anunciar o resultado de forma acessível.
+ 
+ Canais confirmados: `contato@roottrust.com.br` e `11 94008-4692` (`+55 11 94008-4692`). Integração, responsável, proteção contra abuso, retenção e privacidade continuam pendentes. Não inventar endpoint, política jurídica ou checkbox obrigatório.
+ 
+ ## Navegação e conteúdo compartilhado
+ 
+-Proposta de breadcrumb: Home → serviço atual. Cabeçalho/rodapé reutilizam a Home, com links resolvidos para o contexto da interna: Serviços → Home `#servicos`; Ferramentas → Home `#ferramentas`; Newsletter → apresentação existente; diagnóstico → formulário local. Logo volta à Home.
++Proposta de breadcrumb: Home → serviço atual. Cabeçalho/rodapé reutilizam a Home, com links resolvidos para o contexto da interna: Serviços → Home `#servicos`; Ferramentas → Home `#ferramentas`; Newsletter → `/newsletter` no header, em desktop e mobile, em todas as páginas (D11; footer e `#newsletter` da Home inalterados); diagnóstico → formulário local. Logo volta à Home.
+ 
+ **S16:** não incluir seção, cards, CTA secundário ou links promocionais para ferramentas no conteúdo desta página. O item global Ferramentas permanece na navegação do website. A Root Trust tem somente os três pilares de atuação já confirmados. O hub `/ferramentas` e o diagnóstico dedicado estão adiados.
+ 
+@@ -743,4 +743,4 @@ A pesquisa apoia a organização editorial. As quatro frentes e os exemplos de e
+ 
+ ### Rechecagem documental final — 11/10/2026
+ 
+-Rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.
++**Histórico, superado pelos gates P8.3 (ver Estado da entrega):** rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.
+diff --git a/docs/web/tools.md b/docs/web/tools.md
+index bd2876c..4f19f28 100644
+--- a/docs/web/tools.md
++++ b/docs/web/tools.md
+@@ -10,7 +10,7 @@ Este documento é o contrato de escopo, modelos, limites, estados e exemplos rep
+ 
+ ## Implementação e limites verificados
+ 
+-Modelos TS puros cobertos por 69 testes de modelos, dentro dos 101 unitários totais. Cálculo somente no navegador; edição invalida resultado e respostas não são associadas ao relatório. A aritmética usa IEEE 754, com tratamento de cancelamento limitado a quatro EPSILON; não é contabilidade decimal exata nem garantia de precisão universal. Fixtures incluem valores subcentavo e diferenças de 1 em 10¹⁵.
++Modelos TS puros cobertos por 69 testes de modelos, dentro dos 107 unitários totais atuais (101 anteriores + 6 de cobertura de fontes). Cálculo somente no navegador; edição invalida resultado e respostas não são associadas ao relatório. A aritmética usa IEEE 754, com tratamento de cancelamento limitado a quatro EPSILON; não é contabilidade decimal exata nem garantia de precisão universal. Fixtures incluem valores subcentavo e diferenças de 1 em 10¹⁵.
+ 
+ Adaptações funcionais preservadas: seletor de cenário, campos desconhecidos/personalizados e ajudas explícitas; rótulos com “—” antes do cálculo, sem valores fictícios; Shadow AI sem score. Método em acordeão, resultado sem fixação e exemplo fictício abaixo do resultado podem alterar altura/posição em relação ao export. Objetos 3D são decorativos. [QA e limitações](../../references/audits/final-qa.md).
+ 
+@@ -359,4 +359,4 @@ Também conferir percentuais 0/100, valor negativo, campo vazio, excesso numéri
+ 
+ ### Rechecagem documental final — 11/10/2026
+ 
+-Rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.
++**Histórico, superado pelos gates P8.3 (ver [development.md](development.md)):** rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.
+diff --git a/references/audits/final-qa.md b/references/audits/final-qa.md
+index 175ac7a..7996080 100644
+--- a/references/audits/final-qa.md
++++ b/references/audits/final-qa.md
+@@ -1,8 +1,29 @@
+ # QA final — frontend local Root Trust
+ 
+-**Atualizado: 11/10/2026.** Implementação e QA locais concluídos tecnicamente; Home aprovada em 10/10. Aceite humano final pendente. Sem autorização de commit final, push, PR ou deploy. Operação de backend/CMS/e-mail/analytics fora do escopo.
++**Atualizado: 11/10/2026 (P9.2).** Implementação e QA locais concluídos tecnicamente; Home aprovada em 10/10. Seções marcadas como **histórico** abaixo descrevem rodadas anteriores (101 unit, 228/227 E2E, quatro skips, LCP 4,8 s) e foram superadas pela seção “Estado atual — P8.3/P9”. Aceite humano final pendente. Sem autorização de commit final, push, PR ou deploy. Operação de backend/CMS/e-mail/analytics fora do escopo.
+ 
+-## Gates e evidências
++## Estado atual — P8.3/P9
++
++- **Gates finais P8.3** ([log](final-qa/logs/p8-3-final-gates.log), exit 0, retries 0): lint, typecheck, **107 unitários em 13 arquivos** (101 anteriores + 6 de cobertura de fontes), build e **284 E2E aprovados / 6 skips**. Skips: 2 capturas Home opt-in, 2 de aba realmente oculta em headless e 2 de modifier mobile inaplicável; não são passes.
++- **Decisões D11–D16 refletidas:** header Newsletter → `/newsletter` (desktop/mobile; footer e `#newsletter` inalterados); âncoras por rAF 350–900 ms, destino adaptativo, offset 96, aborto por interação, instantâneas em reduced-motion/pausa, sem CSS smooth global; removida somente a frase inicial exata de FormStatus (sem ocultar por CSS nem substituir), demo e feedback pós-tentativa honestos mantidos; select nativo `appearance: none`, chevron direito 16 px, padding-right 44 px, forced-colors nativo; newsletter com estrutura/título/lista/card em 1200 px úteis em 1440, parágrafos 65ch, grade ≥960, landing inalterada.
++- **E2E de contato:** `contactClock` instalado antes do goto, controle de 350 ms, duplicidade (2 submits → 1 timer); 10 repetições desktop + 10 mobile passaram, sem retries nem delay em produção.
++- **Fontes:** WOFF2 locais das mesmas famílias/versões/pesos, Latin+ (→√≥), Archivo com largura padrão 100, TTF+OFL intactos, teste de cobertura futura, sem rede externa; procedência em `font-optimization.json`. GPT mediu 14 comparações de fontes/pesos 100–900 com delta 0 e rede com 2 WOFF2 locais (`p9-visual-checks.json`), sem overflow em 960/1024 px.
++- **Capturas P9:** 44 JPG/22 pares, 11 rotas desktop/mobile, 2 execuções pass sem issues, mais 5 extras (tablets 960/1024 arquivo/prévia e hero Home) em `final-qa/captures`.
++- **Integridade** (`p9-integrity.json`): 158 exports, 10 assets/fontes/licenças e 56 contratos sem divergência. **Scan privado** (`p9-private-scan.json`): 430 arquivos, 11 âncoras privadas, 0 ocorrências, recorte limitado.
++- **LCP** (Lighthouse 13.5 mobile, 4× CPU, slow 4G, mesmo protocolo, 3 rodadas por rota; baselines `lighthouse-before-p7` e `lighthouse-before-p8-fonts`, resultado `final-after-fonts` + `lighthouse/summary.json`, comparativo `logs/p8-lcp-comparison.json`):
++
++| Rota | LCP antes → depois (ms, mediana) | Intervalo depois | CLS | TBT final (ms) | JS (bytes, inalterado) |
++|---|---|---|---:|---:|---:|
++| Home | 4875,840 → 2808,533 | 2808,029–2898,5 | 0 | 59,5 | 173328 |
++| Cibersegurança | 4800,737 → 2726,4505 | 2716,864–2727,239 | 0 | 459 | 308974 |
++| ROSI | 4878,077 → 2873,0245 | 2867,496–2969 | 0 | 453,5 | 316395 |
++| Newsletter | 4860 → 2783 | 2719,477–2812 | 0 | 119 | 167217 |
++
++Transferência de fontes 517372 → 75484 B (com headers). Melhoria de 41–43%, **meta ≤2500 ms NÃO atingida**. Variações pequenas de TBT não comprovam causalidade. Em D16 o usuário aprovou a Opção 1: manter o ganho como exceção local e concluir QA/documentação; isso não é publicação nem aceite final visual. Sonnet implementou e revisou em sessões distintas; GPT executou gates e medições.
++
++Riscos mantidos (histórico, sem novo audit): audit dev cinco high / produção zero. CI remoto, hardware físico, zoom real, leitor de tela e INP de campo seguem sem certificação. Sem backend, commit final, push ou deploy.
++
++## Gates e evidências — histórico (11/10, antes de P8.3)
+ 
+ GPT executou lint, typecheck, **101 unitários em 12 arquivos**, build de produção e **228 E2E aprovados / quatro skips** após a última alteração de código. Sonnet implementou e revisou em sessões distintas; não foi o único verificador de seu trabalho.
+ 
+@@ -12,7 +33,7 @@ GPT executou lint, typecheck, **101 unitários em 12 arquivos**, build de produ
+ - [Audit produção](final-qa/logs/audit-production.json): zero advisories. [Audit completo](final-qa/logs/audit-all.json): cinco high na cadeia de desenvolvimento ESLint/fast-glob/micromatch/braces (GHSA-vfj7-8cjw-p6xm). Não aplicado --force, que ofereceu downgrade Next.
+ - Integridade conferida pelo GPT: 158 arquivos de export e oito cópias públicas/fontes/licenças sem divergência de hash. Scan de 230 arquivos src/public/build e 11 trechos de corpos editoriais privados: zero ocorrências nesse recorte; não prova ausência universal de vazamento.
+ 
+-Após a atualização documental, lint/tipos/101 unit/build passaram novamente. E2E completo: **227 passes, quatro skips, uma falha** ao observar o botão transitório “Enviando…” do contato. Repetição isolada: **3/3 passaram**, sem alteração de código ou testes. Causa não comprovada; instabilidade registrada, sem declarar nova rodada completa verde. [Log completo](final-qa/logs/final-delivery-gates.log) e [rechecagem isolada](final-qa/logs/final-contact-recheck.log). Registros em [PLAN.md](../../PLAN.md). CI está configurado sem deploy; execução remota não realizada, pois não houve push autorizado.
++**Histórico, superado pelos gates P8.3:** após a atualização documental, lint/tipos/101 unit/build passaram novamente. E2E completo: **227 passes, quatro skips, uma falha** ao observar o botão transitório “Enviando…” do contato. Repetição isolada: **3/3 passaram**, sem alteração de código ou testes. Causa não comprovada; instabilidade registrada, sem declarar nova rodada completa verde. [Log completo](final-qa/logs/final-delivery-gates.log) e [rechecagem isolada](final-qa/logs/final-contact-recheck.log). Registros em [PLAN.md](../../PLAN.md). CI está configurado sem deploy; execução remota não realizada, pois não houve push autorizado.
+ 
+ ## Comandos reproduzíveis
+ 
+@@ -30,7 +51,7 @@ node scripts/lighthouse.mjs
+ 
+ Instalar navegadores uma vez: npx playwright install chromium firefox webkit. E2E usa portas 3100/3101; Lighthouse usa 3200. Verificar portas livres e não executar medições junto aos testes. Captura define QA_CAPTURE=1; captura não faz parte do gate comum. Lighthouse 13.5.0 efêmero não é dependência do app nem execução offline fixada.
+ 
+-## Medições finais de laboratório
++## Medições de laboratório — histórico (antes da otimização de fontes; atuais na seção “Estado atual”)
+ 
+ Windows 10.0.26200, Ryzen 7 5800X (16 CPUs lógicas), 11,9 GiB, Node 24.13.1, Chromium Playwright 1248. Lighthouse 13.5.0 em build Next de produção, loopback, FORM_MODE ausente, emulação móvel padrão com CPU 4× e slow 4G. Sem testes/capturas concorrentes.
+ 
+@@ -48,7 +69,7 @@ LCP variou aproximadamente 4800–4935 ms e TBT 107–602,5 ms entre rodadas. **
+ GPT inspecionou amostras nativo/export de serviços, ferramentas, newsletter e 404, desktop/mobile. A revisão visual é amostral, sem igualdade pixel a pixel ou aceite humano final implícito.
+ 
+ - Serviços: frentes 2×2, situações numeradas abertas, detalhe em duas colunas, método e FAQ restaurados; conteúdos contratuais preservados.
+-- Newsletter: landing com amostra/benefícios/curadoria/FAQ, arquivo editorial e destaque antes dos filtros, prévia em coluna de leitura. Formulário avisa ausência de envio desde o início; metadata só usa abertura pública.
++- Newsletter: landing com amostra/benefícios/curadoria/FAQ, arquivo editorial e destaque antes dos filtros, prévia em coluna de leitura. Histórico: o formulário avisava ausência de envio desde o início; por D12 a frase inicial exata de FormStatus foi removida, mantendo o aviso demo e o feedback pós-tentativa. Metadata só usa abertura pública.
+ - Ferramentas: pares de campos e auxiliares ROSI, breadcrumb, rótulos antes do cálculo sem números fictícios, gutters mobile e objetos contidos. Seletor de cenário, estados desconhecidos/personalizados, ajudas, método em acordeão e resultado não fixado são adaptações funcionais documentadas; podem alterar altura/posição do export.
+ - 404 recebeu moldura e arte, com retorno à Home. Privacidade é provisória e verdadeira. Slugs bem formados inexistentes retornam HTTP 404 antes de streaming. Encoding UTF-8 malformado pode gerar 500 no Next antes da aplicação; revisar antes de publicação.
+ 

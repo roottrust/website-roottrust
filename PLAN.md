@@ -42,9 +42,9 @@ Consulta Firecrawl não foi necessária nem realizada nesta rodada. Não atribui
 | D11 | Destino Newsletter no header | /newsletter no desktop e mobile, em todas as páginas | Pedido explícito atual; substitui /#newsletter apenas nesse contexto. |
 | D12 | Aviso inicial dos formulários | Remover a frase exata de FormStatus em todo o site; preservar feedback verdadeiro e aviso do modo demo | Pedido atual, sem ativar integrações ou sucesso simulado. |
 | D13 | Largura da newsletter | Toda a largura útil da moldura para conjunto/título/lista/card, parágrafos com largura confortável | Resposta Opção1 à entrevista; não esticar texto até a borda da tela. |
-| D14 | Movimento na navegação | Rolagem suave para âncoras, exceto reduced-motion/pausa global; links de página não recebem transição artificial | Proposta técnica para aprovação; sem nova biblioteca. |
+| D14 | Movimento na navegação | Rolagem suave para âncoras, exceto reduced-motion/pausa global; links de página não recebem transição artificial | Aprovada no plano e implementada; sem nova biblioteca. |
 | D15 | Execução e custo | Sonnet implementa em tarefas pequenas e revisa em sessão distinta; GPT orquestra/gates/medições/PLAN. Haiku não é necessário nesta rodada; Opus só impasse complexo | Mantém D06 e autorização operacional; sem Fable. |
-| D16 | Meta de desempenho | Buscar LCP mediano ≤2,5s nas quatro rotas, CLS≤0,1; se não alcançar, apresentar medidas e consultar antes de aceitar exceção | Meta existente; não repetir encerramento com desvio silencioso. |
+| D16 | Meta de desempenho | Buscar LCP mediano ≤2,5s nas quatro rotas, CLS≤0,1; se não alcançar, apresentar medidas e consultar antes de aceitar exceção | Meta existente; Opção1 posterior aprovou exceção local medida2,73–2,87s/CLS0 e conclusão deQA/docs. |
 
 D01–D10 continuam válidas, com substituições delimitadas acima. A aprovação deste plano valida D14–D16 e a abordagem abaixo; não autoriza commit final/push/deploy. Entrevista de largura resolvida; decisões de implementação restantes estão propostas para aprovação do plano, sem perguntas redundantes.
 
@@ -69,30 +69,30 @@ Prompt sempre exige AGENTS.md/PLAN.md e arquivos do passo; escopo explícito. Ro
 **Dono:** Header.tsx, shell.module.css, globals.css, layout.tsx e testes de navegação afetados; pequeno componente auxiliar de âncora somente se comprovadamente necessário. GPT [codex] compara header da baseline em navegador e fornece observação delimitada ao Sonnet antes da escrita, sem modificar referência. Capturas/medidas de P7.2/P7.3 também são executadas exclusivamente pelo GPT após escrita terminal.
 **Dependência:** aprovação deste plano.
 
-- [ ] Newsletter desktop/mobile aponta /newsletter a partir da Home e das internas.
-- [ ] Serviços/Ferramentas/CTA chegam à seção correta da Home com posições intermediárias observáveis durante a rolagem normal, tanto na Home quanto partindo de interna.
-- [ ] Reduced-motion e pausa global removem animação; destino permanece visível abaixo do header. Voltar/avançar, hash inicial, teclado e Ctrl/Cmd-click mantêm comportamento esperado.
-- [ ] Menu fecha; clique repetido não deixa scroll pendente/callback após desmontagem. Nenhuma biblioteca nova ou scroll hijacking.
+- [x] Newsletter desktop/mobile aponta /newsletter a partir da Home e das internas.
+- [x] Serviços/Ferramentas/CTA chegam à seção correta da Home com posições intermediárias observáveis durante a rolagem normal, tanto na Home quanto partindo de interna.
+- [x] Reduced-motion e pausa global removem animação; destino permanece visível abaixo do header. Voltar/avançar, hash inicial, teclado e Ctrl/Cmd-click mantêm comportamento esperado.
+- [x] Menu fecha; clique repetido não deixa scroll pendente/callback após desmontagem. Nenhuma biblioteca nova ou scroll hijacking.
 
 #### P7.2 — Aviso inicial e indicadores dos selects [claude:escreve] Sonnet
 
 **Dono:** FormStatus.tsx, forms.module.css, tools.module.css, campos de ferramentas apenas se necessário e testes relacionados.
 **Dependência:** P7.1 terminal/gates; sem escrita concorrente.
 
-- [ ] Frase Este formulário ainda não recebe solicitações. Nenhum dado é enviado ou guardado. ausente do conteúdo público de todas as rotas, sem mera ocultação CSS.
-- [ ] Não substituir a frase por outro aviso inicial equivalente em FormStatus; manter rótulo demo, validação, erro/indisponibilidade após tentativa, nenhum envio/sucesso real.
-- [ ] Setas dos selects com recuo visual de 16px coerente com texto, espaço reservado para texto longo, sem indicadores duplicados, 320px/390px/desktop e smoke Firefox/WebKit.
-- [ ] Labels, teclado, foco, disabled e forced-colors preservados; respostas/cálculos e contratos não alterados.
+- [x] Frase Este formulário ainda não recebe solicitações. Nenhum dado é enviado ou guardado. ausente do conteúdo público de todas as rotas, sem mera ocultação CSS.
+- [x] Não substituir a frase por outro aviso inicial equivalente em FormStatus; manter rótulo demo, validação, erro/indisponibilidade após tentativa, nenhum envio/sucesso real.
+- [x] Setas dos selects com recuo visual de 16px coerente com texto, espaço reservado para texto longo, sem indicadores duplicados, 320px/390px/desktop e smoke Firefox/WebKit.
+- [x] Labels, teclado, foco, disabled e forced-colors preservados; respostas/cálculos e contratos não alterados.
 
 #### P7.3 — Largura do arquivo e prévias [claude:escreve] Sonnet
 
 **Dono:** ArchivePage.tsx, PreviewPage.tsx, newsletter.module.css e testes de newsletter/layout.
 **Dependência:** P7.2 terminal/gates.
 
-- [ ] /newsletter/edicoes usa toda a largura útil da moldura na abertura e seção de listagem, com layout distribuído em desktop, não apenas bloco estreito à esquerda.
-- [ ] /newsletter/edicoes/responsabilidades-na-nuvem e demais slugs compartilham título/estrutura/card expandidos; parágrafos permanecem legíveis. Não aplicar limite reading720 ao conjunto inteiro.
-- [ ] Landing /newsletter não sofre alteração incidental; filtros, paginação, edição escolhida, abertura pública e noindex preservados.
-- [ ] 320/390/1440px sem overflow/corte, semântica/ordem de leitura/foco corretos; capturas antes/depois identificam a nova adaptação aprovada.
+- [x] /newsletter/edicoes usa toda a largura útil da moldura na abertura e seção de listagem, com layout distribuído em desktop, não apenas bloco estreito à esquerda.
+- [x] /newsletter/edicoes/responsabilidades-na-nuvem e demais slugs compartilham título/estrutura/card expandidos; parágrafos permanecem legíveis. Não aplicar limite reading720 ao conjunto inteiro.
+- [x] Landing /newsletter não sofre alteração incidental; filtros, paginação, edição escolhida, abertura pública e noindex preservados.
+- [x] 320/390/1440px sem overflow/corte, semântica/ordem de leitura/foco corretos; capturas antes/depois identificam a nova adaptação aprovada.
 
 ### Fase 8 — confiabilidade e desempenho
 
@@ -101,29 +101,29 @@ Prompt sempre exige AGENTS.md/PLAN.md e arquivos do passo; escopo explícito. Ro
 **Dono:** foundation.spec.ts, teste unitário do adaptador se houver lacuna comprovada; não modificar timer/comportamento de produção para acomodar teste.
 **Dependência:** P7.2/P7.3 terminados.
 
-- [ ] Clock instalado antes de navegar; congelar/avançar tempo de forma que submitting permaneça observável e 350ms conclua deterministicamente. Não instalar clock após timers existentes.
-- [ ] Asserts preservam botão disabled/aria-busy, guarda de duplicidade, falha com campos preservados, nova tentativa aceita apenas localmente e ausência de envio/storage. Verificar duplicidade de maneira observável, não apenas pelo título do teste.
-- [ ] 10 repetições desktop e 10 mobile passam, retries0, sem sleep/aumento de timeout/delay do produto. Também passa na suíte completa com configuração de workers da CI/local registrada, sem reduzir concorrência para esconder falha. Regressão de cancelamento/unmount preservada.
-- [ ] Teste demonstra submitting antes de avançar o relógio e conclusão após runFor(350); controle temporal instalado antes de goto, pausado somente após página pronta. Guarda de duplicidade verificada por instrumentação restrita ao teste (por exemplo contador de agendamento do timer local de submissão), ou spy equivalente viável sem dependências novas, não apenas disabled. Não adicionar contador/endpoint ao produto.
+- [x] Clock instalado antes de navegar; congelar/avançar tempo de forma que submitting permaneça observável e 350ms conclua deterministicamente. Não instalar clock após timers existentes.
+- [x] Asserts preservam botão disabled/aria-busy, guarda de duplicidade, falha com campos preservados, nova tentativa aceita apenas localmente e ausência de envio/storage. Verificar duplicidade de maneira observável, não apenas pelo título do teste.
+- [x] 10 repetições desktop e 10 mobile passam, retries0, sem sleep/aumento de timeout/delay do produto. Também passa na suíte completa com configuração de workers da CI/local registrada, sem reduzir concorrência para esconder falha. Regressão de cancelamento/unmount preservada.
+- [x] Teste demonstra submitting antes de avançar o relógio e conclusão após runFor(350); controle temporal instalado antes de goto, pausado somente após página pronta. Guarda de duplicidade verificada por instrumentação restrita ao teste (por exemplo contador de agendamento do timer local de submissão), ou spy equivalente viável sem dependências novas, não apenas disabled. Não adicionar contador/endpoint ao produto.
 
 #### P8.2 — Diagnóstico reproduzível de LCP [codex] GPT; [claude:consulta] Sonnet
 
 **Dono GPT:** servidores, relatórios/logs e PLAN. **Sonnet readonly:** análise delimitada dos candidatos/trace e proposta mínima, sem executar comandos.
 **Dependência:** P8.1/gates; medir versão após correções de layout como baseline comparável.
 
-- [ ] Preservar baseline anterior antes de regenerar relatórios; produzir três rodadas por Home/Ciber/ROSI/newsletter, mesmo build de produção/ambiente/preset, sem concorrência de testes/capturas.
-- [ ] Registrar candidato LCP por rota, timing observado versus simulado, fontes requisitadas/tamanhos/preload, CSS bloqueante e trabalho main-thread/Canvas/Three. Hipótese inicial a verificar: piso compartilhado (fontes/CSS/TTFB/renderização) porque LCP é próximo nas quatro rotas apesar de JS/TBT distintos; isso não comprova causalidade. GPT entrega à consulta Sonnet pacote curto com candidatos, extratos de rede/fontes/CSS e timings observado/simulado, sem leitura de relatórios inteiros. Documentar hipótese causal sustentada por dados; não somar breakdown bruto como se fosse LCP simulado.
-- [ ] Definir conjunto mínimo de otimizações dentro do escopo SSR/fonts/CSS/carregamento inicial decorativo, com arquivos e dono no PLAN antes da escrita. Se exigir dependência, mudança de arquitetura/fontes/arte aprovada ou escopo, parar e consultar.
+- [x] Preservar baseline anterior antes de regenerar relatórios; produzir três rodadas por Home/Ciber/ROSI/newsletter, mesmo build de produção/ambiente/preset, sem concorrência de testes/capturas.
+- [x] Registrar candidato LCP por rota, timing observado versus simulado, fontes requisitadas/tamanhos/preload, CSS bloqueante e trabalho main-thread/Canvas/Three. Hipótese inicial a verificar: piso compartilhado (fontes/CSS/TTFB/renderização) porque LCP é próximo nas quatro rotas apesar de JS/TBT distintos; isso não comprova causalidade. GPT entrega à consulta Sonnet pacote curto com candidatos, extratos de rede/fontes/CSS e timings observado/simulado, sem leitura de relatórios inteiros. Documentar hipótese causal sustentada por dados; não somar breakdown bruto como se fosse LCP simulado.
+- [x] Definir conjunto mínimo de otimizações dentro do escopo SSR/fonts/CSS/carregamento inicial decorativo, com arquivos e dono no PLAN antes da escrita. Se exigir dependência, mudança de arquitetura/fontes/arte aprovada ou escopo, parar e consultar.
 
 #### P8.3 — Otimização medida sem perda visual [claude:escreve] Sonnet; medições [codex]
 
 **Dono:** somente arquivos identificados em P8.2 (layout/fonts, CSS, fronteiras cliente/runtime gráfico e scripts de medição se bug comprovado). Não pré-autoriza reescrita ampla.
 **Dependência:** P8.2 com hipótese/escopo registrados.
 
-- [ ] Correções sustentadas pelo diagnóstico; h1/texto/CTA essenciais continuam SSR, fontes oficiais/licenças preservadas e sem salto visual, flash artificial ou ocultação de candidato LCP.
-- [ ] Objetos/ASCII permanecem com fallback, primeiro quadro correto, pausa/redução/suspensão/dispose. Não remover efeito aprovado para obter pontuação.
-- [ ] Três rodadas por rota no mesmo protocolo evidenciam LCP menor que baseline pós-layout, buscando mediana≤2500ms e CLS≤0,1; registrar TBT/bytes JS e qualquer regressão. Registrar mínimo/máximo de cada trio; se diferença de mediana ficar dentro da variação das rodadas, classificá-la como inconclusiva e repetir somente a comparação necessária, dentro do limite de duas iterações. Não comparar apenas melhor rodada ou ambiente diferente.
-- [ ] Se meta não for atingida, não marcar otimização aceita: apresentar causas, melhoria medida e opções ao usuário. Limitar a duas iterações focadas antes de escalar decisão; evitar consumo aberto de cota.
+- [x] Correções sustentadas pelo diagnóstico; h1/texto/CTA essenciais continuam SSR, fontes oficiais/licenças preservadas e sem salto visual, flash artificial ou ocultação de candidato LCP.
+- [x] Objetos/ASCII permanecem com fallback, primeiro quadro correto, pausa/redução/suspensão/dispose. Não remover efeito aprovado para obter pontuação.
+- [x] Três rodadas por rota no mesmo protocolo evidenciam LCP menor que baseline pós-layout, buscando mediana≤2500ms e CLS≤0,1; registrar TBT/bytes JS e qualquer regressão. Registrar mínimo/máximo de cada trio; se diferença de mediana ficar dentro da variação das rodadas, classificá-la como inconclusiva e repetir somente a comparação necessária, dentro do limite de duas iterações. Não comparar apenas melhor rodada ou ambiente diferente.
+- [x] Se meta não for atingida, não marcar otimização aceita: apresentar causas, melhoria medida e opções ao usuário. Limitar a duas iterações focadas antes de escalar decisão; evitar consumo aberto de cota.
 
 ### Fase 9 — revisão, documentação e aceite
 
@@ -132,10 +132,10 @@ Prompt sempre exige AGENTS.md/PLAN.md e arquivos do passo; escopo explícito. Ro
 **Dono revisão:** sessão Sonnet distinta dos escritores; diff limitado por tarefa. **Dono gates:** GPT.
 **Dependência:** P7/P8 concluídos ou exceção humana de desempenho registrada.
 
-- [ ] Revisão readonly de diff após mudanças em três ou mais arquivos, por lote; achados corrigidos pelo dono e comprovados. Claude não é o único verificador.
-- [ ] lint/typecheck/101 unitários existentes e novos/build/E2E completo passam com retries0. Skips anteriores separados de passes; não criar skips para mascarar regressões.
-- [ ] Navegação suave tem asserts de posições intermediárias e destino final, não somente CSS/hash; testes reduced-motion/pausa/cross-route/mobile e destino Newsletter. Layout tem medidas de largura útil e recuo do indicador, além de capturas.
-- [ ] Chromium desktop/mobile, Firefox/WebKit smoke, teclado, 320px/reflow e ausência de erros de console/rede/hidratação nas rotas testadas. Sem novos uploads privados/assets/corpos editoriais em build público.
+- [x] Revisão readonly de diff após mudanças em três ou mais arquivos, por lote; achados corrigidos pelo dono e comprovados. Claude não é o único verificador.
+- [x] lint/typecheck/101 unitários existentes e novos/build/E2E completo passam com retries0. Skips anteriores separados de passes; não criar skips para mascarar regressões.
+- [x] Navegação suave tem asserts de posições intermediárias e destino final, não somente CSS/hash; testes reduced-motion/pausa/cross-route/mobile e destino Newsletter. Layout tem medidas de largura útil e recuo do indicador, além de capturas.
+- [x] Chromium desktop/mobile, Firefox/WebKit smoke, teclado, 320px/reflow e ausência de erros de console/rede/hidratação nas rotas testadas. Sem novos uploads privados/assets/corpos editoriais em build público.
 
 #### P9.2 — Alinhar contexto e registrar evidências [claude:escreve] Sonnet; PLAN [codex]
 
@@ -196,6 +196,12 @@ Segunda hipótese avaliada, ainda não implementada: mover tokens.css do @import
 
 D16 resolvida: usuário respondeu Opção1 à escolha “Manter o ganho e concluir QA/documentação (recomendado)”. Exceção local explícita aprovada: preservar LCP2,73–2,87s/CLS0 e concluir P9, sem alegar meta2,5s atingida; não ampliar investigação CSS/font-display nesta rodada. P9.1 revisão readonly já feita, mas conferência visual final e P9.2 ainda pendentes; não declarar entrega final.
 
+P9.1 capturas91005 exit0: 2execuçõespass/22pares/44JPG sem overflow/pageerrors/falhastimeoutgráficos; +5capturasfocadas(tablets960/1024arquivo/prévia e heroHome). GPT inspecionou arquivo/prévia desktop/mobile, tablet960 e hero; adaptações newsletter são solicitadas D13, não divergência acidental do export. Check visual2d4461:960/1024semoverflow/leadcolunadireita; glifosptBR+→√≥ com delta0 pesosBaloo400–800/Archivo100–900; somente2WOFF2locaisrede, semfontGoogleexterna. Logs p9-captures.log/p9-visual-checks.json. Scanprivado430arquivos/11âncoras/0hits, escopo limitado; p9-private-scan.json. Hash158exports/10assets/56contratos íntegros.
+
+P9.2 checkpoint15fa745c9bf6d771d088d690e473cbb389abbea3. DonoSonnet: somente seisdocsweb+AGENTS+final-qa; GPTPLAN/gates.
+
+P9.2 escritorbfa8105d Sonnet5.5 succeeded96s:8docs alterados, semcódigo; gatespós-doc73278 emexecução. Revisorindependente13d75ba1 succeeded25s: aprovado condicionado, sembloqueantes, sugeriuclarificarrecuo16px/dimensões12x8/caminhos. GPT verificou56contratoshashpreservados; encontrou ajustesfactuais pequenos adicionais: nome realpage.clock(nãocontactClock), diretórioreallighthouse-after-fonts(nãofinal-after-fonts), linkslogsrelativos e copypóstatentativa. Correção documental pelo mesmo dono após término dos gates.
+
 ## 8. Progresso e aprovação
 
 | Tarefa | Responsável | Estado | Evidência/dependência |
@@ -204,12 +210,12 @@ D16 resolvida: usuário respondeu Opção1 à escolha “Manter o ganho e conclu
 | Crítica deste plano | Sonnet5.5 readonly | Concluído com ajustes | Sessão00b6b993-cc46-4696-8187-5b2960ae9004 succeeded45s; cinco grupos de sugestões avaliados/incorporados. |
 | P7.1 Header/scroll | Sonnet | Concluído | Gates69932 lint/types/101unit/build/266E2E6skip; revisão independente aprovada. |
 | P7.2 Aviso/select | Sonnet | Concluído | Gates34414 lint/types/101unit/build/270E2E6skip; revisão6d65922a e geometria320/390/1440 aprovadas. |
-| P7.3 Newsletter | Sonnet | Gates concluídos | Exec57880 lint/types/101unit/build/284E2E6skip; captura/revisão consolidada emP9.1. |
+| P7.3 Newsletter | Sonnet | Concluído | Exec57880 lint/types/101unit/build/284E2E6skip; captura/revisão consolidada emP9.1. |
 | P8.1 E2E | Sonnet | Concluído | Gates26247 lint/types/101unit/build/284E2E6skip +20repetições(10desktop/10mobile), retries0. |
 | P8.2 Diagnóstico LCP | GPT + Sonnet consulta | Concluído | Baseline pós-layout concluída: 12rodadas, LCP4875,84/4800,737/4878,077/4860ms, CLS0. Consulta27c0e342 succeeded45s+8s: GO condicionado, cobertura/eixos/CLS/procedência; fontes517372bytes transferidos. |
 | P8.3 Otimização | Sonnet + GPT gates | Concluído com exceção aprovada | LCP2808,533/2726,451/2873,025/2783ms, melhoria41–43%, CLS0; meta2500ms ainda não atendida. |
-| P9.1 Revisão/gates | Sonnet independente + GPT | Em execução | D16 resolvida; capturas/tablets e conferência final. |
-| P9.2 Contexto/evidências | Sonnet + GPT PLAN | Aguardando aprovação | P9.1. |
+| P9.1 Revisão/gates | Sonnet independente + GPT | Concluído | Revisão452170b3; gates42667; 22pares/44JPG +5capturasfocadas, tablets960/1024, glifos/rede/integridade/scanprivado. |
+| P9.2 Contexto/evidências | Sonnet + GPT PLAN | Em execução | Checkpoint15fa745c9bf6d771d088d690e473cbb389abbea3; escopo8docs. |
 | P9.3 Aceite | Usuário + GPT | Pendente | Sem antecipar aprovação. |
 
 **Revisão independente:** primeira inicialização falhou após30s e foi encerrada sem sessionId; usuário avisado antes da única nova tentativa. Sonnet5.5 sessão00b6b993-cc46-4696-8187-5b2960ae9004 succeeded45s, aprovou com limites e cinco grupos de ajustes. Leu somente bloco inicial do plano, sem verificar arquivos de código/testes. GPT incorporou isolamento do scroll, execução browser/medições por GPT, E2E completo e duplicidade observável, hipótese compartilhada de LCP/variabilidade e atualização dos contratos do aviso. Referência do revisor a Next14 não se aplica: projeto usa16.4.0; nenhuma troca de versão foi proposta. Não tratar hipóteses do revisor como defeitos comprovados.

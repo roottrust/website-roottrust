@@ -57,9 +57,9 @@ Arquivo e amostra da landing usam o mesmo parágrafo. Não exigir outra lista p�
 
 ## Estado implementado
 
-As três rotas estão implementadas em Next, com três amostras demonstrativas sem indexação, arquivo com dois itens por página e filtro que reinicia na página 1. O formulário exibe aviso de nenhum envio desde o estado inicial, inclusive com ajuda específica; preserva edição escolhida, ou seleciona a mais recente na origem geral. Metadata individual deriva somente da abertura pública, com corte de até 160 caracteres sem quebrar palavras.
+As três rotas estão implementadas em Next, com três amostras demonstrativas sem indexação, arquivo com dois itens por página e filtro que reinicia na página 1. Histórico: o formulário exibia o aviso inicial de nenhum envio; por D12 a frase inicial exata de FormStatus foi removida (sem ocultar por CSS nem substituir), mantendo o aviso do modo demo e o feedback pós-tentativa honestos. O formulário preserva edição escolhida, ou seleciona a mais recente na origem geral. Metadata individual deriva somente da abertura pública, com corte de até 160 caracteres sem quebrar palavras.
 
-Aberturas e fontes são públicas; corpos completos permanecem fora da distribuição pública. Scan GPT de 230 arquivos e 11 trechos privados encontrou zero ocorrências, dentro desse recorte. Slug inexistente bem formado retorna 404; UTF-8 malformado pode resultar em 500 antes da aplicação. [QA final](../../references/audits/final-qa.md). Confirmação, entrega, cancelamento e CMS seguem pendentes; nenhum estado demo comprova essas operações.
+Layout (D13): título, lista e card do arquivo usam 1200 px úteis em 1440, parágrafos de leitura em 65ch, grade a partir de 960 px e landing inalterada. O item Newsletter do header leva a `/newsletter` (D11). Aberturas e fontes são públicas; corpos completos permanecem fora da distribuição pública. Scan GPT atual (P9) de 430 arquivos e 11 âncoras privadas encontrou zero ocorrências, dentro desse recorte limitado (histórico: 230 arquivos). Slug inexistente bem formado retorna 404; UTF-8 malformado pode resultar em 500 antes da aplicação. [QA final](../../references/audits/final-qa.md). Confirmação, entrega, cancelamento e CMS seguem pendentes; nenhum estado demo comprova essas operações.
 
 ## 4. Página A — apresentação/inscrição
 
@@ -187,4 +187,4 @@ Fornecedor, endpoint/API e integrações não foram escolhidos. Esta documentaç
 
 ### Rechecagem documental final — 11/10/2026
 
-Rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.
+**Histórico, superado pelos gates P8.3 (ver [development.md](development.md)):** rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.

@@ -4,7 +4,7 @@
 
 ## Estado da entrega
 
-Frontend local implementado e validado em 11/10/2026. A Home nativa recebeu aprovação humana em 10/10; o aceite final do conjunto permanece pendente. Gates: lint, typecheck, 101 testes unitários, build de produção e 228 E2E aprovados, com quatro skips explicitados na [auditoria final](../../references/audits/final-qa.md). Não há integração operacional nem autorização de publicação. Slugs bem formados inexistentes retornam HTTP 404 antes de streaming. Encoding UTF-8 malformado pode retornar 500 no decodificador do Next antes da aplicação; limitação registrada para revisão antes da publicação.
+Frontend local implementado e validado em 11/10/2026. A Home nativa recebeu aprovação humana em 10/10; o aceite final do conjunto permanece pendente. Gates finais atuais (P8.3, retries 0): lint, typecheck, 107 testes unitários, build de produção e 284 E2E aprovados, com 6 skips explicitados na [auditoria final](../../references/audits/final-qa.md); 101 unit/228 E2E/quatro skips são histórico. Não há integração operacional nem autorização de publicação. Slugs bem formados inexistentes retornam HTTP 404 antes de streaming. Encoding UTF-8 malformado pode retornar 500 no decodificador do Next antes da aplicação; limitação registrada para revisão antes da publicação.
 
 ## Público e posicionamento
 
@@ -388,13 +388,13 @@ Oferta visível: **conversa inicial gratuita de qualificação**; retorno por li
 | Falha | “Não foi possível enviar sua solicitação. Tente novamente ou use outro canal de contato.” Preservar campos. |
 | Sem integração | “Este formulário ainda não recebe solicitações. Fale com a Root Trust pelos canais de contato.” |
 
-O protótipo demonstra os estados localmente com aviso **“Demonstração — nenhum dado é enviado.”** Usar dados fictícios e controles de revisão identificados; não transmitir ou persistir entradas nem simular uma operação real sem aviso. Focar o primeiro campo inválido e anunciar o resultado de forma acessível.
+D12: o aviso inicial exato de FormStatus foi removido do site (sem ocultar por CSS nem substituir); o aviso do modo demo e o feedback pós-tentativa honestos permanecem. O protótipo demonstra os estados localmente com aviso **“Demonstração — nenhum dado é enviado.”** Usar dados fictícios e controles de revisão identificados; não transmitir ou persistir entradas nem simular uma operação real sem aviso. Focar o primeiro campo inválido e anunciar o resultado de forma acessível.
 
 Canais confirmados: `contato@roottrust.com.br` e `11 94008-4692` (`+55 11 94008-4692`). Integração, responsável, proteção contra abuso, retenção e privacidade continuam pendentes. Não inventar endpoint, política jurídica ou checkbox obrigatório.
 
 ## Navegação e conteúdo compartilhado
 
-Proposta de breadcrumb: Home → serviço atual. Cabeçalho/rodapé reutilizam a Home, com links resolvidos para o contexto da interna: Serviços → Home `#servicos`; Ferramentas → Home `#ferramentas`; Newsletter → apresentação existente; diagnóstico → formulário local. Logo volta à Home.
+Proposta de breadcrumb: Home → serviço atual. Cabeçalho/rodapé reutilizam a Home, com links resolvidos para o contexto da interna: Serviços → Home `#servicos`; Ferramentas → Home `#ferramentas`; Newsletter → `/newsletter` no header, em desktop e mobile, em todas as páginas (D11; footer e `#newsletter` da Home inalterados); diagnóstico → formulário local. Logo volta à Home.
 
 **S16:** não incluir seção, cards, CTA secundário ou links promocionais para ferramentas no conteúdo desta página. O item global Ferramentas permanece na navegação do website. A Root Trust tem somente os três pilares de atuação já confirmados. O hub `/ferramentas` e o diagnóstico dedicado estão adiados.
 
@@ -743,4 +743,4 @@ A pesquisa apoia a organização editorial. As quatro frentes e os exemplos de e
 
 ### Rechecagem documental final — 11/10/2026
 
-Rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.
+**Histórico, superado pelos gates P8.3 (ver Estado da entrega):** rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.

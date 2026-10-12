@@ -10,7 +10,7 @@ Este documento é o contrato de escopo, modelos, limites, estados e exemplos rep
 
 ## Implementação e limites verificados
 
-Modelos TS puros cobertos por 69 testes de modelos, dentro dos 101 unitários totais. Cálculo somente no navegador; edição invalida resultado e respostas não são associadas ao relatório. A aritmética usa IEEE 754, com tratamento de cancelamento limitado a quatro EPSILON; não é contabilidade decimal exata nem garantia de precisão universal. Fixtures incluem valores subcentavo e diferenças de 1 em 10¹⁵.
+Modelos TS puros cobertos por 69 testes de modelos, dentro dos 107 unitários totais atuais (101 anteriores + 6 de cobertura de fontes). Cálculo somente no navegador; edição invalida resultado e respostas não são associadas ao relatório. A aritmética usa IEEE 754, com tratamento de cancelamento limitado a quatro EPSILON; não é contabilidade decimal exata nem garantia de precisão universal. Fixtures incluem valores subcentavo e diferenças de 1 em 10¹⁵.
 
 Adaptações funcionais preservadas: seletor de cenário, campos desconhecidos/personalizados e ajudas explícitas; rótulos com “—” antes do cálculo, sem valores fictícios; Shadow AI sem score. Método em acordeão, resultado sem fixação e exemplo fictício abaixo do resultado podem alterar altura/posição em relação ao export. Objetos 3D são decorativos. [QA e limitações](../../references/audits/final-qa.md).
 
@@ -359,4 +359,4 @@ Também conferir percentuais 0/100, valor negativo, campo vazio, excesso numéri
 
 ### Rechecagem documental final — 11/10/2026
 
-Rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.
+**Histórico, superado pelos gates P8.3 (ver [development.md](development.md)):** rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.
