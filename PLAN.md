@@ -764,3 +764,6 @@ P7.3 correção checkpoint: 5b75c6f534334a1b266c1cb137fa006e8cee3bb3. Pré-checa
 P7.3 correção same-session succeeded14s: previewTitlewidth100/minwidth0, parágrafo65ch preservado. GPTgates após escrita, semalterarassert.
 
 P7.3 gates finais57880 exit0 lint/typecheck/101unit/build/284E2E6skip. Logp7-3-final-gates.log. Artigo/title/card1200 eparagraphlegível nas3prévias,landingpreservada e320/390semoverflow cobertos. Capturas/revisão independente consolidamP9.1. Nenhumcorpoeditorialextra exposto.
+P8.1 checkpoint: 3f05f9d360ec66cce20cb3493a7f02ceecf0d94e. Semsegredos/gerados.
+P8.1 escritae6cae2a1-ae28-4d7f-8d77-28c1dcdad0b0 Sonnet5.5 succeeded61s somentefoundation.spec: clockinstallantesgoto/pauseapóshidratar, contador timer350 doisrequestSubmit, asserts349+1ms,errocampos/ariaBusy/aceite350/semrede/storage. GPTgates/repeat10desktop10mobile apósterminal.
+P8.1 gate22204 exit2 no typecheck: TS2352 setTimeout NodeJS.Timeout vsbrowsernumber eTS2556spread na instrumentação. Lintpassou; unit/build/E2E/repeats nãoexecutados. Correção restrita tiposwrapper usandoReflect.apply/assinaturabrowser, semproduto.
