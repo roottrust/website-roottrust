@@ -5,12 +5,13 @@
 ## Estado atual — P8.3/P9
 
 - **Gates finais P8.3** ([log](final-qa/logs/p8-3-final-gates.log), exit 0, retries 0): lint, typecheck, **107 unitários em 13 arquivos** (101 anteriores + 6 de cobertura de fontes), build e **284 E2E aprovados / 6 skips**. Skips: 2 capturas Home opt-in, 2 de aba realmente oculta em headless e 2 de modifier mobile inaplicável; não são passes.
-- **Decisões D11–D16 refletidas:** header Newsletter → `/newsletter` (desktop/mobile; footer e `#newsletter` inalterados); âncoras por rAF 350–900 ms, destino adaptativo, offset 96, aborto por interação, instantâneas em reduced-motion/pausa, sem CSS smooth global; removida somente a frase inicial exata de FormStatus (sem ocultar por CSS nem substituir), demo e feedback pós-tentativa honestos mantidos; select nativo `appearance: none`, chevron direito 16 px, padding-right 44 px, forced-colors nativo; newsletter com estrutura/título/lista/card em 1200 px úteis em 1440, parágrafos 65ch, grade ≥960, landing inalterada.
-- **E2E de contato:** `contactClock` instalado antes do goto, controle de 350 ms, duplicidade (2 submits → 1 timer); 10 repetições desktop + 10 mobile passaram, sem retries nem delay em produção.
-- **Fontes:** WOFF2 locais das mesmas famílias/versões/pesos, Latin+ (→√≥), Archivo com largura padrão 100, TTF+OFL intactos, teste de cobertura futura, sem rede externa; procedência em `font-optimization.json`. GPT mediu 14 comparações de fontes/pesos 100–900 com delta 0 e rede com 2 WOFF2 locais (`p9-visual-checks.json`), sem overflow em 960/1024 px.
+- **Decisões D11–D16 refletidas:** header Newsletter → `/newsletter` (desktop/mobile; footer e `#newsletter` inalterados); âncoras por rAF 350–900 ms, destino adaptativo, offset 96, aborto por interação, instantâneas em reduced-motion/pausa, sem CSS smooth global; removida somente a frase inicial exata de FormStatus (sem ocultar por CSS nem substituir), demo e feedback pós-tentativa honestos mantidos; select nativo `appearance: none`, ícone 12×8 px com recuo direito de 16 px, padding-right 44 px, forced-colors nativo; newsletter com estrutura/título/lista/card em 1200 px úteis em 1440, parágrafos 65ch, grade ≥960, landing inalterada.
+- **E2E de contato:** API `page.clock` instalada antes do goto, controle de 350 ms, duplicidade (2 submits → 1 timer); 10 repetições desktop + 10 mobile passaram, sem retries e sem alterar o atraso de 350 ms da produção.
+- **Verificação pós-documentação P9.2:** gates reexecutados após a documentação passaram (107 unit/284 E2E/6 skips) — [log](final-qa/logs/p9-documentation-gates.log).
+- **Fontes:** WOFF2 locais das mesmas famílias/versões/pesos, Latin+ (→√≥), Archivo com largura padrão 100, TTF+OFL intactos, teste de cobertura futura, sem rede externa; procedência em [font-optimization.json](../font-optimization.json). GPT mediu 14 comparações de fontes/pesos 100–900 com delta 0 e rede com 2 WOFF2 locais ([p9-visual-checks.json](final-qa/logs/p9-visual-checks.json)), sem overflow em 960/1024 px.
 - **Capturas P9:** 44 JPG/22 pares, 11 rotas desktop/mobile, 2 execuções pass sem issues, mais 5 extras (tablets 960/1024 arquivo/prévia e hero Home) em `final-qa/captures`.
-- **Integridade** (`p9-integrity.json`): 158 exports, 10 assets/fontes/licenças e 56 contratos sem divergência. **Scan privado** (`p9-private-scan.json`): 430 arquivos, 11 âncoras privadas, 0 ocorrências, recorte limitado.
-- **LCP** (Lighthouse 13.5 mobile, 4× CPU, slow 4G, mesmo protocolo, 3 rodadas por rota; baselines `lighthouse-before-p7` e `lighthouse-before-p8-fonts`, resultado `final-after-fonts` + `lighthouse/summary.json`, comparativo `logs/p8-lcp-comparison.json`):
+- **Integridade** ([p9-integrity.json](final-qa/logs/p9-integrity.json)): 158 exports, 10 assets/fontes/licenças e 56 contratos sem divergência. **Scan privado** ([p9-private-scan.json](final-qa/logs/p9-private-scan.json)): 430 arquivos, 11 âncoras privadas, 0 ocorrências, recorte limitado.
+- **LCP** (Lighthouse 13.5 mobile, 4× CPU, slow 4G, mesmo protocolo, 3 rodadas por rota; baselines [before-p7](final-qa/lighthouse-before-p7/summary.json) e [before-p8-fonts](final-qa/lighthouse-before-p8-fonts/summary.json), resultado [after-fonts](final-qa/lighthouse-after-fonts/summary.json), comparativo [p8-lcp-comparison.json](final-qa/logs/p8-lcp-comparison.json)):
 
 | Rota | LCP antes → depois (ms, mediana) | Intervalo depois | CLS | TBT final (ms) | JS (bytes, inalterado) |
 |---|---|---|---:|---:|---:|
@@ -21,7 +22,7 @@
 
 Transferência de fontes 517372 → 75484 B (com headers). Melhoria de 41–43%, **meta ≤2500 ms NÃO atingida**. Variações pequenas de TBT não comprovam causalidade. Em D16 o usuário aprovou a Opção 1: manter o ganho como exceção local e concluir QA/documentação; isso não é publicação nem aceite final visual. Sonnet implementou e revisou em sessões distintas; GPT executou gates e medições.
 
-Riscos mantidos (histórico, sem novo audit): audit dev cinco high / produção zero. CI remoto, hardware físico, zoom real, leitor de tela e INP de campo seguem sem certificação. Sem backend, commit final, push ou deploy.
+Riscos mantidos (sem novo audit): audit dev cinco high / produção zero é medição histórica de 11/10, não audit atual. CI remoto, hardware físico, zoom real, leitor de tela e INP de campo seguem sem certificação. Sem backend, commit final, push ou deploy.
 
 ## Gates e evidências — histórico (11/10, antes de P8.3)
 

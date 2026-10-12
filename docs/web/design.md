@@ -155,7 +155,7 @@ Três internas no mesmo projeto: apresentação/inscrição, arquivo de prévias
 - **Apresentação:** formulário na abertura e pequeno símbolo ASCII existente, seguidos de amostra, benefícios, curadoria/FAQ; não replicar hero G4 gigante.
 - **Arquivo:** destaque compacto e lista cronológica, filtro por pilar, paginação; sem imagens obrigatórias, busca ou métricas sociais.
 - **Prévia:** título/data/pilar/Curadoria Root Trust, primeiro parágrafo completo e formulário, com retorno ao arquivo. Coluna proposta próxima de 65 caracteres por linha; não comprimir fonte para acomodar texto.
-- **Largura (D13):** na estrutura, título, lista e card do arquivo/prévia usar a largura útil de 1200 px em 1440; parágrafos de leitura ficam em 65ch; grade a partir de 960 px; landing inalterada. Select nativo com `appearance: none`, chevron à direita de 16 px e padding-right 44 px; forced-colors permanece nativo.
+- **Largura (D13):** na estrutura, título, lista e card do arquivo/prévia usar a largura útil de 1200 px em 1440; parágrafos de leitura ficam em 65ch; grade a partir de 960 px; landing inalterada. Select nativo com `appearance: none`, ícone de 12×8 px com recuo direito de 16 px e padding-right 44 px; forced-colors permanece nativo.
 - **Leitura:** margens discretas, sem movimento atrás dos textos; mobile empilhado/filtros quebrando linhas. Conteúdo/controles HTML, sem hover obrigatório.
 - **Movimento:** fallback estático, redução dinâmica, pausa se houver animação contínua e suspensão em aba oculta. Sem novo objeto 3D obrigatório, árvore/raízes, fotos ou terminal editorial.
 

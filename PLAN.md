@@ -202,6 +202,8 @@ P9.2 checkpoint15fa745c9bf6d771d088d690e473cbb389abbea3. DonoSonnet: somente sei
 
 P9.2 escritorbfa8105d Sonnet5.5 succeeded96s:8docs alterados, semcódigo; gatespós-doc73278 emexecução. Revisorindependente13d75ba1 succeeded25s: aprovado condicionado, sembloqueantes, sugeriuclarificarrecuo16px/dimensões12x8/caminhos. GPT verificou56contratoshashpreservados; encontrou ajustesfactuais pequenos adicionais: nome realpage.clock(nãocontactClock), diretórioreallighthouse-after-fonts(nãofinal-after-fonts), linkslogsrelativos e copypóstatentativa. Correção documental pelo mesmo dono após término dos gates.
 
+P9.2 primeirogate73278 exit0:lint/types/107unit/build/284E2E6skip; logp9-documentation-gates.log. Correçãodocfocadacheckpoint028bbdd5920b1d05de9c431999bd9955e97aa580, semcódigo.
+
 ## 8. Progresso e aprovação
 
 | Tarefa | Responsável | Estado | Evidência/dependência |

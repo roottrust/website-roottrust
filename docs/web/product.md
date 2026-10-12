@@ -386,7 +386,7 @@ Oferta visível: **conversa inicial gratuita de qualificação**; retorno por li
 | Em andamento | “Enviando solicitação…”; bloquear duplicidade. No protótipo, identificar simulação. |
 | Recebida | “Diagnóstico solicitado. A gente retorna por ligação ou WhatsApp no próximo dia útil.” Em produção, somente após recebimento real. |
 | Falha | “Não foi possível enviar sua solicitação. Tente novamente ou use outro canal de contato.” Preservar campos. |
-| Sem integração | “Este formulário ainda não recebe solicitações. Fale com a Root Trust pelos canais de contato.” |
+| Sem integração (após tentativa) | “O envio ainda não está disponível. Nenhum dado foi enviado.” Nenhum aviso FormStatus inicial padrão é exibido antes da tentativa (D12). |
 
 D12: o aviso inicial exato de FormStatus foi removido do site (sem ocultar por CSS nem substituir); o aviso do modo demo e o feedback pós-tentativa honestos permanecem. O protótipo demonstra os estados localmente com aviso **“Demonstração — nenhum dado é enviado.”** Usar dados fictícios e controles de revisão identificados; não transmitir ou persistir entradas nem simular uma operação real sem aviso. Focar o primeiro campo inválido e anunciar o resultado de forma acessível.
 
