@@ -757,3 +757,6 @@ P7.2 checkpoint: 25a6cd3fb56ffa4e84113705faa7348bc04e02d0. Sem segredos/gerados;
 P7.2 escrita2e6c085e-8465-4483-8df0-bdffe7badc1d Sonnet5.5 succeeded75s: FormStatus semfrase, selects nativos comchevron16/padding44/forcedcolorsauto, testespublic-routes/tools. Sem gates próprios.
 
 P7.2 concluído: gates34414 exit0 lint/types/101unit/build/270E2E6skip logp7-2-gates.log. Revisão6d65922a-e564-4bde-bdd9-24b4071c1fe5 succeeded33s aprovada comlimites. GPTbrowserprodução3300ownserverencerrado: selects320/390/1440 appearance none,backgroundcalc(100%-16px),padding44px,semoverflow. p7-before-layout.json mede artigo720 dentro1200 eheroarchiveestreito;lista já1200. Nenhum servidor usuário encerrado.
+P7.3 checkpoint: d3f69ff7b1f976c22e1dd030ad465379aefe3d28. Pré-checagem sem segredos/gerados.
+P7.3 escritaeac6e9ad-6955-4b89-a940-8c57349e2c7f Sonnet5.5 succeeded90s, CSSnewsletter e novo newsletter-layout.spec.ts. Semgates próprios; GPT valida geometria/capturas e revisão P9.1.
+P7.3 gates34388 lint/types/101unit/build passou; E2E280pass6skip4fail título #titulo shrink1078/1106 em2slugs desktop (duplicadosprojetomobile viewport1440). Artigo1200 passou; corrigir .previewTitle width100%, não reduzirassert. Sem outrasfalhas.

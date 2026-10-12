@@ -94,7 +94,7 @@ a.pagerBtn:hover { background:#262626; color:var(--rt-superficie); }
 .pagerBtn[aria-disabled="true"] { box-shadow:inset 0 0 0 1px #3C3C3C; color:#8a8a8a; cursor:not-allowed; }
 .pagerInfo { font:600 15px/1.4 var(--font-body); }
 
-.reading { max-width:720px; display:flex; flex-direction:column; align-items:flex-start; gap:24px; }
+.reading { width:100%; min-width:0; display:flex; flex-direction:column; align-items:flex-start; gap:24px; }
 .readingText { margin:0; max-width:65ch; font:400 19px/1.7 var(--font-body); text-wrap:pretty; }
 .previewTitle { margin:0; font:700 clamp(32px,4vw,52px)/1.08 var(--font-display); letter-spacing:-.02em; text-wrap:balance; overflow-wrap:anywhere; }
 .back { display:inline-flex; align-items:center; gap:10px; min-height:44px; color:var(--rt-superficie); text-decoration:none; font:600 15px/1.4 var(--font-body); transition:color 160ms ease-out; }
@@ -103,6 +103,25 @@ a.pagerBtn:hover { background:#262626; color:var(--rt-superficie); }
 .requestTitle { margin:0; font:700 clamp(26px,2.8vw,36px)/1.12 var(--font-display); letter-spacing:-.01em; text-wrap:balance; }
 .requested { margin:0; font:400 13px/1.5 var(--font-body); color:var(--rt-menta); overflow-wrap:anywhere; }
 .requestCard .body { max-width:560px; }
+
+.compactHero .heroText { max-width:none; width:100%; }
+.row { align-items:flex-start; }
+.rowBody { max-width:none; }
+.rowBody .abertura { max-width:65ch; }
+
+@media (min-width: 960px) {
+  .compactHero .heroText { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); column-gap:64px; row-gap:24px; align-items:start; }
+  .compactHero .heroText > .eyebrowRow { grid-column:1 / -1; }
+  .compactHero .heroText > .h1 { grid-column:1; grid-row:2 / span 2; }
+  .compactHero .heroText > .lead { grid-column:2; grid-row:2; }
+  .compactHero .heroText > .actions { grid-column:2; grid-row:3; }
+  .row { flex-wrap:nowrap; }
+  .rowBody { display:grid; grid-template-columns:minmax(0,1fr) auto; column-gap:48px; row-gap:16px; align-items:start; }
+  .rowBody > .rowTitle, .rowBody > .abertura { grid-column:1; }
+  .rowBody > div { grid-column:2; grid-row:1 / span 2; align-self:center; }
+  .requestCard { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); column-gap:64px; row-gap:16px; align-items:start; }
+  .requestCard > form { grid-column:2; grid-row:1 / span 3; }
+}
 
 @media (max-width: 720px) {
   .hero, .compactHero { padding-top:110px; padding-bottom:56px; }
