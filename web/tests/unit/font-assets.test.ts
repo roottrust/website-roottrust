@@ -15,7 +15,7 @@ function sourceCodePoints(dir: string, found = new Set<number>()): Set<number> {
   for (const name of readdirSync(dir)) {
     const path = join(dir, name);
     if (statSync(path).isDirectory()) sourceCodePoints(path, found);
-    else if (/\.(tsx?|css|json|md)$/.test(name)) for (const char of readFileSync(path, "utf8")) found.add(char.codePointAt(0)!);
+    else if (/\.(tsx?|css|json|md)$/.test(name)) for (const char of readFileSync(path, "utf8")) if (!/[\u0000-\u001F\u007F-\u009F]/.test(char)) found.add(char.codePointAt(0)!);
   }
   return found;
 }

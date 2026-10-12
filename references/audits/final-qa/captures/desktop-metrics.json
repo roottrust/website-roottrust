@@ -55,15 +55,13 @@
       "route": "/servicos/ciberseguranca",
       "export": "Servico Ciberseguranca.dc.html",
       "native": {
-        "documentHeight": 5156,
+        "documentHeight": 5158,
         "overflowX": false,
         "canvases": 3,
         "h1": "Pentest e cibersegurança para a sua operação.",
         "fontsLoaded": [
           "baloo 400 800",
-          "baloo Fallback normal",
-          "archivo 100 900",
-          "archivo Fallback normal"
+          "archivo 100 900"
         ],
         "graphics": [
           {
@@ -109,7 +107,7 @@
       "route": "/servicos/infraestrutura-em-nuvem",
       "export": "Servico Infraestrutura em nuvem.dc.html",
       "native": {
-        "documentHeight": 4806,
+        "documentHeight": 4807,
         "overflowX": false,
         "canvases": 3,
         "h1": "Continuidade e custos sob controle na sua infraestrutura.",
@@ -161,7 +159,7 @@
       "route": "/servicos/desenvolvimento-de-software",
       "export": "Servico Software.dc.html",
       "native": {
-        "documentHeight": 4928,
+        "documentHeight": 4930,
         "overflowX": false,
         "canvases": 3,
         "h1": "Software sob medida para conectar e evoluir sua operação.",
@@ -213,7 +211,7 @@
       "route": "/ferramentas/rosi",
       "export": "Ferramenta ROSI.dc.html",
       "native": {
-        "documentHeight": 2797,
+        "documentHeight": 2804,
         "overflowX": false,
         "canvases": 2,
         "h1": "Explore o retorno de uma proteção adicional.",
@@ -259,7 +257,7 @@
       "route": "/ferramentas/shadow-ai",
       "export": "Ferramenta Shadow AI.dc.html",
       "native": {
-        "documentHeight": 2435,
+        "documentHeight": 2437,
         "overflowX": false,
         "canvases": 2,
         "h1": "Organize a governança do uso de IA.",
@@ -305,7 +303,7 @@
       "route": "/ferramentas/divida-tecnica",
       "export": "Ferramenta Divida tecnica.dc.html",
       "native": {
-        "documentHeight": 2266,
+        "documentHeight": 2267,
         "overflowX": false,
         "canvases": 2,
         "h1": "Estime o custo do tempo atribuído à dívida técnica.",
@@ -349,7 +347,7 @@
       "route": "/ferramentas/migracao-para-nuvem",
       "export": "Ferramenta Migracao para nuvem.dc.html",
       "native": {
-        "documentHeight": 2522,
+        "documentHeight": 2523,
         "overflowX": false,
         "canvases": 2,
         "h1": "Compare os custos de manter ou migrar.",
@@ -381,8 +379,6 @@
         "h1": "Compare os custos de manter ou migrar.",
         "fontsLoaded": [
           "Baloo 2 400 800",
-          "Archivo 100 900",
-          "Baloo 2 400 800",
           "Archivo 100 900"
         ],
         "graphics": [],
@@ -395,7 +391,7 @@
       "route": "/newsletter",
       "export": "Newsletter.dc.html",
       "native": {
-        "documentHeight": 3260,
+        "documentHeight": 3261,
         "overflowX": false,
         "canvases": 2,
         "h1": "Análise da Root Trust em dias úteis.",
@@ -441,7 +437,7 @@
       "route": "/newsletter/edicoes",
       "export": "Newsletter Arquivo.dc.html",
       "native": {
-        "documentHeight": 1714,
+        "documentHeight": 1495,
         "overflowX": false,
         "canvases": 1,
         "h1": "Prévias das edições.",
@@ -481,7 +477,7 @@
       "route": "/newsletter/edicoes/backup-e-recuperacao",
       "export": "Newsletter Previa.dc.html",
       "native": {
-        "documentHeight": 1485,
+        "documentHeight": 1272,
         "overflowX": false,
         "canvases": 1,
         "h1": "Backup concluído: você já testou a recuperação?",

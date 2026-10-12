@@ -1,0 +1,190 @@
+{
+  "geometry": [
+    {
+      "vw": 960,
+      "path": "/newsletter/edicoes",
+      "overflow": 0,
+      "h1": {
+        "x": 38.390625,
+        "y": 176.796875,
+        "width": 409.609375,
+        "right": 448,
+        "height": 45.921875
+      },
+      "lead": {
+        "x": 512,
+        "y": 176.796875,
+        "width": 409.609375,
+        "right": 921.609375,
+        "height": 83.671875
+      },
+      "article": null
+    },
+    {
+      "vw": 960,
+      "path": "/newsletter/edicoes/responsabilidades-na-nuvem",
+      "overflow": 0,
+      "h1": {
+        "x": 38.390625,
+        "y": 285.375,
+        "width": 883.21875,
+        "right": 921.609375,
+        "height": 41.46875
+      },
+      "lead": null,
+      "article": {
+        "x": 38.390625,
+        "y": 120,
+        "width": 883.21875,
+        "right": 921.609375,
+        "height": 392.328125
+      }
+    },
+    {
+      "vw": 1024,
+      "path": "/newsletter/edicoes",
+      "overflow": 0,
+      "h1": {
+        "x": 40.953125,
+        "y": 176.796875,
+        "width": 439.046875,
+        "right": 480,
+        "height": 48.984375
+      },
+      "lead": {
+        "x": 544,
+        "y": 176.796875,
+        "width": 439.046875,
+        "right": 983.046875,
+        "height": 83.671875
+      },
+      "article": null
+    },
+    {
+      "vw": 1024,
+      "path": "/newsletter/edicoes/responsabilidades-na-nuvem",
+      "overflow": 0,
+      "h1": {
+        "x": 40.953125,
+        "y": 285.375,
+        "width": 942.09375,
+        "right": 983.046875,
+        "height": 44.21875
+      },
+      "lead": null,
+      "article": {
+        "x": 40.953125,
+        "y": 120,
+        "width": 942.09375,
+        "right": 983.046875,
+        "height": 395.078125
+      }
+    }
+  ],
+  "fontRequests": [
+    "http://127.0.0.1:3300/_next/static/media/archivo_latin_variable-s.p.1-682eslgornn.woff2",
+    "http://127.0.0.1:3300/_next/static/media/baloo_2_latin_variable-s.p.0z479sc3aqni2.woff2"
+  ],
+  "fontMetrics": [
+    {
+      "family": "Baloo",
+      "weight": 400,
+      "before": 1332.671630859375,
+      "after": 1332.671630859375,
+      "delta": 0
+    },
+    {
+      "family": "Baloo",
+      "weight": 500,
+      "before": 1356.2874755859375,
+      "after": 1356.2874755859375,
+      "delta": 0
+    },
+    {
+      "family": "Baloo",
+      "weight": 600,
+      "before": 1378.42041015625,
+      "after": 1378.42041015625,
+      "delta": 0
+    },
+    {
+      "family": "Baloo",
+      "weight": 700,
+      "before": 1404.4693603515625,
+      "after": 1404.4693603515625,
+      "delta": 0
+    },
+    {
+      "family": "Baloo",
+      "weight": 800,
+      "before": 1427.2315673828125,
+      "after": 1427.2315673828125,
+      "delta": 0
+    },
+    {
+      "family": "Archivo",
+      "weight": 100,
+      "before": 1365.183349609375,
+      "after": 1365.183349609375,
+      "delta": 0
+    },
+    {
+      "family": "Archivo",
+      "weight": 200,
+      "before": 1380.01953125,
+      "after": 1380.01953125,
+      "delta": 0
+    },
+    {
+      "family": "Archivo",
+      "weight": 300,
+      "before": 1402.1357421875,
+      "after": 1402.1357421875,
+      "delta": 0
+    },
+    {
+      "family": "Archivo",
+      "weight": 400,
+      "before": 1426.67431640625,
+      "after": 1426.67431640625,
+      "delta": 0
+    },
+    {
+      "family": "Archivo",
+      "weight": 500,
+      "before": 1451.2135009765625,
+      "after": 1451.2135009765625,
+      "delta": 0
+    },
+    {
+      "family": "Archivo",
+      "weight": 600,
+      "before": 1478.399658203125,
+      "after": 1478.399658203125,
+      "delta": 0
+    },
+    {
+      "family": "Archivo",
+      "weight": 700,
+      "before": 1522.4547119140625,
+      "after": 1522.4547119140625,
+      "delta": 0
+    },
+    {
+      "family": "Archivo",
+      "weight": 800,
+      "before": 1588.05810546875,
+      "after": 1588.05810546875,
+      "delta": 0
+    },
+    {
+      "family": "Archivo",
+      "weight": 900,
+      "before": 1680.73583984375,
+      "after": 1680.73583984375,
+      "delta": 0
+    }
+  ],
+  "pageErrors": [],
+  "scope": "Production Chromium, 960/1024px layout and glyph metrics sample; not physical hardware or universal Unicode."
+}

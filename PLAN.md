@@ -182,6 +182,20 @@ Baseline anterior preservada em lighthouse-before-p7; baseline comparável pós-
 
 P8.3 checkpoint WIP LOCAL: 8d8a57f10506d27f9f049dcbd1dcef02f9e6e8c3. Dono Sonnet: layout, dois WOFF2 novos, auditoria/allowlist e teste unitário pequeno de cobertura/eixos/hash usando fontkit já transitivo no Next (sem dependência nova). O teste deve detectar futuro caractere que os originais suportam e os WOFF2 não; nenhuma promessa de cobertura mundial. GPT gates após sessão terminal.
 
+P8.3 sessão989d61ef Sonnet5.5 succeeded48s; fontes35960/38924bytes aplicadas. Primeiro gate78569: lint/types passaram, unit105pass/2falhas apenas U+000D(CR de arquivoWindows, não glifo visível); build/E2E não executados. Correção somente teste: ignorar controles C0/C1 não renderizáveis, manter cobertura de todos caracteres imprimíveis. Checkpoint3d5246ca79ebbd2289a3095ae1805415f182ed7d; revisor452170b3 em andamento.
+
+P9.1 revisão452170b3 Sonnet5.5 succeeded87s: nenhum bloqueante em P7.3/P8.1/P8.3. Ressalvas aceitas para verificação GPT: geometria960/1024px, integridadeTTF/OFL/exports, fontes locais por rede e glifos/capturas. Não adicionar teste que apenas espelha caminhos/layout; cobertura futura já automatizada e hashes originais conferidos no gate de integridade. Asserção auxiliar hero soma é fraca, mas há asserção real width1200; não foi usada como prova única. Campo externo Unicode permanece sujeito a fallback, sem promessa universal. Correção controlesC0/C1 concluída7s; gates finais em execução.
+
+P8.3 gate42667 exit0: lint/types/107unit(101anteriores+6fontes)/build/284E2E6skip, retries0. Log p8-3-final-gates.log. GPT integridade:158exports,10assets/fontes/licenças,56contratos sem divergência; p9-integrity.json. Lighthouse após-fontes em execução isolada, sem aceitar desempenho antes do resultado.
+
+### Resultado medido P8.3 e decisão necessária D16
+
+Lighthouse final52065 exit0,12rodadas(3porrota), mesmo preset/ambiente. Home mediana2808,533ms intervalo2808,029–2898,5; Ciber2726,451 intervalo2716,864–2727,239; ROSI2873,025 intervalo2867,496–2969; Newsletter2783 intervalo2719,477–2812. Melhoria41,10–43,21% contra baseline pós-layout, fora da variação dos trios. CLS0 em todos. TBT59,5/459/453,5/119ms, JS173328/308974/316395/167217bytes(inalterado). Pequenas variaçõesTBT nos serviços/ferramentas/newsletter não comprovam causalidade; não alegar melhora dessas métricas. Fontes locais transferidas75484bytes com headers, antes517372bytes. Dados em logs/p8-lcp-comparison.json; rodada preservada em lighthouse-after-fonts, baseline em lighthouse-before-p8-fonts. Meta2500ms não alcançada; NÃO aceitar exceção sem usuário.
+
+Segunda hipótese avaliada, ainda não implementada: mover tokens.css do @importCSS para importTS no layout. Consulta27c0e342 follow-up22s considera ganho improvável porque bundler já resolve import e separa chunk; evitar alteração sem evidência. Duas folhas CSS bloqueantes somam cerca9,8KB; auditoria não prova que unir import resolveria. Alternativas display optional ou inlineCss mudam comportamento/introduzem configuração experimental e exigem decisão, não aplicadas. Fonte oficial Next https://nextjs.org/docs/app/api-reference/config/next-config-js/inlineCss alerta experimental/não recomendado produção; há duplicaçãoSSR/RSC e perda de cacheCSS separado. Preservar swap/arte/arquitetura atuais.
+
+D16 resolvida: usuário respondeu Opção1 à escolha “Manter o ganho e concluir QA/documentação (recomendado)”. Exceção local explícita aprovada: preservar LCP2,73–2,87s/CLS0 e concluir P9, sem alegar meta2,5s atingida; não ampliar investigação CSS/font-display nesta rodada. P9.1 revisão readonly já feita, mas conferência visual final e P9.2 ainda pendentes; não declarar entrega final.
+
 ## 8. Progresso e aprovação
 
 | Tarefa | Responsável | Estado | Evidência/dependência |
@@ -193,8 +207,8 @@ P8.3 checkpoint WIP LOCAL: 8d8a57f10506d27f9f049dcbd1dcef02f9e6e8c3. Dono Sonnet
 | P7.3 Newsletter | Sonnet | Gates concluídos | Exec57880 lint/types/101unit/build/284E2E6skip; captura/revisão consolidada emP9.1. |
 | P8.1 E2E | Sonnet | Concluído | Gates26247 lint/types/101unit/build/284E2E6skip +20repetições(10desktop/10mobile), retries0. |
 | P8.2 Diagnóstico LCP | GPT + Sonnet consulta | Concluído | Baseline pós-layout concluída: 12rodadas, LCP4875,84/4800,737/4878,077/4860ms, CLS0. Consulta27c0e342 succeeded45s+8s: GO condicionado, cobertura/eixos/CLS/procedência; fontes517372bytes transferidos. |
-| P8.3 Otimização | Sonnet + GPT gates | Preparando execução | P8.2; consultar se sair do escopo. |
-| P9.1 Revisão/gates | Sonnet independente + GPT | Aguardando aprovação | P7/P8. |
+| P8.3 Otimização | Sonnet + GPT gates | Concluído com exceção aprovada | LCP2808,533/2726,451/2873,025/2783ms, melhoria41–43%, CLS0; meta2500ms ainda não atendida. |
+| P9.1 Revisão/gates | Sonnet independente + GPT | Em execução | D16 resolvida; capturas/tablets e conferência final. |
 | P9.2 Contexto/evidências | Sonnet + GPT PLAN | Aguardando aprovação | P9.1. |
 | P9.3 Aceite | Usuário + GPT | Pendente | Sem antecipar aprovação. |
 

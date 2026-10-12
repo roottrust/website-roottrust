@@ -1,0 +1,73 @@
+{
+  "lcp": 2808.533,
+  "css": {
+    "type": "table",
+    "headings": [
+      {
+        "key": "url",
+        "valueType": "url",
+        "label": "URL"
+      },
+      {
+        "key": "totalBytes",
+        "valueType": "bytes",
+        "label": "Transfer Size"
+      },
+      {
+        "key": "wastedMs",
+        "valueType": "timespanMs",
+        "label": "Duration"
+      }
+    ],
+    "items": [
+      {
+        "url": "http://127.0.0.1:3200/_next/static/chunks/0lg8f6735qm82.css",
+        "totalBytes": 8523,
+        "wastedMs": 151
+      },
+      {
+        "url": "http://127.0.0.1:3200/_next/static/chunks/1sq5ywg3sj44s.css",
+        "totalBytes": 1305,
+        "wastedMs": 301
+      }
+    ]
+  },
+  "network": [
+    {
+      "url": "http://127.0.0.1:3200/_next/static/chunks/0lg8f6735qm82.css",
+      "sessionTargetType": "page",
+      "protocol": "http/1.1",
+      "cache": "none",
+      "rendererStartTime": 30.62999999523163,
+      "networkRequestTime": 33.86600002646446,
+      "networkEndTime": 39.8299999833107,
+      "finished": true,
+      "transferSize": 8523,
+      "resourceSize": 48114,
+      "statusCode": 200,
+      "mimeType": "text/css",
+      "resourceType": "Stylesheet",
+      "priority": "VeryHigh",
+      "experimentalFromMainFrame": true,
+      "entity": "127.0.0.1"
+    },
+    {
+      "url": "http://127.0.0.1:3200/_next/static/chunks/1sq5ywg3sj44s.css",
+      "sessionTargetType": "page",
+      "protocol": "http/1.1",
+      "cache": "none",
+      "rendererStartTime": 30.73999997973442,
+      "networkRequestTime": 34.003000020980835,
+      "networkEndTime": 38.805999994277954,
+      "finished": true,
+      "transferSize": 1305,
+      "resourceSize": 1956,
+      "statusCode": 200,
+      "mimeType": "text/css",
+      "resourceType": "Stylesheet",
+      "priority": "VeryHigh",
+      "experimentalFromMainFrame": true,
+      "entity": "127.0.0.1"
+    }
+  ]
+}
