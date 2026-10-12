@@ -7,7 +7,7 @@ const reportsRoot = fileURLToPath(new URL("../../../private/reports/", import.me
 const srcRoot = resolve(reportsRoot, "src");
 const slugs = ["rosi", "shadow-ai", "divida-tecnica", "migracao-nuvem"];
 const sourceHosts = new Set(["csrc.nist.gov", "airc.nist.gov", "www.nist.gov", "sei.cmu.edu", "www.sei.cmu.edu", "docs.aws.amazon.com", "learn.microsoft.com"]);
-const requiredSections = ["Método da ferramenta", "Limites", "Próximos passos", "Fontes oficiais consultadas"];
+const requiredSections = ["Método da ferramenta", "Limites", "Próximos passos", "Perguntas de revisão", "Ações por tema", "Fontes consultadas"];
 
 function readHtml(slug: string): string {
   return readFileSync(resolve(srcRoot, `${slug}.html`), "utf8");
@@ -22,6 +22,28 @@ describe.each(slugs)("relatório %s", (slug) => {
     for (const section of requiredSections) {
       expect(html).toContain(`<h2>${section}</h2>`);
     }
+  });
+
+  it("abre Próximos passos em nova página e evita partir itens", () => {
+    expect(html).toContain('<section class="next">');
+    const css = readFileSync(resolve(srcRoot, "report.css"), "utf8");
+    expect(css).toMatch(/section\.next\s*{\s*break-before:\s*page/);
+    expect(css).toMatch(/li,\s*h2\s*{\s*break-inside:\s*avoid/);
+  });
+
+  it("tem 5–6 perguntas e 3–4 ações, CTA com formulário e e-mail, sem IDs Fxx", () => {
+    const list = (title: string) => {
+      const start = html.indexOf(`<h2>${title}</h2>`);
+      const m = html.slice(start).match(/<ul>([\s\S]*?)<\/ul>/);
+      return m ? (m[1].match(/<li>/g) ?? []).length : 0;
+    };
+    expect(list("Perguntas de revisão")).toBeGreaterThanOrEqual(5);
+    expect(list("Perguntas de revisão")).toBeLessThanOrEqual(6);
+    expect(list("Ações por tema")).toBeGreaterThanOrEqual(3);
+    expect(list("Ações por tema")).toBeLessThanOrEqual(4);
+    expect(html).toContain("Nome, Empresa e WhatsApp");
+    expect(html).toContain("contato@roottrust.com.br");
+    expect(html).not.toMatch(/\bF\d{2}\b/);
   });
 
   it("não contém valores monetários nem a cor Sinal", () => {
@@ -49,6 +71,20 @@ describe.each(slugs)("relatório %s", (slug) => {
     const pages = (readFileSync(pdfPath, "latin1").match(/\/Type\s*\/Page(?!s)/g) ?? []).length;
     expect(pages).toBeGreaterThanOrEqual(2);
     expect(pages).toBeLessThanOrEqual(3);
+  });
+});
+
+describe("rodapé e README", () => {
+  it("usa rodapé de pelo menos 8pt", () => {
+    const render = readFileSync(fileURLToPath(new URL("../../../scripts/reports/render.mjs", import.meta.url)), "utf8");
+    expect(render).toMatch(/font-size:\s*8pt/);
+  });
+
+  it("documenta procedência do logo, OFL e comando de geração", () => {
+    const readme = readFileSync(resolve(reportsRoot, "README.md"), "utf8");
+    expect(readme).toContain("OFL");
+    expect(readme).toContain("roottrust-horizontal-positivo.svg");
+    expect(readme).toContain("node scripts/reports/render.mjs");
   });
 });
 

@@ -8,7 +8,7 @@ const reportsRoot = fileURLToPath(new URL("../../private/reports/", import.meta.
 const srcDir = join(reportsRoot, "src");
 
 const footerTemplate = `
-<div style="width:100%; font-family: Archivo, sans-serif; font-size:7pt; color:#2E2E2E; padding:0 16mm; display:flex; justify-content:space-between;">
+<div style="width:100%; font-family: Archivo, sans-serif; font-size:8pt; color:#2E2E2E; padding:0 16mm; display:flex; justify-content:space-between;">
   <span>Root Trust · Relatório padrão · v1</span>
   <span>página <span class="pageNumber"></span> de <span class="totalPages"></span></span>
 </div>`;

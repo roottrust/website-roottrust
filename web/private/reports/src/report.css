@@ -93,6 +93,9 @@ li { margin: 0 0 2pt; }
 .formula li { margin: 0 0 3pt; }
 
 section { break-inside: auto; }
+section.next { break-before: page; }
+li, h2 { break-inside: avoid; }
+h2 { break-after: avoid; }
 
 .sources li, .sources p { font-size: 8.5pt; }
 .sources a { color: var(--verde-raiz); word-break: break-all; }

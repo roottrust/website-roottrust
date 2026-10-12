@@ -26,14 +26,14 @@
 <h2>Método da ferramenta</h2>
 <p><span class="label">Adaptação Root Trust</span>Estimativa simples de custo do tempo de equipe atribuído à dívida, com projeção de 12 meses sob premissas constantes.</p>
 <ul class="formula">
-<li>N = quantidade de profissionais da equipe considerada.</li>
+<li>N = quantidade de profissionais da equipe considerada, um número inteiro não negativo.</li>
 <li>K = custo médio mensal por profissional, com encargos e benefícios conforme a base informada.</li>
 <li>m = fração do tempo total da equipe dedicada à manutenção (de 0% a 100%).</li>
 <li>q = fração dessa manutenção atribuída à dívida técnica, isto é, retrabalho e esforço extra causados por limitações técnicas (de 0% a 100%).</li>
 <li>D = N × K × m × q, custo mensal estimado atribuído à dívida.</li>
 <li>Projeção de 12 meses = 12 × D, mantidos a mesma equipe, os mesmos custos e os mesmos percentuais.</li>
 </ul>
-<p>Manutenção necessária ao funcionamento do sistema não é, por si, dívida técnica. Valores desconhecidos não devem ser tratados como zero, e o resultado correspondente não deve ser calculado quando um dado essencial faltar.</p>
+<p>Manutenção necessária ao funcionamento do sistema não é, por si, dívida técnica. Zero declarado em N é aceito como dado informado, mas não prova ausência de dívida técnica: pode apenas indicar que nenhuma equipe foi considerada neste cálculo. Valores desconhecidos não devem ser tratados como zero, e o resultado correspondente não deve ser calculado quando um dado essencial faltar.</p>
 </section>
 
 <section>
@@ -46,7 +46,7 @@
 </ul>
 </section>
 
-<section>
+<section class="next">
 <h2>Próximos passos</h2>
 <ol>
 <li>Montar um inventário dos itens de dívida técnica conhecidos, com descrição concreta e área afetada.</li>
@@ -55,19 +55,35 @@
 <li>Comparar o custo estimado com o custo de intervenção, considerando o ciclo de vida do sistema e não apenas o próximo trimestre.</li>
 <li>Repetir a estimativa após mudanças relevantes na equipe, no sistema ou nos processos.</li>
 </ol>
+<h2>Perguntas de revisão</h2>
+<ul>
+<li>A quantidade de profissionais, o custo mensal e os percentuais se referem à mesma equipe e ao mesmo período?</li>
+<li>O custo mensal por profissional inclui encargos e benefícios, ou apenas o salário?</li>
+<li>De onde vem o percentual de tempo em manutenção: registro de tempo, chamados ou estimativa da liderança?</li>
+<li>Que parte dessa manutenção é retrabalho ou esforço extra causado por limitações técnicas, e não necessidade normal do sistema?</li>
+<li>Quais itens de dívida estão no inventário, e quais consequências foram registradas para cada um?</li>
+<li>Algum valor foi deixado em branco por ser desconhecido, em vez de ser preenchido com zero?</li>
+</ul>
+<h2>Ações por tema</h2>
+<ul>
+<li>Registrar por algumas semanas o tempo gasto em manutenção, separando retrabalho de manutenção necessária.</li>
+<li>Ordenar o inventário de itens de dívida pelas consequências registradas e escolher o primeiro item a detalhar.</li>
+<li>Pedir à liderança técnica uma estimativa de intervenção para o item escolhido, com a origem das hipóteses.</li>
+<li>Refazer a estimativa após mudanças relevantes na equipe, no sistema ou nos processos.</li>
+</ul>
 </section>
 
 <section class="sources">
-<h2>Fontes oficiais consultadas</h2>
+<h2>Fontes consultadas</h2>
 <ul>
 <li><span class="label">Referência oficial</span>Software Engineering Institute, Carnegie Mellon University. <em>Managing Technical Debt: Identify Technical Debt Items</em>, 22 set. 2022. <a href="https://www.sei.cmu.edu/library/managing-technical-debt-identify-technical-debt-items/">sei.cmu.edu/library/managing-technical-debt-identify-technical-debt-items</a></li>
 </ul>
-<p>Consultada em 12/10/2026. Escopo de método: F23–F25 da Root Trust, versão de 11/10/2026. A fórmula e as premissas são uma adaptação educativa, não um modelo oficial do SEI.</p>
+<p>Consultada em 12/10/2026. A fórmula e as premissas são uma adaptação educativa, não um modelo oficial do SEI.</p>
 </section>
 
 <section class="cta">
 <h2>Solicitar diagnóstico</h2>
-<p>Conversa inicial gratuita de qualificação, pelo e-mail contato@roottrust.com.br. Não é auditoria, não há agenda automática e não inclui relatório personalizado.</p>
+<p>No site da Root Trust, use o formulário “Solicitar diagnóstico” (Nome, Empresa e WhatsApp). A conversa inicial é gratuita e de qualificação, com retorno por ligação ou WhatsApp no próximo dia útil após o recebimento do pedido. Se preferir, escreva para contato@roottrust.com.br. Não é auditoria, não há agenda automática e não inclui relatório personalizado.</p>
 </section>
 </main>
 </body>
