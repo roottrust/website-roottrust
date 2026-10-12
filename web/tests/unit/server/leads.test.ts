@@ -100,7 +100,7 @@ describe.each(stores)("six-month purge on %s", (_name, make) => {
     await recordReportRequest(store, SECRET, { email: "limite@example.com", toolId: "rosi", commercialConsent: false }, leadRetentionCutoff(NOW));
     await recordReportRequest(store, SECRET, { email: "quase@example.com", toolId: "rosi", commercialConsent: false }, new Date(leadRetentionCutoff(NOW).getTime() + DAY));
 
-    expect(await purge(store)).toEqual({ leads: 3, records: 4, partial: 0, failed: 0, deferred: 0 });
+    expect(await purge(store)).toEqual({ leads: 3, records: 6, partial: 0, failed: 0, deferred: 0 });
 
     expect(await lead(store, leadOf(EMAIL))).toBeUndefined();
     expect(await lead(store, leadOf("limite@example.com"))).toBeUndefined();
@@ -170,7 +170,7 @@ describe.each(stores)("six-month purge on %s", (_name, make) => {
     expect(await lead(store, id)).toMatchObject({ lastInteractionAt: ago(210).toISOString() });
     expect(await store.queryEquals(COLLECTIONS.leadEvents, "leadId", id, 10)).toHaveLength(2);
 
-    expect(await purge(store)).toEqual({ leads: 1, records: 2, partial: 0, failed: 0, deferred: 0 });
+    expect(await purge(store)).toEqual({ leads: 1, records: 3, partial: 0, failed: 0, deferred: 0 });
     expect(await lead(store, id)).toBeUndefined();
     expect(await store.queryEquals(COLLECTIONS.leadEvents, "leadId", id, 10)).toHaveLength(0);
   });

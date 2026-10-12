@@ -54,6 +54,11 @@ for (const route of routes) {
 
   test(`${route.path}: report form is independent of the newsletter and local in demo mode`, async ({ page }) => {
     await page.goto(route.path);
+    const sent: string[] = [];
+    page.on("request", (req) => {
+      if (req.method() === "GET" && req.url().includes("_rsc=")) return;
+      if (req.method() !== "GET" || ["fetch", "xhr", "ping", "websocket", "eventsource"].includes(req.resourceType())) sent.push(`${req.method()} ${req.url()}`);
+    });
     await expect(page.locator("main")).toContainText("demonstração local e nenhum dado é enviado");
     const report = page.getByRole("form", { name: /^Receber relatório de/ });
     await expect(report).toContainText("não inscreve você na newsletter");
@@ -64,6 +69,7 @@ for (const route of routes) {
     await report.getByRole("button", { name: "Receber relatório" }).click();
     await expect(report.getByRole("status")).toContainText("pedido de relatório aceito localmente. Nenhum dado foi enviado");
     await expect(page.getByText(/inscrição confirmada|assinatura confirmada/i)).toHaveCount(0);
+    expect(sent).toEqual([]);
   });
 
   test(`${route.path}: default mode never claims receipt`, async ({ page }) => {

@@ -30,10 +30,24 @@ export function pilotMessage(status: "submitting" | SubmissionResult, reference?
   }
 }
 
+// Real (pilot) report feedback. "accepted" means the request is stored and the e-mail is queued, not that it was sent or delivered.
+function pilotReportMessage(status: "submitting" | SubmissionResult): string {
+  switch (status) {
+    case "submitting": return "Solicitando relatório…";
+    case "accepted": return "Pedido registrado. O relatório será enviado por e-mail em seguida; se não chegar, confira a caixa de spam ou use os canais de contato. A entrega não é garantida.";
+    case "invalid": return "Confira o e-mail: ele não foi aceito. Tente novamente.";
+    case "rate_limited": return "Muitas tentativas em pouco tempo. Aguarde um pouco e tente novamente; seus dados foram mantidos.";
+    case "challenge": return "Não foi possível validar a verificação de segurança. Conclua-a novamente e envie de novo.";
+    case "forbidden": return "Esta página não está autorizada a enviar o pedido. Recarregue a página ou use os canais de contato.";
+    case "unavailable": return "O envio do relatório está indisponível no momento. Tente mais tarde ou use os canais de contato.";
+    default: return "Não foi possível registrar o pedido. Tente novamente ou use os canais de contato.";
+  }
+}
+
 export function FormStatus({ mode, status, kind, reference }: {
   mode: ContactMode; status: "idle" | "submitting" | SubmissionResult; kind: "contact" | "newsletter" | "report"; reference?: string;
 }) {
-  const message = mode === "pilot" && kind === "contact" ? (status === "idle" ? "" : pilotMessage(status, reference)) : status === "submitting"
+  const message = mode === "pilot" && (kind === "contact" || kind === "report") ? (status === "idle" ? "" : kind === "contact" ? pilotMessage(status, reference) : pilotReportMessage(status)) : status === "submitting"
     ? kind === "contact" ? "Enviando solicitação…" : "Solicitando confirmação…"
     : status === "accepted"
       ? kind === "contact"
@@ -49,7 +63,7 @@ export function FormStatus({ mode, status, kind, reference }: {
   return (
     <>
       {mode === "demo" ? <p className={styles.notice}>Demonstração local — nenhum dado é enviado ou guardado.</p> : null}
-      <noscript><p>{mode === "pilot" && kind === "contact" ? "Ative JavaScript para enviar a solicitação, ou use os canais de contato." : "Ative JavaScript para validar este formulário local, ou use os canais de contato."}</p></noscript>
+      <noscript><p>{mode === "pilot" && kind !== "newsletter" ? "Ative JavaScript para enviar a solicitação, ou use os canais de contato." : "Ative JavaScript para validar este formulário local, ou use os canais de contato."}</p></noscript>
       <p role="status" aria-live="polite" className={styles.status}>{message}</p>
     </>
   );

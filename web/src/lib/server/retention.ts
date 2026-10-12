@@ -26,7 +26,7 @@ export interface LeadPurgeSummary {
   deferred: number; // candidates not started because the time budget ran out; retried next run
 }
 
-type ChildCollection = typeof COLLECTIONS.leadEvents | typeof COLLECTIONS.diagnostics;
+type ChildCollection = typeof COLLECTIONS.leadEvents | typeof COLLECTIONS.diagnostics | typeof COLLECTIONS.reportDeliveries;
 
 // One bounded page of a stale lead's children, deleted in a single transaction that first re-reads the lead: any
 // interaction rewrites the lead, so a lead touched after the staleness check aborts the page (`touched`) and keeps
@@ -44,6 +44,7 @@ async function deleteChildPage(store: Store, secret: string, leadId: string, cut
       if (record?.leadId !== leadId) continue;
       tx.delete(collection, id);
       if (collection === COLLECTIONS.diagnostics) tx.delete(COLLECTIONS.jobs, opaqueId(secret, "jb", `${JOB_KINDS.diagnosticDiscord}:${id}`));
+      if (collection === COLLECTIONS.reportDeliveries) tx.delete(COLLECTIONS.jobs, opaqueId(secret, "jb", `${JOB_KINDS.reportEmail}:${id}`));
       deleted += 1;
     }
     return { listed: ids.length, deleted, touched: false };
@@ -59,7 +60,7 @@ async function purgeLead(
   shouldStop: () => boolean,
 ): Promise<{ done: boolean; records: number }> {
   let records = 0;
-  for (const collection of [COLLECTIONS.leadEvents, COLLECTIONS.diagnostics] as const) {
+  for (const collection of [COLLECTIONS.leadEvents, COLLECTIONS.diagnostics, COLLECTIONS.reportDeliveries] as const) {
     for (let page = 0; page < MAX_CHILD_PAGES; page += 1) {
       if (shouldStop()) return { done: false, records };
       const result = await deleteChildPage(store, secret, leadId, cutoff, collection);
@@ -71,7 +72,8 @@ async function purgeLead(
   }
   const remaining =
     (await store.queryEquals(COLLECTIONS.leadEvents, "leadId", leadId, 1)).length +
-    (await store.queryEquals(COLLECTIONS.diagnostics, "leadId", leadId, 1)).length;
+    (await store.queryEquals(COLLECTIONS.diagnostics, "leadId", leadId, 1)).length +
+    (await store.queryEquals(COLLECTIONS.reportDeliveries, "leadId", leadId, 1)).length;
   if (remaining) return { done: false, records };
 
   const removed = await store.transaction(async (tx) => {

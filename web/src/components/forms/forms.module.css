@@ -6,6 +6,8 @@
 .demoControl select { appearance: none; padding-right: 44px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none' stroke='%23F5F5F2' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; background-size: 12px 8px; }
 .demoControl select:disabled { opacity: 0.5; }
 @media (forced-colors: active) { .demoControl select { appearance: auto; padding-right: 16px; background-image: none; } }
+.consent { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; max-width: 65ch; }
+.consent input { flex: none; width: 20px; height: 20px; margin-top: 2px; accent-color: var(--rt-menta); }
 .field input[aria-invalid="true"] { border-color: var(--rt-terracota); }
 .error { color: var(--rt-terracota); font-size: 14px; margin: 0; }
 .notice, .channels { color: var(--rt-menta); font-size: 14px; margin: 0; max-width: 65ch; overflow-wrap: anywhere; }
@@ -58,5 +60,5 @@
   .inlineReport .field { display:contents; }
   .inlineReport .field input { grid-column:1; grid-row:1; }
   .inlineReport > button { grid-column:2; grid-row:1; }
-  .inlineReport .error, .inlineReport .notice, .inlineReport .status, .inlineReport .demoControl { grid-column:1 / -1; }
+  .inlineReport .error, .inlineReport .notice, .inlineReport .status, .inlineReport .demoControl, .inlineReport .consent { grid-column:1 / -1; }
 }

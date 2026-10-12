@@ -2,10 +2,11 @@ import { randomUUID } from "node:crypto";
 import { opaqueId } from "./ids";
 import { logEvent, safeErrorCode } from "./safe";
 import type { Store, Tx } from "./store";
-import { COLLECTIONS, type JobRecord, type RateLimitRecord, type ReplayRecord } from "./types";
+import { COLLECTIONS, type EmailQuotaRecord, type JobRecord, type RateLimitRecord, type ReplayRecord } from "./types";
 
 const BACKOFF_BASE_MS = 30_000;
 const BACKOFF_CAP_MS = 60 * 60_000;
+const DEFERRAL_CAP_MS = 24 * 60 * 60_000;
 const DEFAULT_MAX_ATTEMPTS = 5;
 
 // Handler outcomes: a plain throw retries with backoff, RetryLater honors a provider wait (e.g. 429 Retry-After),
@@ -15,9 +16,13 @@ export class RetryLater extends Error {
   readonly retryAfterMs: number;
   // Provider-supplied waits are untrusted: non-finite or non-positive values are ignored (plain backoff applies)
   // and anything above the backoff cap is clamped, so a hostile Retry-After cannot park a job indefinitely.
-  constructor(retryAfterMs: number) {
+  // `deferral` (a known local wait, e.g. a quota reset) keeps the exact wait up to a day and does not spend the attempt.
+  readonly deferral: boolean;
+  constructor(retryAfterMs: number, options: { deferral?: boolean } = {}) {
     super("retry_later");
-    this.retryAfterMs = Number.isFinite(retryAfterMs) && retryAfterMs > 0 ? Math.min(Math.ceil(retryAfterMs), BACKOFF_CAP_MS) : 0;
+    this.deferral = options.deferral === true;
+    const cap = this.deferral ? DEFERRAL_CAP_MS : BACKOFF_CAP_MS;
+    this.retryAfterMs = Number.isFinite(retryAfterMs) && retryAfterMs > 0 ? Math.min(Math.ceil(retryAfterMs), cap) : 0;
   }
 }
 export class PermanentFailure extends Error {
@@ -118,11 +123,16 @@ async function finishJob(
 export const completeJob = (store: Store, job: JobRecord, now: Date) =>
   finishJob(store, job, (current) => ({ ...omitLease(current), status: "done" }), now);
 
-export const failJob = (store: Store, job: JobRecord, code: string, now: Date, options: { retryAfterMs?: number; permanent?: boolean } = {}) =>
+export const failJob = (store: Store, job: JobRecord, code: string, now: Date, options: { retryAfterMs?: number; permanent?: boolean; deferral?: boolean } = {}) =>
   finishJob(
     store,
     job,
     (current) => {
+      if (options.deferral && !options.permanent) {
+        // The handler did nothing (e.g. quota exhausted): give the attempt back and wait the exact time.
+        const wait = Math.max(options.retryAfterMs ?? 0, BACKOFF_BASE_MS);
+        return { ...omitLease(current), status: "pending", attempts: Math.max(current.attempts - 1, 0), lastError: code, dueAt: new Date(now.getTime() + wait).toISOString() };
+      }
       if (options.permanent || current.attempts >= current.maxAttempts) {
         return { ...omitLease(current), status: "dead", lastError: code };
       }
@@ -206,6 +216,7 @@ async function runJob(
       await failJob(store, job, code, options.now(), {
         retryAfterMs: failure instanceof RetryLater ? failure.retryAfterMs : undefined,
         permanent: failure instanceof PermanentFailure,
+        deferral: failure instanceof RetryLater && failure.deferral,
       }),
     );
   } catch (error) {
@@ -230,11 +241,11 @@ const outcomeKey = (finish: Finish): "done" | "retried" | "dead" | "lost" =>
 export async function purgeExpired(store: Store, now: Date, limit: number, shouldStop: () => boolean = () => false): Promise<number> {
   const at = now.toISOString();
   let purged = 0;
-  for (const collection of [COLLECTIONS.rateLimits, COLLECTIONS.replays] as const) {
+  for (const collection of [COLLECTIONS.rateLimits, COLLECTIONS.replays, COLLECTIONS.emailQuota] as const) {
     for (const id of await store.query(collection, "expiresAt", at, limit)) {
       if (shouldStop()) return purged;
       purged += await store.transaction(async (tx) => {
-        const current = await tx.get<RateLimitRecord | ReplayRecord>(collection, id);
+        const current = await tx.get<RateLimitRecord | ReplayRecord | EmailQuotaRecord>(collection, id);
         if (!current || current.expiresAt > at) return 0;
         tx.delete(collection, id);
         return 1;

@@ -3,6 +3,7 @@ import type { Deps } from "../../../src/lib/server/http";
 import { DEFAULT_LIMITS, type Limits } from "../../../src/lib/server/limits";
 import type { DiagnosticConfig } from "../../../src/lib/server/diagnostic";
 import type { DefenseConfig } from "../../../src/lib/server/defense";
+import type { Mailer, ReportConfig } from "../../../src/lib/server/report";
 import { createMemoryStore } from "../../../src/lib/server/store";
 
 export const SECRET = "s".repeat(32);
@@ -56,8 +57,18 @@ export function setup(options: { mode?: Deps["mode"]; idSecret?: string | undefi
   };
   const discord = vi.fn<typeof fetch>(async () => new Response(null, { status: 204 }));
   const diagnostic: DiagnosticConfig = { webhookUrl: WEBHOOK_URL, fetch: discord };
-  const deps: Deps = { mode, idSecret, getStore, now: () => clock.now, diagnostic, internalKeys: { jobs: ["j".repeat(32)] }, ...(withDefense ? { defense } : {}) };
-  return { store, getStore, deps, clock, siteverify, defense, discord };
+  const mailer = vi.fn<Mailer>(async () => ({ ok: true, id: "re_test" }));
+  const report: ReportConfig = {
+    apiKey: "re_test_key",
+    from: "Root Trust <relatorios@roottrust.test>",
+    replyTo: "contato@roottrust.test",
+    dailyLimit: 100,
+    monthlyLimit: 3000,
+    mailer,
+    readPdf: async (toolId) => Buffer.from(`%PDF-1.4 ${toolId} `.padEnd(2048, "x")),
+  };
+  const deps: Deps = { mode, idSecret, getStore, now: () => clock.now, diagnostic, report, internalKeys: { jobs: ["j".repeat(32)] }, ...(withDefense ? { defense } : {}) };
+  return { store, getStore, deps, clock, siteverify, defense, discord, mailer, report };
 }
 
 let counter = 0;

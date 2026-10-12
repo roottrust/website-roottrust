@@ -5,7 +5,7 @@ export type ContactErrors = Partial<Record<keyof ContactValues, string>>;
 export type FormRequest =
   | { kind: "contact"; values: ContactValues }
   | { kind: "newsletter"; email: string; editionSlug?: string }
-  | { kind: "report"; email: string; toolId: string };
+  | { kind: "report"; email: string; toolId: string; commercialConsent?: boolean };
 export type SubmissionResult = "accepted" | "error" | "unavailable" | "invalid" | "rate_limited" | "challenge" | "forbidden";
 
 // "pilot" is the only mode that talks to the backend; it exists for the contact form alone.
@@ -80,20 +80,21 @@ export type DiagnosticOutcome = { result: SubmissionResult; reference?: string; 
 
 const DIAGNOSTIC_REFERENCE = /^DG-[0-9A-Z]{10}$/;
 
-// Real transport for the contact form (pilot only). A network failure is "error": the outcome is unknown, never success.
-export async function submitDiagnostic(
-  values: ContactValues,
+// Real transport for the pilot forms. A network failure is "error": the outcome is unknown, never success.
+async function postPilot(
+  url: string,
+  payload: Record<string, unknown>,
   token: string,
   signal: AbortSignal,
-  fetchFn: typeof fetch = fetch,
+  fetchFn: typeof fetch,
 ): Promise<DiagnosticOutcome> {
   if (signal.aborted) throw new DOMException("Submission cancelled", "AbortError");
   let response: Response;
   try {
-    response = await fetchFn("/api/diagnostico", {
+    response = await fetchFn(url, {
       method: "POST",
       headers: { "content-type": "application/json", "x-turnstile-token": token },
-      body: JSON.stringify({ name: values.name, company: values.company, whatsapp: values.whatsapp }),
+      body: JSON.stringify(payload),
       cache: "no-store",
       credentials: "same-origin",
       signal,
@@ -116,3 +117,10 @@ export async function submitDiagnostic(
   }
   return { result: response.status === 503 ? "unavailable" : "error" };
 }
+
+export const submitDiagnostic = (values: ContactValues, token: string, signal: AbortSignal, fetchFn: typeof fetch = fetch) =>
+  postPilot("/api/diagnostico", { name: values.name, company: values.company, whatsapp: values.whatsapp }, token, signal, fetchFn);
+
+// Only the e-mail, the tool ID and the optional commercial checkbox leave the browser: never answers or results.
+export const submitReport = (email: string, toolId: string, commercialConsent: boolean, token: string, signal: AbortSignal, fetchFn: typeof fetch = fetch) =>
+  postPilot("/api/relatorios", { email, toolId, commercialConsent }, token, signal, fetchFn);

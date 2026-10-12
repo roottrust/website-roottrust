@@ -4,7 +4,9 @@ import { checkEmail } from "./validation";
 import { enqueueJob } from "./jobs";
 import type { Denied, Gate } from "./limits";
 import type { Store, Tx } from "./store";
-import { COLLECTIONS, JOB_KINDS, type DiagnosticRecord, type LeadEventRecord, type LeadRecord, type SubscriptionRecord, type SubscriptionStatus, type ToolId } from "./types";
+import { COLLECTIONS, JOB_KINDS, type DiagnosticRecord, type JobRecord, type LeadEventRecord, type LeadRecord, type ReportDeliveryRecord, type SubscriptionRecord, type SubscriptionStatus, type ToolId } from "./types";
+
+const REPORT_MAX_ATTEMPTS = 8;
 
 async function touchLead(
   tx: Tx,
@@ -80,6 +82,9 @@ export async function recordDiagnostic(
   });
 }
 
+// One delivery (and one e-mail job, one quota unit) per e-mail + tool + UTC day, with an opaque stable ID: repeats the same
+// day only touch the lead (checkbox updates are kept) and reuse the queued delivery. 202 means queued (new or existing),
+// never sent; a same-day repeat whose job already died is denied until the next UTC day rather than acknowledged.
 export async function recordReportRequest(
   store: Store,
   secret: string,
@@ -88,10 +93,21 @@ export async function recordReportRequest(
   gate?: Gate,
 ): Promise<{ ok: true } | Denied> {
   const id = opaqueId(secret, "ld", `email:${value.email}`);
+  const at = now.toISOString();
+  const deliveryId = opaqueId(secret, "rp", `${value.email}:${value.toolId}:${at.slice(0, 10)}`);
   return store.transaction(async (tx) => {
     const denied = await gate?.(tx);
     if (denied) return denied;
-    await touchLead(tx, id, { email: value.email }, `relatorio:${value.toolId}`, now.toISOString(), value.commercialConsent);
+    const existing = await tx.get<ReportDeliveryRecord>(COLLECTIONS.reportDeliveries, deliveryId);
+    const job = existing ? await tx.get<JobRecord>(COLLECTIONS.jobs, opaqueId(secret, "jb", `${JOB_KINDS.reportEmail}:${deliveryId}`)) : undefined;
+    if (existing && !existing.sentAt && (!job || job.status === "dead")) {
+      return { ok: false as const, retryAfterSec: Math.ceil((Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1) - now.getTime()) / 1000) };
+    }
+    await touchLead(tx, id, { email: value.email }, `relatorio:${value.toolId}`, at, value.commercialConsent, deliveryId);
+    if (existing) return { ok: true as const };
+    const delivery: ReportDeliveryRecord = { id: deliveryId, leadId: id, email: value.email, toolId: value.toolId, createdAt: at };
+    tx.set(COLLECTIONS.reportDeliveries, deliveryId, delivery);
+    await enqueueJob(tx, secret, { kind: JOB_KINDS.reportEmail, key: deliveryId, payload: { requestId: deliveryId }, maxAttempts: REPORT_MAX_ATTEMPTS }, now);
     return { ok: true as const };
   });
 }

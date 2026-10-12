@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { submitDiagnostic, submitLocalForm, type ContactMode, type DemoOutcome, type FormMode, type FormRequest, type SubmissionResult } from "@/lib/forms";
+import { submitDiagnostic, submitLocalForm, submitReport, type ContactMode, type DemoOutcome, type FormMode, type FormRequest, type SubmissionResult } from "@/lib/forms";
 
 const subscribe = () => () => {};
 const clientSnapshot = () => true;
@@ -17,7 +17,7 @@ export function useLocalSubmission(mode: ContactMode) {
   const active = useRef<AbortController | null>(null);
   useEffect(() => () => active.current?.abort(), []);
 
-  // `token` is only used by the real (pilot) contact transport; demo/unavailable never touch the network.
+  // `token` is only used by the real (pilot) transports; demo/unavailable never touch the network.
   async function submit(request: FormRequest, token?: string) {
     if (active.current) return;
     const controller = new AbortController();
@@ -26,8 +26,10 @@ export function useLocalSubmission(mode: ContactMode) {
     setReference(undefined);
     try {
       if (mode === "pilot") {
-        if (request.kind !== "contact" || !token) throw new Error("Missing challenge token");
-        const result = await submitDiagnostic(request.values, token, controller.signal);
+        if (!token || (request.kind !== "contact" && request.kind !== "report")) throw new Error("Missing challenge token");
+        const result = request.kind === "contact"
+          ? await submitDiagnostic(request.values, token, controller.signal)
+          : await submitReport(request.email, request.toolId, request.commercialConsent === true, token, controller.signal);
         if (!controller.signal.aborted) {
           setReference(result.reference);
           setStatus(result.result);

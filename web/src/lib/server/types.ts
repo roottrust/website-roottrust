@@ -7,6 +7,8 @@ export const COLLECTIONS = {
   rateLimits: "rate_limits",
   replays: "replays",
   jobs: "jobs",
+  reportDeliveries: "report_deliveries",
+  emailQuota: "email_quota",
 } as const;
 export type Collection = (typeof COLLECTIONS)[keyof typeof COLLECTIONS];
 
@@ -84,7 +86,7 @@ export interface JobRecord {
   updatedAt: string;
 }
 
-export const JOB_KINDS = { diagnosticDiscord: "diagnostic.discord" } as const;
+export const JOB_KINDS = { diagnosticDiscord: "diagnostic.discord", reportEmail: "report.email" } as const;
 
 // One record per diagnostic request, keyed by its team-visible ID, so repeated requests from the same WhatsApp keep
 // their own Name/Company. `notifiedAt` is set once the private Discord message is confirmed.
@@ -96,4 +98,27 @@ export interface DiagnosticRecord {
   whatsapp: string;
   createdAt: string;
   notifiedAt?: string;
+}
+
+// One record per report request. Holds contact data only until the e-mail is confirmed sent (then `email` is dropped);
+// never tool answers or results. `attemptStartedAt` marks a Resend call whose outcome may be unknown: the provider keeps
+// its idempotency key for 24 h only, so past that window a resend would risk a duplicate and `reconcile` blocks it.
+export interface ReportDeliveryRecord {
+  id: string;
+  leadId: string;
+  email?: string;
+  toolId: ToolId;
+  createdAt: string;
+  attemptStartedAt?: string;
+  reservation?: { day: string; month: string };
+  sentAt?: string;
+  resendId?: string;
+  reconcile?: boolean;
+}
+
+// Local counter of Resend sends: id `qt_day_YYYY-MM-DD` / `qt_month_YYYY-MM` (UTC). `expiresAt` lets the purge job sweep it.
+export interface EmailQuotaRecord {
+  id: string;
+  used: number;
+  expiresAt: string;
 }

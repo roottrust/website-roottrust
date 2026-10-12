@@ -4,7 +4,8 @@ import { ReportForm } from "@/components/forms/ReportForm";
 import { FrameCanvas } from "@/features/graphics/FrameCanvas";
 import { PillarArt } from "@/features/graphics/PillarArt";
 import svc from "@/features/services/services.module.css";
-import type { FormMode } from "@/lib/forms";
+import { reportAvailability } from "@/app/api/relatorios/availability";
+import type { ContactFormConfig, FormMode } from "@/lib/forms";
 import type { ToolContent } from "./content";
 import { MethodSlot } from "./method-slot";
 import { ToolSession } from "./ToolSession";
@@ -44,6 +45,7 @@ function Method({ tool }: { tool: ToolContent }) {
 }
 
 export function ToolPage({ tool, mode, children }: { tool: ToolContent; mode: FormMode; children: ReactNode }) {
+  const reportConfig: ContactFormConfig = mode === "demo" ? { mode: "demo" } : reportAvailability();
   return (
     <main id="conteudo" data-graphics-root className={svc.root}>
       <FrameCanvas />
@@ -63,9 +65,11 @@ export function ToolPage({ tool, mode, children }: { tool: ToolContent; mode: Fo
               <p className={svc.lead}>{tool.lead}</p>
               <p className={styles.badge}>
                 <span aria-hidden="true" />
-                {mode === "demo"
+                {reportConfig.mode === "demo"
                   ? "Protótipo — cálculos locais; o pedido de relatório é uma demonstração local e nenhum dado é enviado."
-                  : "Protótipo — cálculos locais; envio do pedido de relatório indisponível."}
+                  : reportConfig.mode === "pilot"
+                    ? "Protótipo — cálculos locais; apenas o pedido de relatório (e-mail e ferramenta) é enviado, sem respostas ou resultados."
+                    : "Protótipo — cálculos locais; envio do pedido de relatório indisponível."}
               </p>
             </div>
             <div className={styles.art}><PillarArt kind={tool.kind} /></div>
@@ -86,7 +90,7 @@ export function ToolPage({ tool, mode, children }: { tool: ToolContent; mode: Fo
         <div className={`${svc.inner} ${styles.reportCard}`}>
           <h2 id="relatorio" className={styles.reportTitle}>Receba o relatório de {tool.reportTopic}</h2>
           <p className={styles.reportText}>Material padrão sobre o tema, conceitos e próximos passos gerais. Não é personalizado a partir das suas respostas.</p>
-          <ToolSession><ReportForm mode={mode} toolId={tool.id} topic={tool.reportTopic} variant="inline" /></ToolSession>
+          <ToolSession><ReportForm config={reportConfig} toolId={tool.id} topic={tool.reportTopic} variant="inline" /></ToolSession>
         </div>
       </section>
 

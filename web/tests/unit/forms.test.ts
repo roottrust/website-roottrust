@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { resolveFormMode, submitLocalForm, validateContact, validateEmail } from "../../src/lib/forms";
+import { resolveFormMode, submitLocalForm, submitReport, validateContact, validateEmail } from "../../src/lib/forms";
 
 const contact = { name: "Pessoa de teste", company: "Empresa demonstrativa", whatsapp: "(11) 94008-4692" };
 
@@ -30,6 +30,15 @@ describe("local forms", () => {
   });
   it("keeps valid submission unavailable by default", async () => {
     await expect(submitLocalForm({ kind: "contact", values: contact }, "unavailable", "success", new AbortController().signal)).resolves.toBe("unavailable");
+  });
+  it("sends only contact, tool and consent for a report, without calculator data", async () => {
+    const fetchFn = vi.fn(async (_url: RequestInfo | URL, init?: RequestInit) => {
+      expect(JSON.parse(String(init?.body))).toEqual({ email: "leitor@example.com", toolId: "rosi", commercialConsent: false });
+      expect(init?.headers).toEqual({ "content-type": "application/json", "x-turnstile-token": "token-de-teste" });
+      return Response.json({ status: "accepted" }, { status: 202 });
+    }) as typeof fetch;
+    await expect(submitReport("leitor@example.com", "rosi", false, "token-de-teste", new AbortController().signal, fetchFn)).resolves.toEqual({ result: "accepted" });
+    expect(fetchFn).toHaveBeenCalledOnce();
   });
   it("simulates acceptance and error locally, retaining the requested edition", async () => {
     vi.useFakeTimers();

@@ -14,6 +14,7 @@ import {
   type Limits,
 } from "./limits";
 import { resolveBackendMode, type BackendMode } from "./mode";
+import { createReportHandler, loadReportConfig, type ReportConfig } from "./report";
 import { purgeInactiveLeads } from "./retention";
 import { recordDiagnostic, recordReportRequest, requestSubscription } from "./repository";
 import { logEvent, safeErrorCode } from "./safe";
@@ -34,6 +35,8 @@ export interface Deps {
   jobHandlers?: JobHandlers;
   // Diagnostic receipt is operational only with a private webhook and the follow-up statement; absent => 503.
   diagnostic?: DiagnosticConfig;
+  // Report e-mails are operational only with Resend configured and attested; absent => 503.
+  report?: ReportConfig;
   // Monotonic milliseconds for the jobs request's time plan; tests inject it.
   clock?: () => number;
 }
@@ -44,6 +47,7 @@ export function defaultDeps(env: Record<string, string | undefined> = process.en
   const getStore = async () => (firestoreStore ??= loadFirestoreStore());
   const now = () => new Date();
   const diagnostic = loadDiagnosticConfig(env);
+  const report = loadReportConfig(env);
   return {
     mode: resolveBackendMode(env.BACKEND_MODE),
     idSecret: env.DATA_ID_SECRET,
@@ -52,9 +56,11 @@ export function defaultDeps(env: Record<string, string | undefined> = process.en
     defense: loadDefenseConfig(env).config,
     internalKeys: loadInternalKeys(env),
     diagnostic,
-    jobHandlers: diagnostic
-      ? { [JOB_KINDS.diagnosticDiscord]: (job, context) => getStore().then((store) => createDiagnosticHandler(store, diagnostic, now)(job, context)) }
-      : {},
+    report,
+    jobHandlers: {
+      ...(diagnostic ? { [JOB_KINDS.diagnosticDiscord]: (job, context) => getStore().then((store) => createDiagnosticHandler(store, diagnostic, now)(job, context)) } : {}),
+      ...(report ? { [JOB_KINDS.reportEmail]: (job, context) => getStore().then((store) => createReportHandler(store, report, now)(job, context)) } : {}),
+    },
   };
 }
 
@@ -193,6 +199,7 @@ export const handleSubscription = (request: Request, deps: Deps = defaultDeps())
 
 export const handleReport = (request: Request, deps: Deps = defaultDeps()) =>
   handle(request, deps, {
+    requires: (current) => current.report !== undefined && Boolean(current.internalKeys?.jobs?.length),
     action: "relatorio",
     parse: parseReport,
     limits: reportLimitSpecs,
