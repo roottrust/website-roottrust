@@ -45,6 +45,17 @@ test("every public route has a distinct title, description and inherited noindex
   expect(html).toMatch(/<meta name="robots" content="noindex, nofollow"/);
 });
 
+test("initial no-integration notice phrase is absent from every route in default and demo modes", async ({ request }) => {
+  for (const base of ["", "http://127.0.0.1:3101"]) {
+    for (const [path] of ROUTES) {
+      const html = await (await request.get(`${base}${path}`)).text();
+      expect(html, `${base}${path}`).not.toContain("ainda não recebe solicitações");
+    }
+  }
+  const demo = await (await request.get("/newsletter")).text();
+  expect(demo).toContain("Demonstração local");
+});
+
 test("arbitrary URL and invalid newsletter slug return HTTP 404 with the native page", async ({ request }) => {
   for (const path of ["/nao-existe-qualquer-coisa", "/servicos/inexistente/profundo", "/newsletter/edicoes/slug-invalido"]) {
     const response = await request.get(path);

@@ -77,6 +77,29 @@ for (const route of routes) {
   });
 }
 
+test("select indicator: one decorative chevron 16px from the right edge, native keyboard and focus kept", async ({ page }) => {
+  await page.goto("/ferramentas/rosi");
+  const select = page.getByLabel("Cenário", { exact: false }).first();
+  const style = await select.evaluate((el) => {
+    const s = getComputedStyle(el);
+    return { appearance: s.appearance, image: s.backgroundImage, position: s.backgroundPositionX, paddingRight: parseFloat(s.paddingRight), repeat: s.backgroundRepeat };
+  });
+  expect(style.appearance).toBe("none");
+  expect(style.image).toContain("url(");
+  expect(style.position).toContain("16px");
+  expect(style.paddingRight).toBeGreaterThanOrEqual(16 + 12 + 16);
+  expect(style.repeat).toBe("no-repeat");
+  await select.focus();
+  await page.keyboard.press("Shift+Tab");
+  await page.keyboard.press("Tab");
+  await expect(select).toBeFocused();
+  expect(await select.evaluate((el) => getComputedStyle(el).outlineStyle)).not.toBe("none");
+  await page.emulateMedia({ forcedColors: "active" });
+  const forced = await select.evaluate((el) => { const s = getComputedStyle(el); return { appearance: s.appearance, image: s.backgroundImage }; });
+  expect(forced.image).toBe("none");
+  expect(forced.appearance).not.toBe("none");
+});
+
 test("ROSI: fixture, edit invalidates, clear wipes, unknown is never zero", async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto("/ferramentas/rosi");

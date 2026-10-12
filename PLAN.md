@@ -181,8 +181,8 @@ Novos asserts devem provar regressões reais: movimento intermediário/endereço
 | Pesquisa e entrevista | GPT/usuário | Concluído | Fontes/código acima; largura Opção1 confirmada. |
 | Crítica deste plano | Sonnet5.5 readonly | Concluído com ajustes | Sessão00b6b993-cc46-4696-8187-5b2960ae9004 succeeded45s; cinco grupos de sugestões avaliados/incorporados. |
 | P7.1 Header/scroll | Sonnet | Concluído | Gates69932 lint/types/101unit/build/266E2E6skip; revisão independente aprovada. |
-| P7.2 Aviso/select | Sonnet | Em execução | P7.1 concluído; checkpoint antes da escrita. |
-| P7.3 Newsletter | Sonnet | Aguardando aprovação | P7.2. |
+| P7.2 Aviso/select | Sonnet | Concluído | Gates34414 lint/types/101unit/build/270E2E6skip; revisão6d65922a e geometria320/390/1440 aprovadas. |
+| P7.3 Newsletter | Sonnet | Em execução | Medida antes: arquivo lista1200,hero620; préviaarticle720 emcontainer1200. |
 | P8.1 E2E | Sonnet | Aguardando aprovação | P7. |
 | P8.2 Diagnóstico LCP | GPT + Sonnet consulta | Aguardando aprovação | P8.1. |
 | P8.3 Otimização | Sonnet + GPT gates | Aguardando aprovação | P8.2; consultar se sair do escopo. |
@@ -753,3 +753,7 @@ P7.1 testes checkpoint: dea5cba9983a780848b3f921c9b53200c1fd7e5c. Sem segredos; 
 P7.1 testes followup succeeded26s somente SSRheader e assertmenucondicional. GPT roda gates finais lote.
 
 P7.1 concluído: exec69932 exit0 lint/typecheck/101unit/build/266E2E6skips. Logp7-1-final-gates.log. Skips:4anteriores mais2modificadoresdesktop inaplicáveis no mobile, não falhas mascaradas. Revisão00bbf98f follow26s aprovada. Testescrossroute/reduced/pausa/foco/history/cancelamento passaram.
+P7.2 checkpoint: 25a6cd3fb56ffa4e84113705faa7348bc04e02d0. Sem segredos/gerados; next-env excluído se modificado.
+P7.2 escrita2e6c085e-8465-4483-8df0-bdffe7badc1d Sonnet5.5 succeeded75s: FormStatus semfrase, selects nativos comchevron16/padding44/forcedcolorsauto, testespublic-routes/tools. Sem gates próprios.
+
+P7.2 concluído: gates34414 exit0 lint/types/101unit/build/270E2E6skip logp7-2-gates.log. Revisão6d65922a-e564-4bde-bdd9-24b4071c1fe5 succeeded33s aprovada comlimites. GPTbrowserprodução3300ownserverencerrado: selects320/390/1440 appearance none,backgroundcalc(100%-16px),padding44px,semoverflow. p7-before-layout.json mede artigo720 dentro1200 eheroarchiveestreito;lista já1200. Nenhum servidor usuário encerrado.

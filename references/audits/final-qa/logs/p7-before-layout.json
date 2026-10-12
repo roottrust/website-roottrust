@@ -1,0 +1,105 @@
+[
+  {
+    "route": "/newsletter/edicoes",
+    "geometry": [
+      {
+        "tag": "SECTION",
+        "class": "XTTb9a_wrap XTTb9a_compactHero",
+        "x": 60,
+        "width": 1320
+      },
+      {
+        "tag": "H1",
+        "class": "XTTb9a_h1",
+        "x": 120,
+        "width": 549.109375
+      },
+      {
+        "tag": "SECTION",
+        "class": "XTTb9a_wrap XTTb9a_archiveSection",
+        "x": 60,
+        "width": 1320
+      },
+      {
+        "tag": "SECTION",
+        "class": "XTTb9a_highlight",
+        "x": 120,
+        "width": 1200
+      },
+      {
+        "tag": "SECTION",
+        "class": "",
+        "x": 120,
+        "width": 1200
+      },
+      {
+        "tag": "ARTICLE",
+        "class": "XTTb9a_row",
+        "x": 120,
+        "width": 1200
+      },
+      {
+        "tag": "ARTICLE",
+        "class": "XTTb9a_row",
+        "x": 120,
+        "width": 1200
+      }
+    ]
+  },
+  {
+    "route": "/newsletter/edicoes/responsabilidades-na-nuvem",
+    "geometry": [
+      {
+        "tag": "SECTION",
+        "class": "XTTb9a_wrap XTTb9a_previewHero",
+        "x": 60,
+        "width": 1320
+      },
+      {
+        "tag": "ARTICLE",
+        "class": "XTTb9a_reading",
+        "x": 120,
+        "width": 720
+      },
+      {
+        "tag": "H1",
+        "class": "XTTb9a_previewTitle",
+        "x": 120,
+        "width": 720
+      },
+      {
+        "tag": "SECTION",
+        "class": "XTTb9a_wrap XTTb9a_requestSection",
+        "x": 60,
+        "width": 1320
+      }
+    ]
+  },
+  {
+    "width": 320,
+    "select": {
+      "appearance": "none",
+      "right": "calc(100% - 16px)",
+      "padding": "44px",
+      "overflow": false
+    }
+  },
+  {
+    "width": 390,
+    "select": {
+      "appearance": "none",
+      "right": "calc(100% - 16px)",
+      "padding": "44px",
+      "overflow": false
+    }
+  },
+  {
+    "width": 1440,
+    "select": {
+      "appearance": "none",
+      "right": "calc(100% - 16px)",
+      "padding": "44px",
+      "overflow": false
+    }
+  }
+]

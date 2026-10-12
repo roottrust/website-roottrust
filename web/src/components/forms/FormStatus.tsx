@@ -33,9 +33,7 @@ export function FormStatus({ mode, status, kind }: {
           : "";
   return (
     <>
-      <p className={styles.notice}>{mode === "demo"
-        ? "Demonstração local — nenhum dado é enviado ou guardado."
-        : "Este formulário ainda não recebe solicitações. Nenhum dado é enviado ou guardado."}</p>
+      {mode === "demo" ? <p className={styles.notice}>Demonstração local — nenhum dado é enviado ou guardado.</p> : null}
       <noscript><p>Ative JavaScript para validar este formulário local, ou use os canais de contato.</p></noscript>
       <p role="status" aria-live="polite" className={styles.status}>{message}</p>
     </>
