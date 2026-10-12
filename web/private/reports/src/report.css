@@ -1,0 +1,105 @@
+@font-face {
+  font-family: "Baloo 2";
+  src: url("../../../../docs/design/assets/fonts/baloo-2/baloo-2-variable.ttf") format("truetype");
+  font-weight: 400 800;
+  font-display: block;
+}
+
+@font-face {
+  font-family: "Archivo";
+  src: url("../../../../docs/design/assets/fonts/archivo/archivo-variable.ttf") format("truetype");
+  font-weight: 100 900;
+  font-display: block;
+}
+
+:root {
+  --verde-raiz: #003428;
+  --superficie: #F5F5F2;
+  --rocha: #2E2E2E;
+  --linha: #003428;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  background: var(--superficie);
+  color: var(--rocha);
+  font-family: "Archivo", sans-serif;
+  font-size: 10pt;
+  line-height: 1.5;
+}
+
+.masthead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 0.75pt solid var(--linha);
+  padding-bottom: 4pt;
+  margin-bottom: 12pt;
+}
+
+.signature { height: 22pt; width: auto; }
+
+.kicker {
+  margin: 0;
+  font-size: 8pt;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--verde-raiz);
+}
+
+h1, h2 {
+  font-family: "Baloo 2", sans-serif;
+  color: var(--verde-raiz);
+  line-height: 1.2;
+}
+
+h1 { font-size: 24pt; font-weight: 700; margin: 0 0 4pt; }
+h2 { font-size: 13pt; font-weight: 600; margin: 12pt 0 4pt; break-after: avoid; }
+
+.lede { font-size: 11pt; margin: 0 0 8pt; }
+
+.notice {
+  border: 0.75pt solid var(--linha);
+  padding: 6pt 8pt;
+  margin: 8pt 0;
+  font-size: 9pt;
+}
+
+.label {
+  display: inline-block;
+  font-size: 7.5pt;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--verde-raiz);
+  border: 0.5pt solid var(--linha);
+  padding: 0 4pt;
+  margin-right: 4pt;
+}
+
+ul, ol { margin: 3pt 0 4pt; padding-left: 14pt; }
+li { margin: 0 0 2pt; }
+
+.formula {
+  list-style: none;
+  padding-left: 0;
+  font-family: "Archivo", sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+.formula li { margin: 0 0 3pt; }
+
+section { break-inside: auto; }
+
+.sources li, .sources p { font-size: 8.5pt; }
+.sources a { color: var(--verde-raiz); word-break: break-all; }
+
+.cta {
+  margin-top: 10pt;
+  border-top: 0.75pt solid var(--linha);
+  padding-top: 6pt;
+  break-inside: avoid;
+}

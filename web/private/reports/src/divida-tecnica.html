@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Dívida técnica — relatório padrão v1</title>
+<link rel="stylesheet" href="report.css">
+</head>
+<body>
+<header class="masthead">
+  <img class="signature" src="../../../../docs/design/assets/logos/horizontal/roottrust-horizontal-positivo.svg" alt="Root Trust">
+  <p class="kicker">Relatório padrão · Ferramenta Dívida técnica · v1</p>
+</header>
+<main>
+<h1>Dívida técnica: custo do tempo atribuído</h1>
+<p class="lede">Como estimar quanto da manutenção da equipe pode estar sendo consumido por dívida técnica, sob premissas explícitas.</p>
+
+<aside class="notice"><strong>Material genérico.</strong> Não usa respostas, cálculos ou dados de qualquer pessoa ou empresa. Não é diagnóstico, análise de código, auditoria, certificação, previsão ou benchmark, e não é personalizado a partir das suas respostas.</aside>
+
+<section>
+<h2>O que o tema significa</h2>
+<p>Dívida técnica são as escolhas de software que facilitam uma entrega no curto prazo, mas tornam mudanças futuras mais lentas, arriscadas ou caras. Ela nem sempre é um defeito visível: aparece como retrabalho, testes difíceis de manter, correções que quebram outras partes do sistema e prazos que se alongam.</p>
+<p>O material do Software Engineering Institute (SEI) da Carnegie Mellon University sobre gestão da dívida técnica orienta a montar um inventário dos itens de dívida, registrar as consequências de acumulá-la, identificar itens concretos e avaliar o custo ao longo do ciclo de vida do sistema.</p>
+</section>
+
+<section>
+<h2>Método da ferramenta</h2>
+<p><span class="label">Adaptação Root Trust</span>Estimativa simples de custo do tempo de equipe atribuído à dívida, com projeção de 12 meses sob premissas constantes.</p>
+<ul class="formula">
+<li>N = quantidade de profissionais da equipe considerada.</li>
+<li>K = custo médio mensal por profissional, com encargos e benefícios conforme a base informada.</li>
+<li>m = fração do tempo total da equipe dedicada à manutenção (de 0% a 100%).</li>
+<li>q = fração dessa manutenção atribuída à dívida técnica, isto é, retrabalho e esforço extra causados por limitações técnicas (de 0% a 100%).</li>
+<li>D = N × K × m × q, custo mensal estimado atribuído à dívida.</li>
+<li>Projeção de 12 meses = 12 × D, mantidos a mesma equipe, os mesmos custos e os mesmos percentuais.</li>
+</ul>
+<p>Manutenção necessária ao funcionamento do sistema não é, por si, dívida técnica. Valores desconhecidos não devem ser tratados como zero, e o resultado correspondente não deve ser calculado quando um dado essencial faltar.</p>
+</section>
+
+<section>
+<h2>Limites</h2>
+<ul>
+<li>O resultado é custo alocado sob as estimativas informadas. Não representa economia garantida, nem o custo de quitar a dívida, nem o orçamento de uma modernização.</li>
+<li>A projeção de 12 meses não é previsão. Ela não considera crescimento de equipe, mudanças de custo, novas funcionalidades nem a dívida acumulada ao longo do tempo.</li>
+<li>A ferramenta não analisa código, não mede qualidade e não atribui gravidade ou classificação de saúde ao sistema.</li>
+<li>Estimativas de percentual dependem de registros de tempo ou de julgamento da liderança técnica. Quanto menos dados, maior a incerteza do resultado.</li>
+</ul>
+</section>
+
+<section>
+<h2>Próximos passos</h2>
+<ol>
+<li>Montar um inventário dos itens de dívida técnica conhecidos, com descrição concreta e área afetada.</li>
+<li>Para cada item, registrar a consequência de mantê-lo: tempo extra, risco de falha, atraso de entregas ou dificuldade de contratação e onboarding.</li>
+<li>Estimar a fração de manutenção atribuída a cada item, com a origem da estimativa (registro de tempo, histórico de chamados ou opinião da equipe).</li>
+<li>Comparar o custo estimado com o custo de intervenção, considerando o ciclo de vida do sistema e não apenas o próximo trimestre.</li>
+<li>Repetir a estimativa após mudanças relevantes na equipe, no sistema ou nos processos.</li>
+</ol>
+</section>
+
+<section class="sources">
+<h2>Fontes oficiais consultadas</h2>
+<ul>
+<li><span class="label">Referência oficial</span>Software Engineering Institute, Carnegie Mellon University. <em>Managing Technical Debt: Identify Technical Debt Items</em>, 22 set. 2022. <a href="https://www.sei.cmu.edu/library/managing-technical-debt-identify-technical-debt-items/">sei.cmu.edu/library/managing-technical-debt-identify-technical-debt-items</a></li>
+</ul>
+<p>Consultada em 12/10/2026. Escopo de método: F23–F25 da Root Trust, versão de 11/10/2026. A fórmula e as premissas são uma adaptação educativa, não um modelo oficial do SEI.</p>
+</section>
+
+<section class="cta">
+<h2>Solicitar diagnóstico</h2>
+<p>Conversa inicial gratuita de qualificação, pelo e-mail contato@roottrust.com.br. Não é auditoria, não há agenda automática e não inclui relatório personalizado.</p>
+</section>
+</main>
+</body>
+</html>

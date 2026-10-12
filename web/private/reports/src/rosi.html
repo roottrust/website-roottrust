@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>ROSI e ponto de equilíbrio — relatório padrão v1</title>
+<link rel="stylesheet" href="report.css">
+</head>
+<body>
+<header class="masthead">
+  <img class="signature" src="../../../../docs/design/assets/logos/horizontal/roottrust-horizontal-positivo.svg" alt="Root Trust">
+  <p class="kicker">Relatório padrão · Ferramenta ROSI · v1</p>
+</header>
+<main>
+<h1>ROSI e ponto de equilíbrio</h1>
+<p class="lede">Como comparar o custo de uma proteção adicional com a redução estimada de perdas, sob premissas explícitas.</p>
+
+<aside class="notice"><strong>Material genérico.</strong> Não usa respostas, cálculos ou dados de qualquer pessoa ou empresa. Não é diagnóstico, auditoria, certificação, previsão ou benchmark, e não é personalizado a partir das suas respostas.</aside>
+
+<section>
+<h2>O que o tema significa</h2>
+<p>O retorno sobre investimento em segurança (ROSI) compara o benefício esperado de uma medida de proteção com o custo dela no mesmo período. O benefício é a redução estimada de perdas financeiras, e não um lucro realizado. O resultado só é tão confiável quanto as estimativas de perda, frequência, eficácia e custo que o alimentam.</p>
+<p>A estimativa de perdas exige identificar e analisar o risco de forma documentada. O NIST IR 8286A Rev. 1 trata justamente da identificação e da estimativa de risco de segurança cibernética para a gestão de risco corporativo, e serve de base para estruturar essas premissas.</p>
+</section>
+
+<section>
+<h2>Método da ferramenta</h2>
+<p><span class="label">Adaptação Root Trust</span>Simplificação com horizonte de 12 meses e hipóteses visíveis. Não é o modelo oficial de nenhuma instituição citada.</p>
+<ul class="formula">
+<li>L = prejuízo por incidente × frequência anual esperada de incidentes com prejuízo (perda de referência, mantendo os controles atuais).</li>
+<li>f = (12 − d) / 12, para prazo d em meses até a proteção estar efetiva (f = 0 quando d ≥ 12).</li>
+<li>B = L × e × f, em que e é a redução estimada das perdas durante a operação efetiva (de 0% a 100%).</li>
+<li>ROSI = (B − C) / C × 100, para custo adicional C &gt; 0 no período de 12 meses.</li>
+<li>Redução de equilíbrio = C / (L × f) × 100, quando L × f &gt; 0. Equilíbrio é ROSI de 0%.</li>
+</ul>
+<p>Custo e perda precisam estar na mesma moeda e no mesmo horizonte. Valores desconhecidos não devem ser tratados como zero. Quando um dado essencial falta, o resultado correspondente não deve ser calculado.</p>
+</section>
+
+<section>
+<h2>Limites</h2>
+<ul>
+<li>O resultado depende inteiramente das premissas. Não representa economia realizada nem a postura de segurança da organização.</li>
+<li>Um percentual de ROSI positivo não recomenda contratar a proteção; um negativo não recomenda dispensá-la.</li>
+<li>Um equilíbrio acima de 100% indica que a redução necessária excede as perdas incluídas no cenário, e não deve ser truncado.</li>
+<li>O modelo analisa um cenário por vez e não soma riscos diferentes. Benefícios de outras proteções já existentes não são atribuídos à medida avaliada.</li>
+<li>Prazo de 12 meses ou mais significa que não há benefício dentro do horizonte.</li>
+</ul>
+</section>
+
+<section>
+<h2>Próximos passos</h2>
+<ol>
+<li>Definir um único cenário de incidente e listar as perdas financeiras sem sobreposição entre elas.</li>
+<li>Registrar a origem de cada estimativa: histórico próprio, cotação, referência externa ou hipótese declarada.</li>
+<li>Comparar a operação atual com a proteção adicional, incluindo implantação, despesas e trabalho interno do período.</li>
+<li>Revisar as premissas com quem responde pela área de segurança e pela área financeira antes de decidir.</li>
+<li>Repetir a análise quando surgirem dados novos, como incidentes reais ou cotações formais.</li>
+</ol>
+</section>
+
+<section class="sources">
+<h2>Fontes oficiais consultadas</h2>
+<ul>
+<li><span class="label">Referência oficial</span>NIST. <em>Identifying and Estimating Cybersecurity Risk for Enterprise Risk Management</em> (NIST IR 8286A Rev. 1), dez/2025. <a href="https://csrc.nist.gov/pubs/ir/8286/a/r1/final">csrc.nist.gov/pubs/ir/8286/a/r1/final</a></li>
+</ul>
+<p>Consultada em 12/10/2026. Escopo de método: F03–F18 da Root Trust, versão de 11/10/2026.</p>
+</section>
+
+<section class="cta">
+<h2>Solicitar diagnóstico</h2>
+<p>Conversa inicial gratuita de qualificação, pelo e-mail contato@roottrust.com.br. Não é auditoria, não há agenda automática e não inclui relatório personalizado.</p>
+</section>
+</main>
+</body>
+</html>

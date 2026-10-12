@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Migração para nuvem — relatório padrão v1</title>
+<link rel="stylesheet" href="report.css">
+</head>
+<body>
+<header class="masthead">
+  <img class="signature" src="../../../../docs/design/assets/logos/horizontal/roottrust-horizontal-positivo.svg" alt="Root Trust">
+  <p class="kicker">Relatório padrão · Ferramenta Migração para nuvem · v1</p>
+</header>
+<main>
+<h1>Migração para nuvem: comparação de custos</h1>
+<p class="lede">Como comparar o custo estimado de manter o ambiente atual com o de migrar e operar na nuvem, no mesmo período.</p>
+
+<aside class="notice"><strong>Material genérico.</strong> Não usa respostas, cálculos ou dados de qualquer pessoa ou empresa. Não é cotação, recomendação de migração, auditoria, previsão, certificação ou benchmark, e não é personalizado a partir das suas respostas.</aside>
+
+<section>
+<h2>O que o tema significa</h2>
+<p>Migrar para a nuvem muda a forma de pagar pela infraestrutura: parte dos custos passa a ser de uso e serviço, e outra parte continua local ou aparece como custo único de migração, desativação e treinamento. Uma comparação justa precisa colocar os dois cenários no mesmo período e no mesmo escopo.</p>
+<p>A documentação de fornecedores de nuvem recomenda estimar custos a partir da arquitetura pretendida, incluir custos operacionais, habilidades e treinamento, e reavaliar a estimativa quando a realidade se afastar das projeções. O guia da AWS para business case também separa os custos do ambiente atual dos custos do modelo futuro e considera cenários de migração, modernização, desativação e execução paralela.</p>
+</section>
+
+<section>
+<h2>Método da ferramenta</h2>
+<p><span class="label">Adaptação Root Trust</span>Comparação aritmética de três totais informados para o horizonte escolhido, com 12 meses como padrão ou 36 meses.</p>
+<ul class="formula">
+<li>A = custo total de manter o ambiente atual no horizonte.</li>
+<li>O = custo operacional total do cenário com migração, incluindo o ambiente antigo durante a transição, a coexistência e a parte que permanecer local.</li>
+<li>T = custos únicos de migrar ou desativar ainda não incluídos em O.</li>
+<li>M = O + T, custo total de migrar e operar no horizonte.</li>
+<li>Diferença = A − M. Positiva indica menor custo estimado com migração; negativa indica maior custo.</li>
+<li>Percentual = 100 × (A − M) / A, somente quando A &gt; 0. Com A = 0, o percentual não tem base de comparação.</li>
+</ul>
+<p>Os valores devem ser finitos, não negativos e comparáveis em moeda, período e escopo. Zero declarado é válido; campo desconhecido não equivale a zero. Ao trocar o horizonte, os totais devem ser revisados, e custos únicos não são multiplicados automaticamente.</p>
+</section>
+
+<section>
+<h2>Limites</h2>
+<ul>
+<li>O resultado depende inteiramente dos totais informados. Diferença positiva é uma estimativa sob essas premissas, não economia realizada.</li>
+<li>A ferramenta não consulta preços, não aplica descontos, não compara provedores e não substitui cotação formal.</li>
+<li>Não há payback, recomendação de compra ou conclusão automática sobre migrar. Fatores como requisitos de serviço, segurança, conformidade, continuidade e habilidades da equipe ficam fora do cálculo.</li>
+<li>Custos do ambiente atual que não foram incluídos em A não aparecem na comparação, e custos de transição não incluídos em T também ficam de fora.</li>
+</ul>
+</section>
+
+<section>
+<h2>Próximos passos</h2>
+<ol>
+<li>Definir o escopo da comparação: quais sistemas, ambientes e equipes entram no cálculo e quais ficam de fora.</li>
+<li>Levantar o custo total de manter o ambiente atual para o horizonte escolhido, com a origem de cada valor.</li>
+<li>Descrever a arquitetura pretendida na nuvem e estimar O, incluindo a coexistência e a parte que continuar local.</li>
+<li>Listar os custos únicos de migração e desativação em T, sem repetir despesas já incluídas em O.</li>
+<li>Pedir cotações formais aos fornecedores considerados e revisar a comparação antes de qualquer decisão.</li>
+<li>Reavaliar as estimativas após o piloto ou a primeira migração, comparando o previsto com o realizado.</li>
+</ol>
+</section>
+
+<section class="sources">
+<h2>Fontes oficiais consultadas</h2>
+<ul>
+<li><span class="label">Doc. de fornecedor</span>Amazon Web Services. <em>Detailed business case</em>, AWS Prescriptive Guidance (Application Portfolio Assessment Guide). <a href="https://docs.aws.amazon.com/prescriptive-guidance/latest/application-portfolio-assessment-guide/detailed-business-case.html">docs.aws.amazon.com/prescriptive-guidance/latest/application-portfolio-assessment-guide/detailed-business-case.html</a></li>
+<li><span class="label">Doc. de fornecedor</span>Microsoft. <em>Plan your Azure environment for cost estimation</em>, Cloud Adoption Framework for Azure. <a href="https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/plan/estimate-total-cost-of-ownership">learn.microsoft.com/en-us/azure/cloud-adoption-framework/plan/estimate-total-cost-of-ownership</a></li>
+</ul>
+<p>Consultadas em 12/10/2026. Documentação de fornecedores usada apenas como orientação geral de cobertura de custos; não recomenda nenhum fornecedor, e não foram usados seus percentuais de referência. Escopo de método: F26–F29 da Root Trust, versão de 11/10/2026.</p>
+</section>
+
+<section class="cta">
+<h2>Solicitar diagnóstico</h2>
+<p>Conversa inicial gratuita de qualificação, pelo e-mail contato@roottrust.com.br. Não é cotação, não é auditoria, não há agenda automática e não inclui relatório personalizado.</p>
+</section>
+</main>
+</body>
+</html>
