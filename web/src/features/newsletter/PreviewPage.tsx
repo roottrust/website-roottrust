@@ -20,10 +20,20 @@ export function PreviewPage({ edicao, mode }: { edicao: EdicaoPublica; mode: For
         <div className={styles.inner}>
           <article className={styles.reading} aria-labelledby="titulo">
             <BackLink />
-            <DemoPill />
+            {edicao.demo ? <DemoPill /> : null}
             <EdicaoMeta edicao={edicao} />
             <h1 id="titulo" className={styles.previewTitle}>{edicao.titulo}</h1>
             <Abertura edicao={edicao} className={styles.readingText} />
+            {edicao.fontes?.length ? (
+              <section aria-labelledby="fontes">
+                <h2 id="fontes" className={styles.sourcesTitle}>Fontes</h2>
+                <ul className={styles.sources}>
+                  {edicao.fontes.map((fonte) => (
+                    <li key={fonte.href}><a href={fonte.href} target="_blank" rel="noopener noreferrer">{fonte.titulo}</a></li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
           </article>
         </div>
       </section>

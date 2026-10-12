@@ -196,3 +196,14 @@ for (const path of ["/newsletter", "/newsletter/edicoes", `/newsletter/edicoes/$
     expect(w.problems).toEqual([]);
   });
 }
+
+test("catalog routes (demo samples) expose no private revision fields in HTML or RSC and keep the demo label", async ({ request }) => {
+  for (const path of ["/newsletter", "/newsletter/edicoes", `/newsletter/edicoes/${recente.slug}`]) {
+    for (const headers of [{} as Record<string, string>, { RSC: "1" }]) {
+      const text = await (await request.get(path, { headers })).text();
+      expect(text, path).not.toMatch(/"corpo"|"draftId"|"currentRevision"|edition_revisions|edition_drafts|editions_public/);
+    }
+  }
+  expect(await (await request.get(`/newsletter/edicoes/${recente.slug}`)).text()).toMatch(/demonstra/i);
+  expect((await request.get("/newsletter/edicoes/slug-bem-formado-inexistente")).status()).toBe(404);
+});

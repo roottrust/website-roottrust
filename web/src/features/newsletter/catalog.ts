@@ -7,6 +7,12 @@ export interface SegmentoAbertura {
   readonly href?: string;
 }
 
+export interface FonteEdicao {
+  readonly titulo: string;
+  readonly href: string;
+}
+
+// Allowlist of what may reach the page, RSC payload and client JS. Never add the edition body here.
 export interface EdicaoPublica {
   readonly id: string;
   readonly slug: string;
@@ -14,7 +20,8 @@ export interface EdicaoPublica {
   readonly pilar: Pilar;
   readonly titulo: string;
   readonly abertura: readonly SegmentoAbertura[];
-  readonly demo: true;
+  readonly fontes?: readonly FonteEdicao[];
+  readonly demo: boolean;
 }
 
 export const EDICOES_PUBLICAS: readonly EdicaoPublica[] = [

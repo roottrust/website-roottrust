@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getEdicaoBySlug } from "@/features/newsletter/catalog";
+import { getEdicao } from "@/features/newsletter/current";
 import { PreviewPage } from "@/features/newsletter/PreviewPage";
 import { resolveFormMode } from "@/lib/forms";
 
@@ -16,7 +16,7 @@ function previewDescription(abertura: readonly { t: string }[]): string {
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const edicao = getEdicaoBySlug((await params).slug);
+  const edicao = await getEdicao((await params).slug);
   if (!edicao) notFound();
   return {
     title: { absolute: `${edicao.titulo} — Prévia · Root Trust` },
@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function Page({ params }: Props) {
-  const edicao = getEdicaoBySlug((await params).slug);
+  const edicao = await getEdicao((await params).slug);
   if (!edicao) notFound();
   return <PreviewPage edicao={edicao} mode={resolveFormMode(process.env.FORM_MODE)} />;
 }

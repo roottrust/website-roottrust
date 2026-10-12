@@ -58,7 +58,7 @@ export function ReadLink({ edicao }: { edicao: EdicaoPublica }) {
 export function EdicaoCard({ edicao }: { edicao: EdicaoPublica }) {
   return (
     <article className={styles.card} aria-labelledby={`card-${edicao.slug}`}>
-      <DemoPill />
+      {edicao.demo ? <DemoPill /> : null}
       <EdicaoMeta edicao={edicao} />
       <h3 id={`card-${edicao.slug}`} className={styles.cardTitle}>{edicao.titulo}</h3>
       <Abertura edicao={edicao} />

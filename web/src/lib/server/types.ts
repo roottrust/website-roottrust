@@ -9,6 +9,9 @@ export const COLLECTIONS = {
   jobs: "jobs",
   reportDeliveries: "report_deliveries",
   emailQuota: "email_quota",
+  editionDrafts: "edition_drafts",
+  editionRevisions: "edition_revisions",
+  editionsPublic: "editions_public",
 } as const;
 export type Collection = (typeof COLLECTIONS)[keyof typeof COLLECTIONS];
 
@@ -121,4 +124,54 @@ export interface EmailQuotaRecord {
   id: string;
   used: number;
   expiresAt: string;
+}
+
+// Newsletter editions. `edition_revisions` is private (full body) and immutable: a revision is written once, never
+// updated, so approval can bind to the exact text a reviewer saw. `edition_drafts` is the mutable head (current revision +
+// workflow status). `editions_public` is the only collection the site reads, written solely by projectPublicEdition.
+export interface EditionOpeningSegment {
+  t: string;
+  href?: string;
+}
+export interface EditionSource {
+  titulo: string;
+  href: string;
+}
+
+export interface EditionRevisionRecord {
+  id: string; // `${draftId}.${revision}`
+  draftId: string;
+  revision: number;
+  slug: string;
+  data: string;
+  pilar: string;
+  titulo: string;
+  corpo: string; // PRIVATE: full editorial body, never projected
+  abertura: EditionOpeningSegment[]; // derived from `corpo` (first substantive paragraph, N08)
+  fontes: EditionSource[];
+  createdAt: string;
+}
+
+export type EditionDraftStatus = "pending" | "approved" | "rejected";
+export interface EditionDraftRecord {
+  id: string;
+  slug: string;
+  currentRevision: number;
+  status: EditionDraftStatus;
+  approvedRevision?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Doc ID is the slug. `draftId`/`revision` are for audit and never reach the page.
+export interface EditionPublicRecord {
+  slug: string;
+  data: string;
+  pilar: string;
+  titulo: string;
+  abertura: EditionOpeningSegment[];
+  fontes: EditionSource[];
+  draftId: string;
+  revision: number;
+  publishedAt: string;
 }

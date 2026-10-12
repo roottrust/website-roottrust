@@ -1,11 +1,18 @@
 import { validateContact, validateEmail } from "../forms";
-import { TOOL_IDS, type ToolId } from "./types";
+import { PILARES } from "../../features/newsletter/catalog";
+import { TOOL_IDS, type EditionOpeningSegment, type EditionSource, type ToolId } from "./types";
 
 export const MAX_BODY_BYTES = 8 * 1024;
 
 export type Parsed<T> = { ok: true; value: T } | { ok: false; fields: string[] };
 
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+export const MAX_EDITION_BYTES = 64 * 1024;
+
+export function isEditionSlug(value: unknown): value is string {
+  return typeof value === "string" && value.length <= 80 && SLUG.test(value);
+}
 
 function asRecord(body: unknown): Record<string, unknown> | undefined {
   return typeof body === "object" && body !== null && !Array.isArray(body) ? (body as Record<string, unknown>) : undefined;
@@ -60,4 +67,91 @@ export function parseReport(body: unknown): Parsed<{ email: string; toolId: Tool
   const fields = [...extra, ...(email ? [] : ["email"]), ...(toolId ? [] : ["toolId"]), ...(consentOk ? [] : ["commercialConsent"])];
   if (fields.length || !email || !toolId) return { ok: false, fields };
   return { ok: true, value: { email, toolId, commercialConsent: consent === true } };
+}
+
+// Only absolute https URLs without credentials. Returns the normalized href.
+export function checkHttpsUrl(value: unknown): string | undefined {
+  if (typeof value !== "string" || value.length > 2048 || /[\s\p{Cc}]/u.test(value)) return undefined;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && url.hostname && !url.username && !url.password ? url.href : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+const STRUCTURAL_LINE = /^(#{1,6}\s|>|[-*+]\s|\d+[.)]\s|```|---|\|)/m;
+const MIN_OPENING_CHARS = 40;
+export const MAX_OPENING_CHARS = 2000;
+const INLINE_LINK = /\[([^\]\n]{1,300})\]\(([^)\s]{1,2048})\)/g;
+
+export function isIsoDate(value: unknown): value is string {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const time = Date.parse(`${value}T00:00:00Z`);
+  return !Number.isNaN(time) && new Date(time).toISOString().slice(0, 10) === value;
+}
+
+// `corpo` is the editorial body only (title, greeting, preheader, signature and footer are not part of it), so the opening
+// is its FIRST paragraph (N08), whole: if that paragraph is structural, too short, longer than MAX_OPENING_CHARS (never
+// truncated; usually a missing separator) or has an invalid link, the body is rejected, never a later paragraph used.
+// Only `[text](https://...)` is kept, as structured data; other markup stays literal text and is escaped on render.
+// A URL with parentheses is rejected rather than published truncated.
+export function extractOpening(corpo: string): EditionOpeningSegment[] | undefined {
+  const first = corpo
+    .replace(/\r\n?|[\u0085\u2028\u2029]/g, "\n")
+    .split(/\n[^\S\n]*\n/)
+    .map((block) => block.trim())
+    .find((block) => block);
+  if (!first || STRUCTURAL_LINE.test(first)) return undefined;
+  const text = first.replace(/\s*\n\s*/g, " ");
+  if (text.length < MIN_OPENING_CHARS || text.length > MAX_OPENING_CHARS || text.includes("![")) return undefined;
+  const segments: EditionOpeningSegment[] = [];
+  let last = 0;
+  for (const match of text.matchAll(INLINE_LINK)) {
+    const href = match[2].includes("(") ? undefined : checkHttpsUrl(match[2]);
+    if (!href || !match[1].trim()) return undefined;
+    if (match.index > last) segments.push({ t: text.slice(last, match.index) });
+    segments.push({ t: match[1], href });
+    last = match.index + match[0].length;
+  }
+  if (last < text.length) segments.push({ t: text.slice(last) });
+  return segments.some((segment) => segment.t.includes("](")) ? undefined : segments;
+}
+
+export interface EditionInput {
+  slug: string;
+  data: string;
+  pilar: string;
+  titulo: string;
+  corpo: string;
+  fontes: EditionSource[];
+  abertura: EditionOpeningSegment[];
+}
+
+// Draft contract for the routine (T4.2): exact keys, 64 KiB cap, opening derived here (never trusted from the caller).
+export function parseEditionInput(body: unknown): Parsed<EditionInput> {
+  const record = asRecord(body);
+  if (!record) return { ok: false, fields: ["body"] };
+  const extra = unknownKeys(record, ["slug", "data", "pilar", "titulo", "corpo", "fontes"]);
+  const { slug, data, pilar, titulo, corpo, fontes } = record;
+  const fields = [...extra];
+  if (!isEditionSlug(slug)) fields.push("slug");
+  if (!isIsoDate(data)) fields.push("data");
+  if (typeof pilar !== "string" || !(PILARES as readonly string[]).includes(pilar)) fields.push("pilar");
+  const title = typeof titulo === "string" ? titulo.trim() : "";
+  if (!title || title.length > 200 || /\p{Cc}/u.test(title)) fields.push("titulo");
+  const abertura = typeof corpo === "string" && Buffer.byteLength(corpo) <= MAX_EDITION_BYTES ? extractOpening(corpo) : undefined;
+  if (!abertura) fields.push("corpo");
+  const sources: EditionSource[] = [];
+  let sourcesOk = Array.isArray(fontes) && fontes.length <= 20;
+  for (const item of sourcesOk ? (fontes as unknown[]) : []) {
+    const source = asRecord(item);
+    const href = source && !unknownKeys(source, ["titulo", "href"]).length ? checkHttpsUrl(source.href) : undefined;
+    const label = typeof source?.titulo === "string" ? source.titulo.trim() : "";
+    if (!href || !label || label.length > 200 || /\p{Cc}/u.test(label)) sourcesOk = false;
+    else sources.push({ titulo: label, href });
+  }
+  if (!sourcesOk) fields.push("fontes");
+  if (fields.length || !abertura) return { ok: false, fields };
+  return { ok: true, value: { slug: slug as string, data: data as string, pilar: pilar as string, titulo: title, corpo: corpo as string, fontes: sources, abertura } };
 }

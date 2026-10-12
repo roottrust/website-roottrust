@@ -206,6 +206,9 @@ describe("transactions", () => {
 });
 
 describe("server isolation", () => {
+  // Server-only readers of the public catalog (Server Components; never imported from "use client" files).
+  const SERVER_READERS = ["src/features/newsletter/source.ts", "src/features/newsletter/current.ts"];
+
   const walk = (dir: string): string[] =>
     readdirSync(dir).flatMap((name) => {
       const path = join(dir, name);
@@ -215,7 +218,7 @@ describe("server isolation", () => {
   it("only server code and API routes import lib/server", () => {
     const offenders = walk("src").filter((file) => {
       const normalized = file.replaceAll("\\", "/");
-      if (normalized.startsWith("src/lib/server/") || normalized.startsWith("src/app/api/")) return false;
+      if (normalized.startsWith("src/lib/server/") || normalized.startsWith("src/app/api/") || SERVER_READERS.includes(normalized)) return false;
       return /from\s+["'][^"']*(?:lib\/server|\/server\/|firebase-admin)/.test(readFileSync(file, "utf8"));
     });
     expect(offenders).toEqual([]);

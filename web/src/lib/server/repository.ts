@@ -1,10 +1,10 @@
 import { randomInt, randomUUID } from "node:crypto";
 import { opaqueId } from "./ids";
-import { checkEmail } from "./validation";
+import { checkEmail, extractOpening, type EditionInput } from "./validation";
 import { enqueueJob } from "./jobs";
 import type { Denied, Gate } from "./limits";
 import type { Store, Tx } from "./store";
-import { COLLECTIONS, JOB_KINDS, type DiagnosticRecord, type JobRecord, type LeadEventRecord, type LeadRecord, type ReportDeliveryRecord, type SubscriptionRecord, type SubscriptionStatus, type ToolId } from "./types";
+import { COLLECTIONS, JOB_KINDS, type DiagnosticRecord, type EditionDraftRecord, type EditionPublicRecord, type EditionRevisionRecord, type JobRecord, type LeadEventRecord, type LeadRecord, type ReportDeliveryRecord, type SubscriptionRecord, type SubscriptionStatus, type ToolId } from "./types";
 
 const REPORT_MAX_ATTEMPTS = 8;
 
@@ -185,5 +185,83 @@ export async function withdrawCommercialConsent(
     tx.set(COLLECTIONS.leads, id, lead);
     tx.set(COLLECTIONS.leadEvents, eventId, event);
     return "withdrawn";
+  });
+}
+
+// A revision is written once and never updated: approval (T4.3) binds to `${draftId}.${revision}` and so to the exact text
+// that was reviewed. Saving never publishes. A new revision (regeneration) resets the draft to "pending" and moves
+// `currentRevision`, which is what makes older revisions stale for any later approval. Approved drafts are frozen.
+export async function saveEditionRevision(
+  store: Store,
+  input: EditionInput & { draftId?: string },
+  now: Date,
+): Promise<{ ok: true; draftId: string; revision: number } | { ok: false; reason: "not_found" | "approved" | "invalid_body" }> {
+  const abertura = extractOpening(input.corpo);
+  if (!abertura) return { ok: false, reason: "invalid_body" };
+  const at = now.toISOString();
+  return store.transaction(async (tx) => {
+    const current = input.draftId ? await tx.get<EditionDraftRecord>(COLLECTIONS.editionDrafts, input.draftId) : undefined;
+    if (input.draftId && !current) return { ok: false as const, reason: "not_found" as const };
+    if (current?.status === "approved") return { ok: false as const, reason: "approved" as const };
+    const draftId = current?.id ?? `ed_${randomUUID()}`;
+    const revision = (current?.currentRevision ?? 0) + 1;
+    const id = `${draftId}.${revision}`;
+    if (await tx.get(COLLECTIONS.editionRevisions, id)) throw new Error("edition_revision_exists");
+    const record: EditionRevisionRecord = {
+      id,
+      draftId,
+      revision,
+      slug: input.slug,
+      data: input.data,
+      pilar: input.pilar,
+      titulo: input.titulo,
+      corpo: input.corpo,
+      abertura,
+      fontes: input.fontes,
+      createdAt: at,
+    };
+    const draft: EditionDraftRecord = { id: draftId, slug: input.slug, currentRevision: revision, status: "pending", createdAt: current?.createdAt ?? at, updatedAt: at };
+    tx.set(COLLECTIONS.editionRevisions, id, record);
+    tx.set(COLLECTIONS.editionDrafts, draftId, draft);
+    return { ok: true as const, draftId, revision };
+  });
+}
+
+// The only place that builds the public record: an explicit allowlist, so `corpo` (or any future private field) cannot leak.
+export function projectPublicEdition(revision: EditionRevisionRecord, publishedAt: string): EditionPublicRecord {
+  return {
+    slug: revision.slug,
+    data: revision.data,
+    pilar: revision.pilar,
+    titulo: revision.titulo,
+    abertura: revision.abertura.map((segment) => (segment.href ? { t: segment.t, href: segment.href } : { t: segment.t })),
+    fontes: revision.fontes.map((source) => ({ titulo: source.titulo, href: source.href })),
+    draftId: revision.draftId,
+    revision: revision.revision,
+    publishedAt,
+  };
+}
+
+// Library function for the approval flow (T4.3); no route or job calls it yet. Compare-and-set on the draft: only the
+// current revision of a pending draft can be approved; a repeat for the same revision is "already", never a second write.
+export async function publishEditionRevision(
+  store: Store,
+  draftId: string,
+  revision: number,
+  now: Date,
+): Promise<"published" | "already" | "not_found" | "stale" | "conflict" | "slug_taken"> {
+  return store.transaction(async (tx) => {
+    const draft = await tx.get<EditionDraftRecord>(COLLECTIONS.editionDrafts, draftId);
+    const record = await tx.get<EditionRevisionRecord>(COLLECTIONS.editionRevisions, `${draftId}.${revision}`);
+    if (!draft || !record) return "not_found";
+    if (draft.status === "approved") return draft.approvedRevision === revision ? "already" : "conflict";
+    if (draft.status !== "pending") return "conflict";
+    if (draft.currentRevision !== revision) return "stale";
+    const taken = await tx.get<EditionPublicRecord>(COLLECTIONS.editionsPublic, record.slug);
+    if (taken && taken.draftId !== draftId) return "slug_taken";
+    const at = now.toISOString();
+    tx.set(COLLECTIONS.editionsPublic, record.slug, projectPublicEdition(record, at));
+    tx.set(COLLECTIONS.editionDrafts, draftId, { ...draft, status: "approved", approvedRevision: revision, updatedAt: at });
+    return "published";
   });
 }

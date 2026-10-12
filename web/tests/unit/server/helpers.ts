@@ -108,6 +108,27 @@ export function createFakeFirestore() {
     docs,
     collection: (name: string) => ({
       doc: (id: string) => ref(name, id),
+      orderBy: (field: string, direction: "asc" | "desc" = "asc") => {
+        let max = Number.POSITIVE_INFINITY;
+        const query = {
+          orderBy: () => query,
+          limit: (count: number) => {
+            max = count;
+            return query;
+          },
+          get: async () => ({
+            docs: [...docs]
+              .filter(([path, doc]) => path.startsWith(`${name}/`) && typeof (doc.data as Record<string, unknown>)[field] === "string")
+              .sort((a, b) => {
+                const order = (a[1].data as Record<string, string>)[field] < (b[1].data as Record<string, string>)[field] ? -1 : 1;
+                return direction === "desc" ? -order : order;
+              })
+              .slice(0, max)
+              .map(([path, doc]) => ({ id: path.slice(name.length + 1), data: () => structuredClone(doc.data) })),
+          }),
+        };
+        return query;
+      },
       where: (field: string, op: "<=" | "==", value: unknown) => {
         let max = Number.POSITIVE_INFINITY;
         const query = {
@@ -121,7 +142,7 @@ export function createFakeFirestore() {
               .filter(([path, doc]) => path.startsWith(`${name}/`) && typeof (doc.data as Record<string, unknown>)[field] === "string" && (op === "==" ? (doc.data as Record<string, string>)[field] === String(value) : (doc.data as Record<string, string>)[field] <= String(value)))
               .sort((a, b) => ((a[1].data as Record<string, string>)[field] < (b[1].data as Record<string, string>)[field] ? -1 : 1))
               .slice(0, max)
-              .map(([path]) => ({ id: path.slice(name.length + 1) })),
+              .map(([path, doc]) => ({ id: path.slice(name.length + 1), data: () => structuredClone(doc.data) })),
           }),
         };
         return query;

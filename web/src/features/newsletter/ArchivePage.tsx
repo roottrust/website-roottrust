@@ -32,7 +32,7 @@ export function ArchivePage({ view }: { view: ArchiveView }) {
           <p className={styles.lead}>Conheça os temas da curadoria da Root Trust. Escolha uma prévia e solicite aquela edição completa por e-mail.</p>
           <div className={styles.actions}>
             <Link className={styles.outlineBtn} href="/newsletter" prefetch={false}>Conhecer a newsletter<Arrow /></Link>
-            <DemoPill>Edições demonstrativas — conteúdo para avaliação do design.</DemoPill>
+            {view.destaque?.demo ? <DemoPill>Edições demonstrativas — conteúdo para avaliação do design.</DemoPill> : null}
           </div>
          </div>
         </div>

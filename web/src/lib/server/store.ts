@@ -18,6 +18,8 @@ export interface Store {
   query(collection: Collection, field: string, upTo: string, limit: number): Promise<string[]>;
   // IDs of documents whose `field` equals `value` (any order, at most `limit`). Same caveat: re-read before acting.
   queryEquals(collection: Collection, field: string, value: string, limit: number): Promise<string[]>;
+  // Snapshot of up to `limit` documents with a string `field`, newest first (`field` DESC), in one non-transactional read.
+  latest<T>(collection: Collection, field: string, limit: number): Promise<{ id: string; data: T }[]>;
 }
 
 const DELETED = Symbol("deleted");
@@ -64,6 +66,13 @@ export function createMemoryStore(): Store & { dump(collection: Collection): Rec
         .slice(0, limit)
         .map(([id]) => id);
     },
+    async latest(collection, field, limit) {
+      return entries(collection)
+        .filter((entry) => typeof (entry[1] as Record<string, unknown>)[field] === "string")
+        .sort((a, b) => ((a[1] as Record<string, string>)[field] < (b[1] as Record<string, string>)[field] ? 1 : -1))
+        .slice(0, limit)
+        .map(([id, value]) => ({ id, data: structuredClone(value) as never }));
+    },
     dump(collection) {
       return Object.fromEntries(entries(collection).map(([id, value]) => [id, structuredClone(value)]));
     },
@@ -72,9 +81,9 @@ export function createMemoryStore(): Store & { dump(collection: Collection): Rec
 
 interface FsSnapshot { exists: boolean; data(): unknown }
 interface FsTransaction { get(ref: unknown): Promise<FsSnapshot>; set(ref: unknown, value: object): unknown; delete(ref: unknown): unknown }
-interface FsQuery { orderBy(field: string): FsQuery; limit(count: number): FsQuery; get(): Promise<{ docs: { id: string }[] }> }
+interface FsQuery { orderBy(field: string, direction?: "asc" | "desc"): FsQuery; limit(count: number): FsQuery; get(): Promise<{ docs: { id: string; data(): unknown }[] }> }
 export interface FirestoreLike {
-  collection(name: string): { doc(id: string): unknown; where(field: string, op: "<=" | "==", value: unknown): FsQuery };
+  collection(name: string): { doc(id: string): unknown; where(field: string, op: "<=" | "==", value: unknown): FsQuery; orderBy(field: string, direction?: "asc" | "desc"): FsQuery };
   runTransaction<T>(fn: (tx: FsTransaction) => Promise<T>): Promise<T>;
 }
 
@@ -110,6 +119,10 @@ export function createFirestoreStore(db: FirestoreLike): Store {
     async queryEquals(collection, field, value, limit) {
       const snapshot = await db.collection(collection).where(field, "==", value).limit(limit).get();
       return snapshot.docs.map((doc) => doc.id);
+    },
+    async latest(collection, field, limit) {
+      const snapshot = await db.collection(collection).orderBy(field, "desc").limit(limit).get();
+      return snapshot.docs.map((doc) => ({ id: doc.id, data: doc.data() as never }));
     },
   };
 }

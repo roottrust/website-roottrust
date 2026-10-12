@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { getLatestEdicao } from "@/features/newsletter/current";
 import { LandingPage } from "@/features/newsletter/LandingPage";
+import { latestOrUnavailable } from "@/features/newsletter/source";
 import { resolveFormMode } from "@/lib/forms";
 
 export const dynamic = "force-dynamic";
@@ -9,6 +11,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function Page() {
-  return <LandingPage mode={resolveFormMode(process.env.FORM_MODE)} />;
+export default async function Page() {
+  const { recente, indisponivel } = await latestOrUnavailable(getLatestEdicao);
+  return <LandingPage mode={resolveFormMode(process.env.FORM_MODE)} recente={recente} indisponivel={indisponivel} />;
 }

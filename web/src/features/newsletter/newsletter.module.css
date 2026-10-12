@@ -95,6 +95,10 @@ a.pagerBtn:hover { background:#262626; color:var(--rt-superficie); }
 .pagerInfo { font:600 15px/1.4 var(--font-body); }
 
 .reading { width:100%; min-width:0; display:flex; flex-direction:column; align-items:flex-start; gap:24px; }
+.sourcesTitle { margin:0 0 8px; font:600 15px/1.4 var(--font-body); }
+.sources { margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:8px; max-width:65ch; font:400 16px/1.6 var(--font-body); }
+.sources a { color:var(--rt-superficie); text-decoration:underline; text-underline-offset:3px; overflow-wrap:anywhere; }
+.sources a:hover { color:var(--rt-folha); }
 .readingText { margin:0; max-width:65ch; font:400 19px/1.7 var(--font-body); text-wrap:pretty; }
 .previewTitle { margin:0; width:100%; min-width:0; font:700 clamp(32px,4vw,52px)/1.08 var(--font-display); letter-spacing:-.02em; text-wrap:balance; overflow-wrap:anywhere; }
 .back { display:inline-flex; align-items:center; gap:10px; min-height:44px; color:var(--rt-superficie); text-decoration:none; font:600 15px/1.4 var(--font-body); transition:color 160ms ease-out; }

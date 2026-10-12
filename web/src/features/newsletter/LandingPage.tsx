@@ -3,7 +3,7 @@ import { NewsletterForm } from "@/components/forms/NewsletterForm";
 import { FrameCanvas } from "@/features/graphics/FrameCanvas";
 import { SymbolAscii } from "@/features/graphics/SymbolAscii";
 import type { FormMode } from "@/lib/forms";
-import { latestEdicao } from "./catalog";
+import type { EdicaoPublica } from "./catalog";
 import { Arrow, EdicaoCard, Eyebrow } from "./NewsletterParts";
 import styles from "./newsletter.module.css";
 
@@ -27,8 +27,7 @@ const FAQ = [
   ["Como cancelo?", "Pelo caminho de cancelamento indicado nos e-mails."],
 ] as const;
 
-export function LandingPage({ mode }: { mode: FormMode }) {
-  const recente = latestEdicao();
+export function LandingPage({ mode, recente, indisponivel = false }: { mode: FormMode; recente: EdicaoPublica | undefined; indisponivel?: boolean }) {
   return (
     <main id="conteudo" data-graphics-root className={styles.root}>
       <FrameCanvas />
@@ -63,7 +62,7 @@ export function LandingPage({ mode }: { mode: FormMode }) {
               <h2 id="amostra" className={styles.title}>Conheça uma edição.</h2>
               <p className={styles.body}>Conheça o assunto pela abertura de cada edição. Receba o conteúdo completo por e-mail, após confirmar seu endereço, e os próximos envios em dias úteis.</p>
             </div>
-            {recente ? <EdicaoCard edicao={recente} /> : <p className={styles.panel}>Ainda não há edições publicadas.</p>}
+            {recente ? <EdicaoCard edicao={recente} /> : <p className={styles.panel}>{indisponivel ? "Não foi possível carregar as edições agora. Tente novamente em instantes." : "Ainda não há edições publicadas."}</p>}
           </div>
         </div>
       </section>
