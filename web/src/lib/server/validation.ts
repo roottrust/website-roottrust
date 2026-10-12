@@ -16,7 +16,7 @@ function unknownKeys(body: Record<string, unknown>, allowed: readonly string[]):
   return Object.keys(body).filter((key) => !allowed.includes(key));
 }
 
-function checkEmail(value: unknown): string | undefined {
+export function checkEmail(value: unknown): string | undefined {
   if (typeof value !== "string" || value.length > 254 || validateEmail(value)) return undefined;
   return value.trim().toLowerCase();
 }

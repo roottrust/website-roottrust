@@ -1,5 +1,6 @@
 import { randomInt, randomUUID } from "node:crypto";
 import { opaqueId } from "./ids";
+import { checkEmail } from "./validation";
 import { enqueueJob } from "./jobs";
 import type { Denied, Gate } from "./limits";
 import type { Store, Tx } from "./store";
@@ -25,7 +26,11 @@ async function touchLead(
     lastInteractionAt: at,
     interactionCount: (current?.interactionCount ?? 0) + 1,
   };
-  if (commercialConsent && !current?.commercialConsent) lead.commercialConsentAt = at;
+  if (commercialConsent && !current?.commercialConsent) {
+    lead.commercialConsentAt = at;
+    lead.commercialConsentOrigin = origin;
+    delete lead.commercialConsentWithdrawnAt;
+  }
   const eventId = `ev_${randomUUID()}`;
   const event: LeadEventRecord = {
     id: eventId,
@@ -134,5 +139,35 @@ export async function transitionSubscription(
     if (current.status !== from) return "conflict";
     tx.set(COLLECTIONS.subscriptions, id, { ...current, status: to, updatedAt: now.toISOString() });
     return "ok";
+  });
+}
+
+export const CONSENT_WITHDRAWAL_ORIGIN = "consentimento:retirada";
+
+// Administrative, local operation (needs DATA_ID_SECRET and storage credentials): the public site cannot prove who owns
+// an e-mail, so withdrawal is never exposed as an unauthenticated endpoint. The operator verifies the request by hand
+// (see docs/web/development.md) and runs this. Idempotent; it does not count as lead activity (retention clock untouched).
+export async function withdrawCommercialConsent(
+  store: Store,
+  secret: string,
+  email: string,
+  now: Date,
+): Promise<"withdrawn" | "no_consent" | "not_found" | "invalid_email"> {
+  const normalized = checkEmail(email);
+  if (!normalized) return "invalid_email";
+  const id = opaqueId(secret, "ld", `email:${normalized}`);
+  const at = now.toISOString();
+  return store.transaction(async (tx) => {
+    const current = await tx.get<LeadRecord>(COLLECTIONS.leads, id);
+    if (!current) return "not_found";
+    if (!current.commercialConsent) return "no_consent";
+    const lead: LeadRecord = { ...current, commercialConsent: false, commercialConsentWithdrawnAt: at };
+    delete lead.commercialConsentAt;
+    delete lead.commercialConsentOrigin;
+    const eventId = `ev_${randomUUID()}`;
+    const event: LeadEventRecord = { id: eventId, leadId: id, origin: CONSENT_WITHDRAWAL_ORIGIN, commercialConsent: false, at };
+    tx.set(COLLECTIONS.leads, id, lead);
+    tx.set(COLLECTIONS.leadEvents, eventId, event);
+    return "withdrawn";
   });
 }

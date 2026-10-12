@@ -14,6 +14,7 @@ import {
   type Limits,
 } from "./limits";
 import { resolveBackendMode, type BackendMode } from "./mode";
+import { purgeInactiveLeads } from "./retention";
 import { recordDiagnostic, recordReportRequest, requestSubscription } from "./repository";
 import { logEvent, safeErrorCode } from "./safe";
 import { loadFirestoreStore, type Store } from "./store";
@@ -33,6 +34,8 @@ export interface Deps {
   jobHandlers?: JobHandlers;
   // Diagnostic receipt is operational only with a private webhook and the follow-up statement; absent => 503.
   diagnostic?: DiagnosticConfig;
+  // Monotonic milliseconds for the jobs request's time plan; tests inject it.
+  clock?: () => number;
 }
 
 let firestoreStore: Store | undefined;
@@ -59,8 +62,14 @@ const TURNSTILE_HEADER = "x-turnstile-token";
 const JOBS_LEASE_MS = 60_000;
 const JOBS_HANDLER_TIMEOUT_MS = 20_000;
 const JOBS_BATCH = 5;
-const JOBS_BUDGET_MS = 50_000; // must stay below maxDuration of the jobs route
+// Time plan inside the route's maxDuration (60 s): job claims stop when the next handler (20 s) could not end by
+// JOBS_BUDGET_MS, so jobs end by ~35 s plus the last completion write. The window up to MAINTENANCE_DEADLINE_MS is
+// reserved for retention and counter cleanup, so jobs can never starve it. No new maintenance step starts after the
+// deadline, leaving ~8 s for the step in flight. Real durations are unmeasured: PLAN T6.2 gate (see development.md).
+const JOBS_BUDGET_MS = 35_000;
+const MAINTENANCE_DEADLINE_MS = 52_000;
 const PURGE_BATCH = 25;
+const LEAD_PURGE_BATCH = 10;
 const JOBS_MAX_BODY_BYTES = 1024;
 
 function json(status: number, body: Record<string, unknown>, headers: Record<string, string> = {}): Response {
@@ -190,7 +199,7 @@ export const handleReport = (request: Request, deps: Deps = defaultDeps()) =>
     persist: recordReportRequest,
   });
 
-// Internal, scope "jobs": claims a small batch of due jobs and sweeps expired counters. No body is expected.
+// Internal, scope "jobs": claims a small batch of due jobs and sweeps expired counters and six-month-inactive leads. No body is expected.
 // Authentication failures share one generic 401 so callers learn nothing about which check failed.
 export async function handleJobsProcess(request: Request, deps: Deps = defaultDeps()): Promise<Response> {
   if (deps.mode !== "pilot") return unavailable("unavailable");
@@ -198,6 +207,8 @@ export async function handleJobsProcess(request: Request, deps: Deps = defaultDe
     logEvent("error", "pilot_misconfigured", { action: "jobs" });
     return unavailable("misconfigured");
   }
+  const clock = deps.clock ?? Date.now;
+  const startedAt = clock();
   try {
     const store = await deps.getStore();
     const auth = await authenticateInternal(request, {
@@ -219,8 +230,13 @@ export async function handleJobsProcess(request: Request, deps: Deps = defaultDe
       handlerTimeoutMs: JOBS_HANDLER_TIMEOUT_MS,
       budgetMs: JOBS_BUDGET_MS,
     });
-    const purged = await purgeExpired(store, deps.now(), PURGE_BATCH);
-    return json(200, { ...summary, purged });
+    // Retention (a legal duty) first; expired counters use whatever time remains.
+    const pastDeadline = () => clock() - startedAt >= MAINTENANCE_DEADLINE_MS;
+    const leadPurge = await purgeInactiveLeads(store, deps.idSecret, deps.now(), LEAD_PURGE_BATCH, pastDeadline);
+    const purged = await purgeExpired(store, deps.now(), PURGE_BATCH, pastDeadline);
+    const deadlineReached = pastDeadline();
+    if (deadlineReached) logEvent("warn", "jobs_maintenance_deadline", { deferredLeads: leadPurge.deferred, partialLeads: leadPurge.partial });
+    return json(200, { ...summary, purged, leadPurge, deadlineReached });
   } catch (error) {
     logEvent("error", "jobs_failed", { error: safeErrorCode(error) });
     return unavailable("storage_unavailable");

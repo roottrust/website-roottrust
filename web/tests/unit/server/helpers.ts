@@ -97,7 +97,7 @@ export function createFakeFirestore() {
     docs,
     collection: (name: string) => ({
       doc: (id: string) => ref(name, id),
-      where: (field: string, _op: "<=", value: unknown) => {
+      where: (field: string, op: "<=" | "==", value: unknown) => {
         let max = Number.POSITIVE_INFINITY;
         const query = {
           orderBy: () => query,
@@ -107,7 +107,7 @@ export function createFakeFirestore() {
           },
           get: async () => ({
             docs: [...docs]
-              .filter(([path, doc]) => path.startsWith(`${name}/`) && typeof (doc.data as Record<string, unknown>)[field] === "string" && (doc.data as Record<string, string>)[field] <= String(value))
+              .filter(([path, doc]) => path.startsWith(`${name}/`) && typeof (doc.data as Record<string, unknown>)[field] === "string" && (op === "==" ? (doc.data as Record<string, string>)[field] === String(value) : (doc.data as Record<string, string>)[field] <= String(value)))
               .sort((a, b) => ((a[1].data as Record<string, string>)[field] < (b[1].data as Record<string, string>)[field] ? -1 : 1))
               .slice(0, max)
               .map(([path]) => ({ id: path.slice(name.length + 1) })),

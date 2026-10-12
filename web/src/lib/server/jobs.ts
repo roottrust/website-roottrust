@@ -227,11 +227,12 @@ const outcomeKey = (finish: Finish): "done" | "retried" | "dead" | "lost" =>
   finish === "done" ? "done" : finish === "retry" ? "retried" : finish;
 
 // Short-lived counters and single-use markers carry an `expiresAt`; this sweeps the expired ones.
-export async function purgeExpired(store: Store, now: Date, limit: number): Promise<number> {
+export async function purgeExpired(store: Store, now: Date, limit: number, shouldStop: () => boolean = () => false): Promise<number> {
   const at = now.toISOString();
   let purged = 0;
   for (const collection of [COLLECTIONS.rateLimits, COLLECTIONS.replays] as const) {
     for (const id of await store.query(collection, "expiresAt", at, limit)) {
+      if (shouldStop()) return purged;
       purged += await store.transaction(async (tx) => {
         const current = await tx.get<RateLimitRecord | ReplayRecord>(collection, id);
         if (!current || current.expiresAt > at) return 0;

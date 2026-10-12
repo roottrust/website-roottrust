@@ -16,6 +16,8 @@ export interface Store {
   // IDs of documents whose `field` is <= `upTo`, ascending (documents without the field are skipped). Not transactional:
   // callers re-read each ID inside a transaction before acting.
   query(collection: Collection, field: string, upTo: string, limit: number): Promise<string[]>;
+  // IDs of documents whose `field` equals `value` (any order, at most `limit`). Same caveat: re-read before acting.
+  queryEquals(collection: Collection, field: string, value: string, limit: number): Promise<string[]>;
 }
 
 const DELETED = Symbol("deleted");
@@ -56,6 +58,12 @@ export function createMemoryStore(): Store & { dump(collection: Collection): Rec
         .slice(0, limit)
         .map(([id]) => id);
     },
+    async queryEquals(collection, field, value, limit) {
+      return entries(collection)
+        .filter(([, doc]) => (doc as Record<string, unknown>)[field] === value)
+        .slice(0, limit)
+        .map(([id]) => id);
+    },
     dump(collection) {
       return Object.fromEntries(entries(collection).map(([id, value]) => [id, structuredClone(value)]));
     },
@@ -66,7 +74,7 @@ interface FsSnapshot { exists: boolean; data(): unknown }
 interface FsTransaction { get(ref: unknown): Promise<FsSnapshot>; set(ref: unknown, value: object): unknown; delete(ref: unknown): unknown }
 interface FsQuery { orderBy(field: string): FsQuery; limit(count: number): FsQuery; get(): Promise<{ docs: { id: string }[] }> }
 export interface FirestoreLike {
-  collection(name: string): { doc(id: string): unknown; where(field: string, op: "<=", value: unknown): FsQuery };
+  collection(name: string): { doc(id: string): unknown; where(field: string, op: "<=" | "==", value: unknown): FsQuery };
   runTransaction<T>(fn: (tx: FsTransaction) => Promise<T>): Promise<T>;
 }
 
@@ -97,6 +105,10 @@ export function createFirestoreStore(db: FirestoreLike): Store {
       }),
     async query(collection, field, upTo, limit) {
       const snapshot = await db.collection(collection).where(field, "<=", upTo).orderBy(field).limit(limit).get();
+      return snapshot.docs.map((doc) => doc.id);
+    },
+    async queryEquals(collection, field, value, limit) {
+      const snapshot = await db.collection(collection).where(field, "==", value).limit(limit).get();
       return snapshot.docs.map((doc) => doc.id);
     },
   };

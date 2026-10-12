@@ -13,6 +13,8 @@ export type Collection = (typeof COLLECTIONS)[keyof typeof COLLECTIONS];
 export const TOOL_IDS = ["rosi", "shadow-ai", "divida-tecnica", "migracao-para-nuvem"] as const;
 export type ToolId = (typeof TOOL_IDS)[number];
 
+// Origins: "diagnostico" (service request, NOT marketing authorization) and "relatorio:<toolId>". Lead IDs are per
+// identity (WhatsApp or e-mail), so a diagnostic lead and a report lead are distinct records.
 // Never holds tool answers or results: only contact data and origin.
 export interface LeadRecord {
   id: string;
@@ -22,7 +24,10 @@ export interface LeadRecord {
   email?: string;
   origins: string[];
   commercialConsent: boolean;
+  // Only an explicit report-form checkbox sets this; a request without it (or any diagnostic) never does, and never revokes.
   commercialConsentAt?: string;
+  commercialConsentOrigin?: string;
+  commercialConsentWithdrawnAt?: string;
   firstSeenAt: string;
   lastInteractionAt: string;
   interactionCount: number;
