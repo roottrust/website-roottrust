@@ -174,6 +174,12 @@ Novos asserts devem provar regressões reais: movimento intermediário/endereço
 | Claude consome cota em leitura ampla | Alto | Uma tarefa curta, escopo e recortes do PLAN, sem transcrição/exports completos; máximo duas iterações de desempenho antes de consultar. |
 | Árvore suja ou servidor do usuário | Alto | Inspeção WIP/segredos/gerados; não sobrescrever mudanças nem encerrar processo desconhecido. |
 
+## Escopo mínimo de P8.3, sujeito à crítica P8.2
+
+Somente layout.tsx, duas novas fontes locais WOFF2 Latin + símbolos públicos →√≥ (Baloo2/Archivo), registro references/audits/font-optimization.json, allowlist public-assets.json e teste focado de fontes se necessário. Sem alteração de TTF/OFL originais, famílias, pesos, CSS, arte, gráficos ou dependências. Fontes Google Fonts oficiais: Baloo2 v23 wXKrE3kTposypRyd51jcAA.woff2 (33188bytes, versão1.700); Archivo v25 k3kPo8UDI-1M0wlSV9XAw6lQkqWY8Q82sLydOxI.woff2 (34928bytes, versão2.001). Archivo mantém eixo wght100–900 e largura normal100, sem uso de wdth no CSS; Baloo wght400–800. Cobertura Latin pura tinha ausências →√≥, detectadas antes da escrita. Usar respostas oficiais CSS2 text= com todos os codepoints Latin originais + esses três símbolos: origens/repertório em logs/font-baloo-source.json e font-archivo-source.json; Baloo35960bytes/Archivo38924bytes, versões/eixos preservados, nenhuma ausência no repertório. Download permitido ao escritor somente das duas URLs gstatic registradas nesses arquivos públicos para os caminhos locais delimitados, com verificação de resposta/assinatura WOFF2/hash; nenhum comando de gate/servidor/instalação. Registrar cobertura pt-BR real e diferenças Unicode; originais e licenças preservados. Métricas Chromium dos textos de amostra iguais nos pesos400/500/600/700/800; isso não comprova cobertura universal. Provar a hipótese por Lighthouse e CLS antes de aceitar.
+
+Baseline anterior preservada em lighthouse-before-p7; baseline comparável pós-layout em lighthouse-before-p8-fonts. Diagnóstico curto em logs/p8-lcp-diagnostic.json; comparação em logs/font-candidate-metrics.json. LCP observado282–312ms não é o simulado4800–4878ms; não somar esses tempos.
+
 ## 8. Progresso e aprovação
 
 | Tarefa | Responsável | Estado | Evidência/dependência |
@@ -183,9 +189,9 @@ Novos asserts devem provar regressões reais: movimento intermediário/endereço
 | P7.1 Header/scroll | Sonnet | Concluído | Gates69932 lint/types/101unit/build/266E2E6skip; revisão independente aprovada. |
 | P7.2 Aviso/select | Sonnet | Concluído | Gates34414 lint/types/101unit/build/270E2E6skip; revisão6d65922a e geometria320/390/1440 aprovadas. |
 | P7.3 Newsletter | Sonnet | Gates concluídos | Exec57880 lint/types/101unit/build/284E2E6skip; captura/revisão consolidada emP9.1. |
-| P8.1 E2E | Sonnet | Em execução | P7 gates concluídos; checkpoint antes da escrita. |
-| P8.2 Diagnóstico LCP | GPT + Sonnet consulta | Aguardando aprovação | P8.1. |
-| P8.3 Otimização | Sonnet + GPT gates | Aguardando aprovação | P8.2; consultar se sair do escopo. |
+| P8.1 E2E | Sonnet | Concluído | Gates26247 lint/types/101unit/build/284E2E6skip +20repetições(10desktop/10mobile), retries0. |
+| P8.2 Diagnóstico LCP | GPT + Sonnet consulta | Em execução | Baseline pós-layout concluída: 12rodadas, LCP4875,84/4800,737/4878,077/4860ms, CLS0. Consulta27c0e342 em execução; fontes517372bytes transferidos. |
+| P8.3 Otimização | Sonnet + GPT gates | Preparando execução | P8.2; consultar se sair do escopo. |
 | P9.1 Revisão/gates | Sonnet independente + GPT | Aguardando aprovação | P7/P8. |
 | P9.2 Contexto/evidências | Sonnet + GPT PLAN | Aguardando aprovação | P9.1. |
 | P9.3 Aceite | Usuário + GPT | Pendente | Sem antecipar aprovação. |
@@ -767,3 +773,7 @@ P7.3 gates finais57880 exit0 lint/typecheck/101unit/build/284E2E6skip. Logp7-3-f
 P8.1 checkpoint: 3f05f9d360ec66cce20cb3493a7f02ceecf0d94e. Semsegredos/gerados.
 P8.1 escritae6cae2a1-ae28-4d7f-8d77-28c1dcdad0b0 Sonnet5.5 succeeded61s somentefoundation.spec: clockinstallantesgoto/pauseapóshidratar, contador timer350 doisrequestSubmit, asserts349+1ms,errocampos/ariaBusy/aceite350/semrede/storage. GPTgates/repeat10desktop10mobile apósterminal.
 P8.1 gate22204 exit2 no typecheck: TS2352 setTimeout NodeJS.Timeout vsbrowsernumber eTS2556spread na instrumentação. Lintpassou; unit/build/E2E/repeats nãoexecutados. Correção restrita tiposwrapper usandoReflect.apply/assinaturabrowser, semproduto.
+P8.1 correção checkpoint: d0a2d8b22832998d9b187662cff6808ef065a9ab. Sem segredos/gerados.
+P8.1 correçãosessãoe6cae2a1 succeeded11s: Reflect.apply + Object.defineProperty no wrapper, semany/produção. Checkpoint real deste followup é d0a2d8b (retornoClaude citou3f05f9d antigo; prevaleceGit/registroGPT). GPT repete gates/repetições.
+
+P8.1 concluído: gates26247 exit0 lint/typecheck/101unit/build/284E2E6skip;20repetições(10desktop10mobile) em19,6s, retries0. Prova timer349+1 eguarda2requestSubmit/1agendamento. Logp8-1-final-gates.log. Portas3100/3101/3200/3300livres apósencerrarprópriosservidores; usuário3000preservado.

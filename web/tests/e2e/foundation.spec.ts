@@ -45,10 +45,14 @@ test("contact validates, prevents duplicate requests, and retains fields after d
     const w = window as Window & { __submitTimers?: number };
     w.__submitTimers = 0;
     const original = window.setTimeout;
-    window.setTimeout = ((handler: TimerHandler, delay?: number, ...args: unknown[]) => {
-      if (delay === 350) w.__submitTimers = (w.__submitTimers ?? 0) + 1;
-      return original.call(window, handler, delay, ...args);
-    }) as typeof window.setTimeout;
+    Object.defineProperty(window, "setTimeout", {
+      configurable: true,
+      writable: true,
+      value: (...args: unknown[]): number => {
+        if (args[1] === 350) w.__submitTimers = (w.__submitTimers ?? 0) + 1;
+        return Reflect.apply(original, window, args) as number;
+      },
+    });
   });
   const submitTimers = () => page.evaluate(() => (window as Window & { __submitTimers?: number }).__submitTimers);
   const busyButton = form.getByRole("button", { name: "Enviando solicitação…" });

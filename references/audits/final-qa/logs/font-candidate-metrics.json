@@ -1,0 +1,98 @@
+{
+  "fonts": [
+    {
+      "name": "Baloo",
+      "file": "src/assets/fonts/baloo-2/baloo-2-variable.ttf",
+      "url": "https://fonts.gstatic.com/s/baloo2/v23/wXKrE3kTposypRyd51jcAA.woff2",
+      "range": "400 800",
+      "bytesOriginal": 683200,
+      "bytesWoff": 33188,
+      "versionOriginal": "Version 1.700",
+      "versionWoff": "Version 1.700",
+      "missingPtBr": []
+    },
+    {
+      "name": "Archivo",
+      "file": "src/assets/fonts/archivo/archivo-variable.ttf",
+      "url": "https://fonts.gstatic.com/s/archivo/v25/k3kPo8UDI-1M0wlSV9XAw6lQkqWY8Q82sLydOxI.woff2",
+      "range": "100 900",
+      "bytesOriginal": 658596,
+      "bytesWoff": 34928,
+      "versionOriginal": "Version 2.001",
+      "versionWoff": "Version 2.001",
+      "missingPtBr": []
+    }
+  ],
+  "metrics": [
+    {
+      "name": "Baloo",
+      "weights": [
+        {
+          "weight": 400,
+          "original": 1256.863525390625,
+          "woff": 1256.863525390625,
+          "delta": 0
+        },
+        {
+          "weight": 500,
+          "original": 1279.8714599609375,
+          "woff": 1279.8714599609375,
+          "delta": 0
+        },
+        {
+          "weight": 600,
+          "original": 1301.4283447265625,
+          "woff": 1301.4283447265625,
+          "delta": 0
+        },
+        {
+          "weight": 700,
+          "original": 1326.8052978515625,
+          "woff": 1326.8052978515625,
+          "delta": 0
+        },
+        {
+          "weight": 800,
+          "original": 1348.991455078125,
+          "woff": 1348.991455078125,
+          "delta": 0
+        }
+      ]
+    },
+    {
+      "name": "Archivo",
+      "weights": [
+        {
+          "weight": 400,
+          "original": 1337.0423583984375,
+          "woff": 1337.0423583984375,
+          "delta": 0
+        },
+        {
+          "weight": 500,
+          "original": 1361.805419921875,
+          "woff": 1361.805419921875,
+          "delta": 0
+        },
+        {
+          "weight": 600,
+          "original": 1389.279541015625,
+          "woff": 1389.279541015625,
+          "delta": 0
+        },
+        {
+          "weight": 700,
+          "original": 1433.558837890625,
+          "woff": 1433.558837890625,
+          "delta": 0
+        },
+        {
+          "weight": 800,
+          "original": 1499.5782470703125,
+          "woff": 1499.5782470703125,
+          "delta": 0
+        }
+      ]
+    }
+  ]
+}

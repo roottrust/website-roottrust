@@ -1,0 +1,447 @@
+{
+  "environment": {
+    "lighthouse": "13.5.0",
+    "node": "v24.13.1",
+    "os": "win32 10.0.26200",
+    "cpu": "AMD Ryzen 7 5800X 8-Core Processor              x16",
+    "memoryGiB": 11.9,
+    "chrome": "C:\\Users\\renat\\AppData\\Local\\ms-playwright\\chromium-1248\\chrome-win64\\chrome.exe",
+    "preset": "default (mobile emulation, simulated 4x CPU / slow-4G throttling)",
+    "server": "next start, production build, local loopback, FORM_MODE unset"
+  },
+  "routes": [
+    {
+      "name": "home",
+      "path": "/",
+      "rounds": 3,
+      "medians": {
+        "lcpMs": 4875.84,
+        "cls": 0,
+        "tbtMs": 120,
+        "jsTransferBytes": 173328
+      },
+      "range": [
+        4878.258,
+        4875.047999999999,
+        4875.84
+      ],
+      "observedLcp": 309,
+      "fonts": [
+        {
+          "url": "http://127.0.0.1:3200/_next/static/media/archivo_variable-s.p.3e7bum3qpoi16.ttf",
+          "bytes": 257555
+        },
+        {
+          "url": "http://127.0.0.1:3200/_next/static/media/baloo_2_variable-s.p.0nleok4x6v3im.ttf",
+          "bytes": 259817
+        }
+      ],
+      "lcp": {
+        "type": "list",
+        "items": [
+          {
+            "type": "table",
+            "headings": [
+              {
+                "key": "label",
+                "valueType": "text",
+                "label": "Subpart"
+              },
+              {
+                "key": "duration",
+                "valueType": "ms",
+                "label": "Duration"
+              }
+            ],
+            "items": [
+              {
+                "subpart": "timeToFirstByte",
+                "label": "Time to first byte",
+                "duration": 26.565
+              },
+              {
+                "subpart": "elementRenderDelay",
+                "label": "Element render delay",
+                "duration": 282.827
+              }
+            ]
+          },
+          {
+            "type": "node",
+            "lhId": "page-0-SPAN",
+            "path": "1,HTML,1,BODY,3,MAIN,2,DIV,0,SECTION,1,DIV,1,H1,1,SPAN",
+            "selector": "section.j8ab0G_hero > div.j8ab0G_heroCopy > h1.j8ab0G_heroTitle > span.j8ab0G_accentLine",
+            "boundingRect": {
+              "top": 318,
+              "bottom": 417,
+              "left": 20,
+              "right": 392,
+              "width": 372,
+              "height": 100
+            },
+            "snippet": "<span class=\"j8ab0G_accentLine\">",
+            "nodeLabel": "com profundidade."
+          }
+        ]
+      },
+      "css": {
+        "type": "table",
+        "headings": [
+          {
+            "key": "url",
+            "valueType": "url",
+            "label": "URL"
+          },
+          {
+            "key": "totalBytes",
+            "valueType": "bytes",
+            "label": "Transfer Size"
+          },
+          {
+            "key": "wastedMs",
+            "valueType": "timespanMs",
+            "label": "Duration"
+          }
+        ],
+        "items": [
+          {
+            "url": "http://127.0.0.1:3200/_next/static/chunks/1sq5ywg3sj44s.css",
+            "totalBytes": 1305,
+            "wastedMs": 302
+          },
+          {
+            "url": "http://127.0.0.1:3200/_next/static/chunks/17qmjb60stcx7.css",
+            "totalBytes": 8520,
+            "wastedMs": 152
+          }
+        ]
+      }
+    },
+    {
+      "name": "servico",
+      "path": "/servicos/ciberseguranca",
+      "rounds": 3,
+      "medians": {
+        "lcpMs": 4800.737,
+        "cls": 0,
+        "tbtMs": 446.5,
+        "jsTransferBytes": 308974
+      },
+      "range": [
+        4801.174,
+        4800.737,
+        4800.349
+      ],
+      "observedLcp": 282,
+      "fonts": [
+        {
+          "url": "http://127.0.0.1:3200/_next/static/media/archivo_variable-s.p.3e7bum3qpoi16.ttf",
+          "bytes": 257555
+        },
+        {
+          "url": "http://127.0.0.1:3200/_next/static/media/baloo_2_variable-s.p.0nleok4x6v3im.ttf",
+          "bytes": 259817
+        }
+      ],
+      "lcp": {
+        "type": "list",
+        "items": [
+          {
+            "type": "table",
+            "headings": [
+              {
+                "key": "label",
+                "valueType": "text",
+                "label": "Subpart"
+              },
+              {
+                "key": "duration",
+                "valueType": "ms",
+                "label": "Duration"
+              }
+            ],
+            "items": [
+              {
+                "subpart": "timeToFirstByte",
+                "label": "Time to first byte",
+                "duration": 59.991
+              },
+              {
+                "subpart": "elementRenderDelay",
+                "label": "Element render delay",
+                "duration": 221.888
+              }
+            ]
+          },
+          {
+            "type": "node",
+            "lhId": "page-0-P",
+            "path": "1,HTML,1,BODY,3,MAIN,1,SECTION,0,DIV,0,DIV,3,P",
+            "selector": "section._MvEGq_wrap > div._MvEGq_inner > div._MvEGq_heroText > p._MvEGq_lead",
+            "boundingRect": {
+              "top": 313,
+              "bottom": 480,
+              "left": 20,
+              "right": 392,
+              "width": 372,
+              "height": 167
+            },
+            "snippet": "<p class=\"_MvEGq_lead\">",
+            "nodeLabel": "Entenda os riscos dos seus sistemas, organize acessos e prepare sua operação pa…"
+          }
+        ]
+      },
+      "css": {
+        "type": "table",
+        "headings": [
+          {
+            "key": "url",
+            "valueType": "url",
+            "label": "URL"
+          },
+          {
+            "key": "totalBytes",
+            "valueType": "bytes",
+            "label": "Transfer Size"
+          },
+          {
+            "key": "wastedMs",
+            "valueType": "timespanMs",
+            "label": "Duration"
+          }
+        ],
+        "items": [
+          {
+            "url": "http://127.0.0.1:3200/_next/static/chunks/1sq5ywg3sj44s.css",
+            "totalBytes": 1305,
+            "wastedMs": 301
+          },
+          {
+            "url": "http://127.0.0.1:3200/_next/static/chunks/17qmjb60stcx7.css",
+            "totalBytes": 8520,
+            "wastedMs": 151
+          }
+        ]
+      }
+    },
+    {
+      "name": "ferramenta",
+      "path": "/ferramentas/rosi",
+      "rounds": 3,
+      "medians": {
+        "lcpMs": 4878.077,
+        "cls": 0,
+        "tbtMs": 446.5,
+        "jsTransferBytes": 316395
+      },
+      "range": [
+        4935,
+        4875.6449999999995,
+        4878.077
+      ],
+      "observedLcp": 312,
+      "fonts": [
+        {
+          "url": "http://127.0.0.1:3200/_next/static/media/archivo_variable-s.p.3e7bum3qpoi16.ttf",
+          "bytes": 257555
+        },
+        {
+          "url": "http://127.0.0.1:3200/_next/static/media/baloo_2_variable-s.p.0nleok4x6v3im.ttf",
+          "bytes": 259817
+        }
+      ],
+      "lcp": {
+        "type": "list",
+        "items": [
+          {
+            "type": "table",
+            "headings": [
+              {
+                "key": "label",
+                "valueType": "text",
+                "label": "Subpart"
+              },
+              {
+                "key": "duration",
+                "valueType": "ms",
+                "label": "Duration"
+              }
+            ],
+            "items": [
+              {
+                "subpart": "timeToFirstByte",
+                "label": "Time to first byte",
+                "duration": 89.743
+              },
+              {
+                "subpart": "elementRenderDelay",
+                "label": "Element render delay",
+                "duration": 222.379
+              }
+            ]
+          },
+          {
+            "type": "node",
+            "lhId": "page-0-H1",
+            "path": "1,HTML,1,BODY,3,MAIN,1,SECTION,0,DIV,1,DIV,0,DIV,1,H1",
+            "selector": "div._MvEGq_inner > div.KAbXra_heroRow > div.KAbXra_heroText > h1#titulo",
+            "boundingRect": {
+              "top": 185,
+              "bottom": 303,
+              "left": 20,
+              "right": 392,
+              "width": 372,
+              "height": 119
+            },
+            "snippet": "<h1 id=\"titulo\" class=\"KAbXra_h1\">",
+            "nodeLabel": "Explore o retorno de uma proteção adicional."
+          }
+        ]
+      },
+      "css": {
+        "type": "table",
+        "headings": [
+          {
+            "key": "url",
+            "valueType": "url",
+            "label": "URL"
+          },
+          {
+            "key": "totalBytes",
+            "valueType": "bytes",
+            "label": "Transfer Size"
+          },
+          {
+            "key": "wastedMs",
+            "valueType": "timespanMs",
+            "label": "Duration"
+          }
+        ],
+        "items": [
+          {
+            "url": "http://127.0.0.1:3200/_next/static/chunks/02z9b88_8fge_.css",
+            "totalBytes": 2594,
+            "wastedMs": 330
+          },
+          {
+            "url": "http://127.0.0.1:3200/_next/static/chunks/17qmjb60stcx7.css",
+            "totalBytes": 8520,
+            "wastedMs": 180
+          },
+          {
+            "url": "http://127.0.0.1:3200/_next/static/chunks/1sq5ywg3sj44s.css",
+            "totalBytes": 1305,
+            "wastedMs": 330
+          }
+        ]
+      }
+    },
+    {
+      "name": "newsletter",
+      "path": "/newsletter",
+      "rounds": 3,
+      "medians": {
+        "lcpMs": 4860,
+        "cls": 0,
+        "tbtMs": 114,
+        "jsTransferBytes": 167217
+      },
+      "range": [
+        4860,
+        4860,
+        4860
+      ],
+      "observedLcp": 274,
+      "fonts": [
+        {
+          "url": "http://127.0.0.1:3200/_next/static/media/archivo_variable-s.p.3e7bum3qpoi16.ttf",
+          "bytes": 257555
+        },
+        {
+          "url": "http://127.0.0.1:3200/_next/static/media/baloo_2_variable-s.p.0nleok4x6v3im.ttf",
+          "bytes": 259817
+        }
+      ],
+      "lcp": {
+        "type": "list",
+        "items": [
+          {
+            "type": "table",
+            "headings": [
+              {
+                "key": "label",
+                "valueType": "text",
+                "label": "Subpart"
+              },
+              {
+                "key": "duration",
+                "valueType": "ms",
+                "label": "Duration"
+              }
+            ],
+            "items": [
+              {
+                "subpart": "timeToFirstByte",
+                "label": "Time to first byte",
+                "duration": 14.383
+              },
+              {
+                "subpart": "elementRenderDelay",
+                "label": "Element render delay",
+                "duration": 259.907
+              }
+            ]
+          },
+          {
+            "type": "node",
+            "lhId": "page-0-P",
+            "path": "1,HTML,1,BODY,3,MAIN,1,SECTION,0,DIV,0,DIV,0,DIV,2,P",
+            "selector": "div.XTTb9a_inner > div.XTTb9a_heroGrid > div.XTTb9a_heroText > p.XTTb9a_lead",
+            "boundingRect": {
+              "top": 254,
+              "bottom": 393,
+              "left": 20,
+              "right": 392,
+              "width": 372,
+              "height": 139
+            },
+            "snippet": "<p class=\"XTTb9a_lead\">",
+            "nodeLabel": "Cibersegurança, infraestrutura em nuvem e software para decisões sobre operaçõe…"
+          }
+        ]
+      },
+      "css": {
+        "type": "table",
+        "headings": [
+          {
+            "key": "url",
+            "valueType": "url",
+            "label": "URL"
+          },
+          {
+            "key": "totalBytes",
+            "valueType": "bytes",
+            "label": "Transfer Size"
+          },
+          {
+            "key": "wastedMs",
+            "valueType": "timespanMs",
+            "label": "Duration"
+          }
+        ],
+        "items": [
+          {
+            "url": "http://127.0.0.1:3200/_next/static/chunks/1sq5ywg3sj44s.css",
+            "totalBytes": 1305,
+            "wastedMs": 330
+          },
+          {
+            "url": "http://127.0.0.1:3200/_next/static/chunks/17qmjb60stcx7.css",
+            "totalBytes": 8520,
+            "wastedMs": 180
+          }
+        ]
+      }
+    }
+  ]
+}

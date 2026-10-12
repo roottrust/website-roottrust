@@ -1,0 +1,193 @@
+{
+  "environment": {
+    "lighthouse": "13.5.0",
+    "node": "v24.13.1",
+    "os": "win32 10.0.26200",
+    "cpu": "AMD Ryzen 7 5800X 8-Core Processor              x16",
+    "memoryGiB": 11.9,
+    "chrome": "C:\\Users\\renat\\AppData\\Local\\ms-playwright\\chromium-1248\\chrome-win64\\chrome.exe",
+    "preset": "default (mobile emulation, simulated 4x CPU / slow-4G throttling)",
+    "server": "next start, production build, local loopback, FORM_MODE unset"
+  },
+  "summary": [
+    {
+      "name": "home",
+      "path": "/",
+      "rounds": 3,
+      "medians": {
+        "lcpMs": 4876.802,
+        "cls": 0,
+        "tbtMs": 114,
+        "jsTransferBytes": 172501
+      }
+    },
+    {
+      "name": "servico",
+      "path": "/servicos/ciberseguranca",
+      "rounds": 3,
+      "medians": {
+        "lcpMs": 4800.539000000001,
+        "cls": 0,
+        "tbtMs": 452.5,
+        "jsTransferBytes": 308149
+      }
+    },
+    {
+      "name": "ferramenta",
+      "path": "/ferramentas/rosi",
+      "rounds": 3,
+      "medians": {
+        "lcpMs": 4875.202,
+        "cls": 0,
+        "tbtMs": 452.5,
+        "jsTransferBytes": 315566
+      }
+    },
+    {
+      "name": "newsletter",
+      "path": "/newsletter",
+      "rounds": 3,
+      "medians": {
+        "lcpMs": 4860,
+        "cls": 0,
+        "tbtMs": 112,
+        "jsTransferBytes": 166400
+      }
+    }
+  ],
+  "runs": [
+    {
+      "name": "home",
+      "path": "/",
+      "round": 1,
+      "version": "13.5.0",
+      "lcpMs": 4878.312,
+      "cls": 0,
+      "tbtMs": 114,
+      "jsTransferBytes": 172501,
+      "performanceScore": 0.81
+    },
+    {
+      "name": "home",
+      "path": "/",
+      "round": 2,
+      "version": "13.5.0",
+      "lcpMs": 4876.802,
+      "cls": 0,
+      "tbtMs": 111,
+      "jsTransferBytes": 172501,
+      "performanceScore": 0.81
+    },
+    {
+      "name": "home",
+      "path": "/",
+      "round": 3,
+      "version": "13.5.0",
+      "lcpMs": 4875.626,
+      "cls": 0,
+      "tbtMs": 114,
+      "jsTransferBytes": 172501,
+      "performanceScore": 0.81
+    },
+    {
+      "name": "servico",
+      "path": "/servicos/ciberseguranca",
+      "round": 1,
+      "version": "13.5.0",
+      "lcpMs": 4800.539000000001,
+      "cls": 0,
+      "tbtMs": 452.5,
+      "jsTransferBytes": 308149,
+      "performanceScore": 0.71
+    },
+    {
+      "name": "servico",
+      "path": "/servicos/ciberseguranca",
+      "round": 2,
+      "version": "13.5.0",
+      "lcpMs": 4800.0650000000005,
+      "cls": 0,
+      "tbtMs": 483.5,
+      "jsTransferBytes": 308149,
+      "performanceScore": 0.7
+    },
+    {
+      "name": "servico",
+      "path": "/servicos/ciberseguranca",
+      "round": 3,
+      "version": "13.5.0",
+      "lcpMs": 4800.717000000001,
+      "cls": 0,
+      "tbtMs": 448.5,
+      "jsTransferBytes": 308149,
+      "performanceScore": 0.71
+    },
+    {
+      "name": "ferramenta",
+      "path": "/ferramentas/rosi",
+      "round": 1,
+      "version": "13.5.0",
+      "lcpMs": 4935,
+      "cls": 0,
+      "tbtMs": 602.5,
+      "jsTransferBytes": 315566,
+      "performanceScore": 0.67
+    },
+    {
+      "name": "ferramenta",
+      "path": "/ferramentas/rosi",
+      "round": 2,
+      "version": "13.5.0",
+      "lcpMs": 4875.171,
+      "cls": 0,
+      "tbtMs": 444.5,
+      "jsTransferBytes": 315566,
+      "performanceScore": 0.71
+    },
+    {
+      "name": "ferramenta",
+      "path": "/ferramentas/rosi",
+      "round": 3,
+      "version": "13.5.0",
+      "lcpMs": 4875.202,
+      "cls": 0,
+      "tbtMs": 452.5,
+      "jsTransferBytes": 315566,
+      "performanceScore": 0.71
+    },
+    {
+      "name": "newsletter",
+      "path": "/newsletter",
+      "round": 1,
+      "version": "13.5.0",
+      "lcpMs": 4860,
+      "cls": 0,
+      "tbtMs": 113,
+      "jsTransferBytes": 166400,
+      "performanceScore": 0.81
+    },
+    {
+      "name": "newsletter",
+      "path": "/newsletter",
+      "round": 2,
+      "version": "13.5.0",
+      "lcpMs": 4800.054,
+      "cls": 0,
+      "tbtMs": 107,
+      "jsTransferBytes": 166400,
+      "performanceScore": 0.82
+    },
+    {
+      "name": "newsletter",
+      "path": "/newsletter",
+      "round": 3,
+      "version": "13.5.0",
+      "lcpMs": 4860,
+      "cls": 0,
+      "tbtMs": 112,
+      "jsTransferBytes": 166400,
+      "performanceScore": 0.81
+    }
+  ],
+  "error": null
+}

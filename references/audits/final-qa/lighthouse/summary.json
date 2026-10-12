@@ -15,10 +15,10 @@
       "path": "/",
       "rounds": 3,
       "medians": {
-        "lcpMs": 4876.802,
+        "lcpMs": 4875.84,
         "cls": 0,
-        "tbtMs": 114,
-        "jsTransferBytes": 172501
+        "tbtMs": 120,
+        "jsTransferBytes": 173328
       }
     },
     {
@@ -26,10 +26,10 @@
       "path": "/servicos/ciberseguranca",
       "rounds": 3,
       "medians": {
-        "lcpMs": 4800.539000000001,
+        "lcpMs": 4800.737,
         "cls": 0,
-        "tbtMs": 452.5,
-        "jsTransferBytes": 308149
+        "tbtMs": 446.5,
+        "jsTransferBytes": 308974
       }
     },
     {
@@ -37,10 +37,10 @@
       "path": "/ferramentas/rosi",
       "rounds": 3,
       "medians": {
-        "lcpMs": 4875.202,
+        "lcpMs": 4878.077,
         "cls": 0,
-        "tbtMs": 452.5,
-        "jsTransferBytes": 315566
+        "tbtMs": 446.5,
+        "jsTransferBytes": 316395
       }
     },
     {
@@ -50,8 +50,8 @@
       "medians": {
         "lcpMs": 4860,
         "cls": 0,
-        "tbtMs": 112,
-        "jsTransferBytes": 166400
+        "tbtMs": 114,
+        "jsTransferBytes": 167217
       }
     }
   ],
@@ -61,21 +61,21 @@
       "path": "/",
       "round": 1,
       "version": "13.5.0",
-      "lcpMs": 4878.312,
+      "lcpMs": 4878.258,
       "cls": 0,
-      "tbtMs": 114,
-      "jsTransferBytes": 172501,
-      "performanceScore": 0.81
+      "tbtMs": 155,
+      "jsTransferBytes": 173328,
+      "performanceScore": 0.8
     },
     {
       "name": "home",
       "path": "/",
       "round": 2,
       "version": "13.5.0",
-      "lcpMs": 4876.802,
+      "lcpMs": 4875.047999999999,
       "cls": 0,
-      "tbtMs": 111,
-      "jsTransferBytes": 172501,
+      "tbtMs": 110,
+      "jsTransferBytes": 173328,
       "performanceScore": 0.81
     },
     {
@@ -83,10 +83,10 @@
       "path": "/",
       "round": 3,
       "version": "13.5.0",
-      "lcpMs": 4875.626,
+      "lcpMs": 4875.84,
       "cls": 0,
-      "tbtMs": 114,
-      "jsTransferBytes": 172501,
+      "tbtMs": 120,
+      "jsTransferBytes": 173328,
       "performanceScore": 0.81
     },
     {
@@ -94,10 +94,10 @@
       "path": "/servicos/ciberseguranca",
       "round": 1,
       "version": "13.5.0",
-      "lcpMs": 4800.539000000001,
+      "lcpMs": 4801.174,
       "cls": 0,
-      "tbtMs": 452.5,
-      "jsTransferBytes": 308149,
+      "tbtMs": 452,
+      "jsTransferBytes": 308974,
       "performanceScore": 0.71
     },
     {
@@ -105,21 +105,21 @@
       "path": "/servicos/ciberseguranca",
       "round": 2,
       "version": "13.5.0",
-      "lcpMs": 4800.0650000000005,
+      "lcpMs": 4800.737,
       "cls": 0,
-      "tbtMs": 483.5,
-      "jsTransferBytes": 308149,
-      "performanceScore": 0.7
+      "tbtMs": 446.5,
+      "jsTransferBytes": 308974,
+      "performanceScore": 0.71
     },
     {
       "name": "servico",
       "path": "/servicos/ciberseguranca",
       "round": 3,
       "version": "13.5.0",
-      "lcpMs": 4800.717000000001,
+      "lcpMs": 4800.349,
       "cls": 0,
-      "tbtMs": 448.5,
-      "jsTransferBytes": 308149,
+      "tbtMs": 443.5,
+      "jsTransferBytes": 308974,
       "performanceScore": 0.71
     },
     {
@@ -129,19 +129,19 @@
       "version": "13.5.0",
       "lcpMs": 4935,
       "cls": 0,
-      "tbtMs": 602.5,
-      "jsTransferBytes": 315566,
-      "performanceScore": 0.67
+      "tbtMs": 526.5,
+      "jsTransferBytes": 316395,
+      "performanceScore": 0.69
     },
     {
       "name": "ferramenta",
       "path": "/ferramentas/rosi",
       "round": 2,
       "version": "13.5.0",
-      "lcpMs": 4875.171,
+      "lcpMs": 4875.6449999999995,
       "cls": 0,
-      "tbtMs": 444.5,
-      "jsTransferBytes": 315566,
+      "tbtMs": 444,
+      "jsTransferBytes": 316395,
       "performanceScore": 0.71
     },
     {
@@ -149,10 +149,10 @@
       "path": "/ferramentas/rosi",
       "round": 3,
       "version": "13.5.0",
-      "lcpMs": 4875.202,
+      "lcpMs": 4878.077,
       "cls": 0,
-      "tbtMs": 452.5,
-      "jsTransferBytes": 315566,
+      "tbtMs": 446.5,
+      "jsTransferBytes": 316395,
       "performanceScore": 0.71
     },
     {
@@ -162,20 +162,20 @@
       "version": "13.5.0",
       "lcpMs": 4860,
       "cls": 0,
-      "tbtMs": 113,
-      "jsTransferBytes": 166400,
-      "performanceScore": 0.81
+      "tbtMs": 107,
+      "jsTransferBytes": 167217,
+      "performanceScore": 0.82
     },
     {
       "name": "newsletter",
       "path": "/newsletter",
       "round": 2,
       "version": "13.5.0",
-      "lcpMs": 4800.054,
+      "lcpMs": 4860,
       "cls": 0,
-      "tbtMs": 107,
-      "jsTransferBytes": 166400,
-      "performanceScore": 0.82
+      "tbtMs": 114,
+      "jsTransferBytes": 167217,
+      "performanceScore": 0.81
     },
     {
       "name": "newsletter",
@@ -184,8 +184,8 @@
       "version": "13.5.0",
       "lcpMs": 4860,
       "cls": 0,
-      "tbtMs": 112,
-      "jsTransferBytes": 166400,
+      "tbtMs": 114,
+      "jsTransferBytes": 167217,
       "performanceScore": 0.81
     }
   ],
