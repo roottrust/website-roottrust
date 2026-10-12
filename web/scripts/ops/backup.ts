@@ -1,30 +1,36 @@
 import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from "node:crypto";
-import { open, rm, type FileHandle } from "node:fs/promises";
+import { readFile, rm, stat, writeFile } from "node:fs/promises";
 import { COLLECTIONS } from "../../src/lib/server/types";
 import { readCollection, type DocumentSink, type DocumentSource } from "./documents";
 
-// Layout: header (magic, version, salt, base IV) then frames (u32 length, u8 flags, ciphertext, GCM tag).
-// Each frame's AAD binds the header, its index and its final flag, so edits, reordering, truncation and
-// trailing data all fail authentication. Plaintext is JSON lines: format line, one line per document, footer with counts.
+// File layout: MAGIC "RTBK" | version (1) | log2 scrypt N (1) | salt (16) | nonce (12) | AES-256-GCM ciphertext | tag (16).
+// The whole header is authenticated as AAD. A fresh random salt gives every file its own key, so a random nonce is safe.
+// Plaintext (never written to disk) is JSON lines: format line, one line per document, footer with per-collection counts.
+// The backup is built and restored in memory, bounded by MAX_PLAINTEXT_BYTES; the pilot dataset is far below that.
 const MAGIC = Buffer.from("RTBK");
 const VERSION = 1;
 const SALT_LENGTH = 16;
-const IV_LENGTH = 12;
-const HEADER_LENGTH = MAGIC.length + 1 + SALT_LENGTH + IV_LENGTH;
-const FRAME_SIZE = 64 * 1024;
-const FRAME_HEAD_LENGTH = 5;
+const NONCE_LENGTH = 12;
 const TAG_LENGTH = 16;
-const FLAG_FINAL = 1;
-const WRITE_BATCH = 400;
-const SCRYPT = { N: 2 ** 17, r: 8, p: 1, maxmem: 2 ** 28 };
+const HEADER_LENGTH = MAGIC.length + 2 + SALT_LENGTH + NONCE_LENGTH;
+const KDF_LOG_N = 17; // scrypt N=2^17, r=8, p=1 (~128 MiB, a few hundred ms)
+const KDF_LOG_N_MIN = 14; // accepted range on read, so a forged header cannot demand unbounded memory
+const KDF_LOG_N_MAX = 18;
+export const WRITE_BATCH = 500;
 
 export const MIN_PASSPHRASE_LENGTH = 16;
-export const DEFAULT_MAX_PLAINTEXT_BYTES = 512 * 1024 * 1024;
+export const MAX_PLAINTEXT_BYTES = 128 * 1024 * 1024;
 const LOOPBACK_EMULATOR = /^(localhost|127\.0\.0\.1|\[::1\]):\d{1,5}$/;
+const FORBIDDEN_ID = /^\.{1,2}$|^__.*__$|\//;
 
 export class BackupError extends Error {}
 
 export type Counts = Record<string, number>;
+export interface BackupEntry {
+  collection: string;
+  id: string;
+  data: Record<string, unknown>;
+}
 
 export function requirePassphrase(passphrase: string | undefined): string {
   if (!passphrase || passphrase.length < MIN_PASSPHRASE_LENGTH) {
@@ -42,209 +48,87 @@ export function emulatorHost(env: Record<string, string | undefined>): string {
   return host;
 }
 
-function deriveKey(passphrase: string, salt: Buffer): Buffer {
-  return scryptSync(passphrase, salt, 32, SCRYPT);
+function deriveKey(passphrase: string, salt: Buffer, logN: number): Buffer {
+  return scryptSync(passphrase.normalize("NFKC"), salt, 32, { N: 2 ** logN, r: 8, p: 1, maxmem: 2 ** 29 });
 }
 
-function frameNonce(iv: Buffer, index: number): Buffer {
-  const nonce = Buffer.from(iv);
-  nonce.writeBigUInt64BE(nonce.readBigUInt64BE(4) ^ BigInt(index), 4);
-  return nonce;
-}
-
-function frameAad(header: Buffer, index: number, flags: number): Buffer {
-  const counter = Buffer.alloc(8);
-  counter.writeBigUInt64BE(BigInt(index));
-  return Buffer.concat([header, counter, Buffer.from([flags])]);
-}
-
-function encryptFrame(key: Buffer, header: Buffer, iv: Buffer, index: number, flags: number, plaintext: Buffer): Buffer {
-  const cipher = createCipheriv("aes-256-gcm", key, frameNonce(iv, index), { authTagLength: TAG_LENGTH });
-  cipher.setAAD(frameAad(header, index, flags));
+export function encryptBackup(plaintext: Buffer, passphrase: string, logN = KDF_LOG_N): Buffer {
+  const salt = randomBytes(SALT_LENGTH);
+  const nonce = randomBytes(NONCE_LENGTH);
+  const header = Buffer.concat([MAGIC, Buffer.from([VERSION, logN]), salt, nonce]);
+  const cipher = createCipheriv("aes-256-gcm", deriveKey(passphrase, salt, logN), nonce, { authTagLength: TAG_LENGTH });
+  cipher.setAAD(header);
   const body = Buffer.concat([cipher.update(plaintext), cipher.final()]);
-  const head = Buffer.alloc(FRAME_HEAD_LENGTH);
-  head.writeUInt32BE(body.length);
-  head[4] = flags;
-  return Buffer.concat([head, body, cipher.getAuthTag()]);
+  return Buffer.concat([header, body, cipher.getAuthTag()]);
 }
 
-function decryptFrame(key: Buffer, header: Buffer, iv: Buffer, index: number, flags: number, body: Buffer): Buffer {
-  const ciphertext = body.subarray(0, body.length - TAG_LENGTH);
-  const decipher = createDecipheriv("aes-256-gcm", key, frameNonce(iv, index), { authTagLength: TAG_LENGTH });
-  decipher.setAAD(frameAad(header, index, flags));
-  decipher.setAuthTag(body.subarray(body.length - TAG_LENGTH));
+export function decryptBackup(file: Buffer, passphrase: string): Buffer {
+  if (file.length < HEADER_LENGTH + TAG_LENGTH || !file.subarray(0, MAGIC.length).equals(MAGIC) || file[MAGIC.length] !== VERSION) {
+    throw new BackupError("arquivo de backup inválido");
+  }
+  const logN = file[MAGIC.length + 1] ?? 0;
+  if (logN < KDF_LOG_N_MIN || logN > KDF_LOG_N_MAX) throw new BackupError("arquivo de backup inválido");
+  const header = file.subarray(0, HEADER_LENGTH);
+  const salt = header.subarray(MAGIC.length + 2, MAGIC.length + 2 + SALT_LENGTH);
+  const nonce = header.subarray(HEADER_LENGTH - NONCE_LENGTH);
+  const decipher = createDecipheriv("aes-256-gcm", deriveKey(passphrase, salt, logN), nonce, { authTagLength: TAG_LENGTH });
+  decipher.setAAD(header);
+  decipher.setAuthTag(file.subarray(file.length - TAG_LENGTH));
   try {
-    return Buffer.concat([decipher.update(ciphertext), decipher.final()]);
+    return Buffer.concat([decipher.update(file.subarray(HEADER_LENGTH, file.length - TAG_LENGTH)), decipher.final()]);
   } catch {
     throw new BackupError("senha incorreta ou arquivo de backup alterado");
   }
 }
 
-async function readExact(handle: FileHandle, position: number, length: number): Promise<Buffer> {
-  const buffer = Buffer.alloc(length);
-  const { bytesRead } = await handle.read(buffer, 0, length, position);
-  if (bytesRead !== length) throw new BackupError("backup truncado");
-  return buffer;
-}
-
-// Frames are authenticated one by one; the caller sees plaintext of a frame only after its tag verified.
-async function forEachFrame(path: string, passphrase: string, onPlaintext: (chunk: Buffer) => Promise<void>): Promise<void> {
-  const handle = await open(path, "r");
-  try {
-    const { size } = await handle.stat();
-    if (size < HEADER_LENGTH) throw new BackupError("arquivo de backup inválido");
-    const header = await readExact(handle, 0, HEADER_LENGTH);
-    if (!header.subarray(0, MAGIC.length).equals(MAGIC) || header[MAGIC.length] !== VERSION) {
-      throw new BackupError("arquivo de backup inválido");
-    }
-    const salt = header.subarray(MAGIC.length + 1, MAGIC.length + 1 + SALT_LENGTH);
-    const iv = header.subarray(MAGIC.length + 1 + SALT_LENGTH);
-    const key = deriveKey(passphrase, salt);
-    let position = HEADER_LENGTH;
-    for (let index = 0; ; index += 1) {
-      if (position + FRAME_HEAD_LENGTH > size) throw new BackupError("backup truncado");
-      const head = await readExact(handle, position, FRAME_HEAD_LENGTH);
-      const length = head.readUInt32BE(0);
-      const flags = head[4] ?? 0;
-      if (length > FRAME_SIZE || (flags & ~FLAG_FINAL) !== 0) throw new BackupError("arquivo de backup inválido");
-      const frameEnd = position + FRAME_HEAD_LENGTH + length + TAG_LENGTH;
-      if (frameEnd > size) throw new BackupError("backup truncado");
-      const body = await readExact(handle, position + FRAME_HEAD_LENGTH, length + TAG_LENGTH);
-      await onPlaintext(decryptFrame(key, header, iv, index, flags, body));
-      position = frameEnd;
-      if (flags & FLAG_FINAL) {
-        if (position !== size) throw new BackupError("dados após o último quadro");
-        return;
-      }
-    }
-  } finally {
-    await handle.close();
+// Only JSON-representable values survive the round trip; anything else (Timestamp, GeoPoint, Bytes...) would be
+// silently altered, so it fails the backup instead.
+function assertPlain(value: unknown): void {
+  if (value === null || typeof value === "string" || typeof value === "boolean") return;
+  if (typeof value === "number" && Number.isFinite(value)) return;
+  if (Array.isArray(value)) return value.forEach(assertPlain);
+  if (typeof value === "object") {
+    const proto = Object.getPrototypeOf(value);
+    if (proto === Object.prototype || proto === null) return Object.values(value).forEach(assertPlain);
   }
-}
-
-class PlaintextWriter {
-  private pending: Buffer[] = [];
-  private pendingSize = 0;
-  private index = 0;
-  private total = 0;
-
-  constructor(
-    private readonly handle: FileHandle,
-    private readonly key: Buffer,
-    private readonly header: Buffer,
-    private readonly iv: Buffer,
-    private readonly maxBytes: number,
-  ) {}
-
-  async line(value: unknown): Promise<void> {
-    const bytes = Buffer.from(`${JSON.stringify(value)}\n`);
-    this.total += bytes.length;
-    if (this.total > this.maxBytes) throw new BackupError("backup excede o limite de tamanho configurado");
-    this.pending.push(bytes);
-    this.pendingSize += bytes.length;
-    while (this.pendingSize >= FRAME_SIZE) {
-      const all = Buffer.concat(this.pending);
-      await this.emit(all.subarray(0, FRAME_SIZE), 0);
-      const rest = all.subarray(FRAME_SIZE);
-      this.pending = [rest];
-      this.pendingSize = rest.length;
-    }
-  }
-
-  async finish(): Promise<void> {
-    await this.emit(Buffer.concat(this.pending), FLAG_FINAL);
-  }
-
-  private async emit(plaintext: Buffer, flags: number): Promise<void> {
-    const frame = encryptFrame(this.key, this.header, this.iv, this.index, flags, plaintext);
-    this.index += 1;
-    await this.handle.writeFile(frame);
-  }
+  throw new BackupError("documento com tipo não suportado pelo backup (apenas JSON)");
 }
 
 export async function writeBackup(
   source: DocumentSource,
   path: string,
   passphrase: string,
-  maxPlaintextBytes = DEFAULT_MAX_PLAINTEXT_BYTES,
+  options: { maxPlaintextBytes?: number; kdfLogN?: number } = {},
 ): Promise<Counts> {
   requirePassphrase(passphrase);
-  const salt = randomBytes(SALT_LENGTH);
-  const iv = randomBytes(IV_LENGTH);
-  const header = Buffer.concat([MAGIC, Buffer.from([VERSION]), salt, iv]);
-  const key = deriveKey(passphrase, salt);
-  const handle = await open(path, "wx", 0o600);
-  try {
-    await handle.writeFile(header);
-    const writer = new PlaintextWriter(handle, key, header, iv, maxPlaintextBytes);
-    const counts: Counts = {};
-    await writer.line({ f: "rtbk", v: VERSION });
-    for (const collection of Object.values(COLLECTIONS)) {
-      counts[collection] = 0;
-      for await (const document of readCollection(source, collection)) {
-        await writer.line({ c: collection, i: document.id, d: document.data });
-        counts[collection] += 1;
-      }
+  const max = options.maxPlaintextBytes ?? MAX_PLAINTEXT_BYTES;
+  const lines: string[] = [];
+  let bytes = 0;
+  const add = (value: unknown) => {
+    const line = `${JSON.stringify(value)}\n`;
+    bytes += Buffer.byteLength(line);
+    if (bytes > max) throw new BackupError("backup excede o limite de tamanho configurado");
+    lines.push(line);
+  };
+  const counts: Counts = {};
+  add({ f: "rtbk", v: VERSION });
+  for (const collection of Object.values(COLLECTIONS)) {
+    counts[collection] = 0;
+    for await (const document of readCollection(source, collection)) {
+      assertPlain(document.data);
+      add({ c: collection, i: document.id, d: document.data });
+      counts[collection] += 1;
     }
-    await writer.line({ end: 1, counts });
-    await writer.finish();
-    return counts;
+  }
+  add({ end: 1, counts });
+  const encrypted = encryptBackup(Buffer.from(lines.join("")), passphrase, options.kdfLogN);
+  try {
+    await writeFile(path, encrypted, { flag: "wx", mode: 0o600 });
   } catch (error) {
-    await handle.close();
-    await rm(path, { force: true });
+    if ((error as NodeJS.ErrnoException).code !== "EEXIST") await rm(path, { force: true });
     throw error;
   }
-  finally {
-    await handle.close().catch(() => undefined);
-  }
-}
-
-// Validates the whole structure of the plaintext and applies documents in order.
-class BackupParser {
-  private remainder = Buffer.alloc(0);
-  private lines = 0;
-  private counts: Counts = {};
-  private ended = false;
-
-  constructor(private readonly onDocument: (collection: string, id: string, data: Record<string, unknown>) => Promise<void>) {}
-
-  async feed(chunk: Buffer): Promise<void> {
-    let buffer = Buffer.concat([this.remainder, chunk]);
-    let newline = buffer.indexOf(0x0a);
-    while (newline !== -1) {
-      await this.handle(buffer.subarray(0, newline).toString("utf8"));
-      buffer = buffer.subarray(newline + 1);
-      newline = buffer.indexOf(0x0a);
-    }
-    this.remainder = buffer;
-  }
-
-  async end(): Promise<Counts> {
-    if (this.remainder.length > 0 || !this.ended) throw new BackupError("backup incompleto");
-    return this.counts;
-  }
-
-  private async handle(line: string): Promise<void> {
-    if (this.ended) throw new BackupError("dados após o rodapé do backup");
-    const value = parseLine(line);
-    if (this.lines === 0) {
-      if (value.f !== "rtbk" || value.v !== VERSION) throw new BackupError("arquivo de backup inválido");
-    } else if ("end" in value) {
-      if (!isCounts(value.counts, this.counts)) throw new BackupError("contagem do backup não confere");
-      this.ended = true;
-    } else {
-      const collection = value.c;
-      if (typeof collection !== "string" || !Object.values(COLLECTIONS).includes(collection as never)) {
-        throw new BackupError("coleção desconhecida no backup");
-      }
-      if (typeof value.i !== "string" || typeof value.d !== "object" || value.d === null || Array.isArray(value.d)) {
-        throw new BackupError("documento inválido no backup");
-      }
-      this.counts[collection] = (this.counts[collection] ?? 0) + 1;
-      await this.onDocument(collection, value.i, value.d as Record<string, unknown>);
-    }
-    this.lines += 1;
-  }
+  return counts;
 }
 
 function parseLine(line: string): Record<string, unknown> {
@@ -257,22 +141,53 @@ function parseLine(line: string): Record<string, unknown> {
   throw new BackupError("linha inválida no backup");
 }
 
-function isCounts(value: unknown, observed: Counts): boolean {
-  if (typeof value !== "object" || value === null) return false;
-  const expected = value as Record<string, unknown>;
-  const keys = new Set([...Object.keys(expected), ...Object.keys(observed)]);
-  return [...keys].every((key) => (expected[key] ?? 0) === (observed[key] ?? 0));
+// Validates the entire plaintext (format, collections, IDs, duplicates, footer counts) and returns the documents.
+export function parseBackup(plaintext: Buffer): { entries: BackupEntry[]; counts: Counts } {
+  const known = new Set<string>(Object.values(COLLECTIONS));
+  const lines = plaintext.toString("utf8").split("\n");
+  if (lines.pop() !== "") throw new BackupError("backup incompleto");
+  const header = parseLine(lines.shift() ?? "");
+  if (header.f !== "rtbk" || header.v !== VERSION) throw new BackupError("arquivo de backup inválido");
+  const entries: BackupEntry[] = [];
+  const counts: Counts = {};
+  const seen = new Set<string>();
+  let footer: Record<string, unknown> | undefined;
+  for (const line of lines) {
+    if (footer) throw new BackupError("dados após o rodapé do backup");
+    const value = parseLine(line);
+    if ("end" in value) {
+      footer = value;
+      continue;
+    }
+    const { c: collection, i: id, d: data } = value;
+    if (typeof collection !== "string" || !known.has(collection)) throw new BackupError("coleção desconhecida no backup");
+    if (typeof id !== "string" || !id || Buffer.byteLength(id) > 1500 || FORBIDDEN_ID.test(id)) throw new BackupError("ID inválido no backup");
+    if (typeof data !== "object" || data === null || Array.isArray(data)) throw new BackupError("documento inválido no backup");
+    if (seen.has(`${collection}/${id}`)) throw new BackupError("documento duplicado no backup");
+    seen.add(`${collection}/${id}`);
+    counts[collection] = (counts[collection] ?? 0) + 1;
+    entries.push({ collection, id, data: data as Record<string, unknown> });
+  }
+  const expected = footer?.counts;
+  if (!footer || typeof expected !== "object" || expected === null) throw new BackupError("backup incompleto");
+  const declared = expected as Record<string, unknown>;
+  const names = new Set([...Object.keys(declared), ...Object.keys(counts)]);
+  if ([...names].some((name) => (declared[name] ?? 0) !== (counts[name] ?? 0))) throw new BackupError("contagem do backup não confere");
+  return { entries, counts };
 }
 
+// Order: decrypt + validate everything, require an empty target, only then write (batches of <= 500, never overwriting).
 export async function restoreBackup(target: DocumentSource & DocumentSink, path: string, passphrase: string): Promise<Counts> {
   requirePassphrase(passphrase);
+  if ((await stat(path)).size > MAX_PLAINTEXT_BYTES + HEADER_LENGTH + TAG_LENGTH) throw new BackupError("arquivo de backup acima do limite");
+  const { entries, counts } = parseBackup(decryptBackup(await readFile(path), passphrase));
   for (const collection of Object.values(COLLECTIONS)) {
     if ((await target.page(collection, undefined, 1)).length > 0) {
       throw new BackupError(`destino não está vazio (${collection}); restauração recusada`);
     }
   }
-  // First pass authenticates and validates everything, so a bad file never leaves a partial restore.
-  await forEachFrame(path, passphrase, (chunk) => verify.feed(chunk));
-  const verify = new BackupParser(async () => undefined);
+  for (let start = 0; start < entries.length; start += WRITE_BATCH) {
+    await target.writeAll(entries.slice(start, start + WRITE_BATCH));
+  }
   return counts;
 }

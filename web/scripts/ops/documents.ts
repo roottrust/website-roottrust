@@ -11,6 +11,7 @@ export interface DocumentSource {
 }
 
 export interface DocumentSink {
+  // At most 500 entries per call (Firestore batch limit). Existing documents are never overwritten.
   writeAll(entries: readonly { collection: string; id: string; data: Record<string, unknown> }[]): Promise<void>;
 }
 
@@ -37,7 +38,7 @@ export function adminDocuments(db: Firestore): DocumentSource & DocumentSink {
     },
     async writeAll(entries) {
       const batch = db.batch();
-      for (const entry of entries) batch.set(db.collection(entry.collection).doc(entry.id), entry.data);
+      for (const entry of entries) batch.create(db.collection(entry.collection).doc(entry.id), entry.data);
       await batch.commit();
     },
   };

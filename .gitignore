@@ -8,5 +8,9 @@ web/test-results/
 web/*.tsbuildinfo
 .env*
 
+# Dados operacionais (CSV e backups cifrados): nunca versionar
+web/ops-data/
+*.rtbk
+
 # Referências locais, preservadas fora do versionamento
 /references/
