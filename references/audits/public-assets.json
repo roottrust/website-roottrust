@@ -103,6 +103,32 @@
       "delivery": "license-file",
       "provenance": null,
       "license": "SIL Open Font License 1.1"
+    },
+    {
+      "source": "references/audits/final-qa/logs/font-baloo-source.json",
+      "destination": "web/src/assets/fonts/baloo-2/baloo-2-latin-variable.woff2",
+      "bytes": 35960,
+      "sha256_source": null,
+      "sha256_destination": "6c51534b303386a28583bada93cb2e4b24f67225409abc423ae0b43f0f8bc6a7",
+      "matches": true,
+      "role": "Baloo 2 Latin variable subset (+U+2192, U+221A, U+2265) for next/font/local",
+      "delivery": "next-font-local",
+      "provenance": "https://fonts.gstatic.com/l/font?kit=wXKrE3kTposypRyd11rOjucKvFUQkf30qaJG9HmJwVEjiwQIvt4AbAIyzjXlxFfVVqPDoZqVkApyF8i3vrMtN0GasoRZ65z2TG_EaB0iz4uZwyMPfpM4L2X9gahcY_C64jPEGAtb5zCTMytZN2dVI-Ktwt0cmX5qJyiD6uA089mCqscCO9A1BpauhkeLdQaI9JvuJPsBUkaf4FRxumwzQQY_lQAvp1fvwdLsqjFdhvZOREotBPvHrJUHiI1Nmy49kIYO_CARyOtULevVt3IFjo6JToYwP4JdC01oMNzH1eYtSleKyTv3uuMC2CFvFE4y9jbait7bm-u2RqwIggmXxWkFmQZ-x79UWdRm37WvcGpqNDCRpUTfe5cJMnH-I2mf4avkp4zDwju8xHgDt48oVXAdM4rJYjOGxlXWotwxF3yavA0VinUf75dYcX7tB3q-yJW-nwqTqO0vddlwx2d2i0BQLhhkpJWgtu9wZzVTf6jI_V8JlCDmAi4Ijz5UMKnKzlqLjIC9T9s2Hnh2ARxVPv7_NfUfAadOVFMFKA&skey=f84d20f19091b325&v=v23",
+      "license": "SIL Open Font License 1.1",
+      "license_source": "web/src/assets/fonts/baloo-2/OFL.txt"
+    },
+    {
+      "source": "references/audits/final-qa/logs/font-archivo-source.json",
+      "destination": "web/src/assets/fonts/archivo/archivo-latin-variable.woff2",
+      "bytes": 38924,
+      "sha256_source": null,
+      "sha256_destination": "0ef853834daeefe81fae808b19f19ca84199a64fafaedd3798949cd6316002c6",
+      "matches": true,
+      "role": "Archivo Latin variable subset (+U+2192, U+221A, U+2265) for next/font/local",
+      "delivery": "next-font-local",
+      "provenance": "https://fonts.gstatic.com/l/font?kit=k3kPo8UDI-1M0wlSV9XAw6lQkqWY8Q82sIyfKZ-Fna1FS9D22ldh2R1HA2fEe_RgElwhj2oH71YoNJu0Z6cAmjYSxldZndVg_ReQo2vJeX9QtKIqy6HBh-9NA4wfO3yk3ukpXmzjjbkxUTOgamWGvCtKbIAGU9T7T2b2nikJXHDgDV7yw2E6ZbX7p2tE-Av4E10x-D3pciaCTePLxW70RAS1jb4FsJENh99eukmrkoe00YMOMhbGGwN4__J14NeJSN2M7GVAaMfXJ8i45UaZj1rNgnHs05fw-_1nZ8SO_WYs35KNAcyt1moiB2O-Mwx-RbM226-DRG148bBawsRKun3u6D_PO45TxS0VqBf_Br2GlwVcL_n8qNIKQpPml_raez_iyAW4NULKJRFvywdBVo5cypPXAgORmnqyGWdA-lTEavxr3BX-ZvClWpKb0DNwM3_vuPIgQ2lTM0rwwYcyC4SjkeuWPLTRtIPEmvUY49XTddY6awPgTnpRPm0Ir-QmZEoyuLQ1_Wyg6Lco7KC5Ifazv7JV91LHSoNrHUPFMFh1kZw3BEw&skey=8131191f4580dfcb&v=v25",
+      "license": "SIL Open Font License 1.1",
+      "license_source": "web/src/assets/fonts/archivo/OFL.txt"
     }
   ]
 }

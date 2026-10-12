@@ -5,8 +5,8 @@ import { Footer } from "@/components/shell/Footer";
 import { GraphicsProvider, PauseMotionButton } from "@/features/graphics/GraphicsProvider";
 import "./globals.css";
 
-const baloo = localFont({ src: "../assets/fonts/baloo-2/baloo-2-variable.ttf", variable: "--font-baloo", display: "swap", weight: "400 800" });
-const archivo = localFont({ src: "../assets/fonts/archivo/archivo-variable.ttf", variable: "--font-archivo", display: "swap", weight: "100 900" });
+const baloo = localFont({ src: "../assets/fonts/baloo-2/baloo-2-latin-variable.woff2", variable: "--font-baloo", display: "swap", weight: "400 800" });
+const archivo = localFont({ src: "../assets/fonts/archivo/archivo-latin-variable.woff2", variable: "--font-archivo", display: "swap", weight: "100 900" });
 
 export const metadata: Metadata = {
   title: { default: "Root Trust · A base que sustenta o crescimento", template: "%s · Root Trust" },

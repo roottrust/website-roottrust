@@ -1,0 +1,800 @@
+diff --git a/references/audits/font-optimization.json b/references/audits/font-optimization.json
+new file mode 100644
+index 0000000..cfb2bda
+--- /dev/null
++++ b/references/audits/font-optimization.json
+@@ -0,0 +1,517 @@
++{
++  "created_utc": "2026-10-12T00:39:13.094Z",
++  "scope": "Latin subsets of Baloo 2 and Archivo for next/font/local; original TTF and OFL files preserved",
++  "origin": "Google Fonts CSS2 API with text= listing all original Latin codepoints plus U+2192, U+221A, U+2265",
++  "note": "Archivo drops the wdth axis (62-125) and stays at the previous default width 100; CSS does not use wdth. Coverage claim is limited to the listed codepoints, not universal.",
++  "fonts": [
++    {
++      "family": "Baloo 2",
++      "ttf": "baloo-2/baloo-2-variable.ttf",
++      "woff2": "baloo-2/baloo-2-latin-variable.woff2",
++      "sourceUrl": "https://fonts.gstatic.com/l/font?kit=wXKrE3kTposypRyd11rOjucKvFUQkf30qaJG9HmJwVEjiwQIvt4AbAIyzjXlxFfVVqPDoZqVkApyF8i3vrMtN0GasoRZ65z2TG_EaB0iz4uZwyMPfpM4L2X9gahcY_C64jPEGAtb5zCTMytZN2dVI-Ktwt0cmX5qJyiD6uA089mCqscCO9A1BpauhkeLdQaI9JvuJPsBUkaf4FRxumwzQQY_lQAvp1fvwdLsqjFdhvZOREotBPvHrJUHiI1Nmy49kIYO_CARyOtULevVt3IFjo6JToYwP4JdC01oMNzH1eYtSleKyTv3uuMC2CFvFE4y9jbait7bm-u2RqwIggmXxWkFmQZ-x79UWdRm37WvcGpqNDCRpUTfe5cJMnH-I2mf4avkp4zDwju8xHgDt48oVXAdM4rJYjOGxlXWotwxF3yavA0VinUf75dYcX7tB3q-yJW-nwqTqO0vddlwx2d2i0BQLhhkpJWgtu9wZzVTf6jI_V8JlCDmAi4Ijz5UMKnKzlqLjIC9T9s2Hnh2ARxVPv7_NfUfAadOVFMFKA&skey=f84d20f19091b325&v=v23",
++      "sourceCss": "https://fonts.googleapis.com/css2?family=Baloo+2:wght@400..800&display=swap&text=%20!%22%23%24%25%26'()*%2B%2C-.%2F0123456789%3A%3B%3C%3D%3E%3F%40ABCDEFGHIJKLMNOPQRSTUVWXYZ%5B%5C%5D%5E_%60abcdefghijklmnopqrstuvwxyz%7B%7C%7D~%C2%A0%C2%A1%C2%A2%C2%A3%C2%A4%C2%A5%C2%A6%C2%A7%C2%A8%C2%A9%C2%AA%C2%AB%C2%AC%C2%AD%C2%AE%C2%AF%C2%B0%C2%B1%C2%B2%C2%B3%C2%B4%C2%B5%C2%B6%C2%B7%C2%B8%C2%B9%C2%BA%C2%BB%C2%BC%C2%BD%C2%BE%C2%BF%C3%80%C3%81%C3%82%C3%83%C3%84%C3%85%C3%86%C3%87%C3%88%C3%89%C3%8A%C3%8B%C3%8C%C3%8D%C3%8E%C3%8F%C3%90%C3%91%C3%92%C3%93%C3%94%C3%95%C3%96%C3%97%C3%98%C3%99%C3%9A%C3%9B%C3%9C%C3%9D%C3%9E%C3%9F%C3%A0%C3%A1%C3%A2%C3%A3%C3%A4%C3%A5%C3%A6%C3%A7%C3%A8%C3%A9%C3%AA%C3%AB%C3%AC%C3%AD%C3%AE%C3%AF%C3%B0%C3%B1%C3%B2%C3%B3%C3%B4%C3%B5%C3%B6%C3%B7%C3%B8%C3%B9%C3%BA%C3%BB%C3%BC%C3%BD%C3%BE%C3%BF%C4%B1%C5%92%C5%93%CA%BB%CA%BC%CB%86%CB%9A%CB%9C%CC%80%CC%81%CC%83%CC%84%CC%88%CC%89%CC%A3%E2%80%89%E2%80%8B%E2%80%93%E2%80%94%E2%80%98%E2%80%99%E2%80%9A%E2%80%9C%E2%80%9D%E2%80%9E%E2%80%A2%E2%80%A6%E2%80%B2%E2%80%B3%E2%80%B9%E2%80%BA%E2%81%84%E2%82%AC%E2%84%A2%E2%86%91%E2%86%92%E2%86%93%E2%88%92%E2%88%95%E2%88%9A%E2%89%A5",
++      "bytes": 35960,
++      "sha256": "6c51534b303386a28583bada93cb2e4b24f67225409abc423ae0b43f0f8bc6a7",
++      "sha256Ttf": "d47a6852548059b1db49a1319d06d499d546c3fa2237cf9eee9c43c8abb025c2",
++      "version": "1.700",
++      "axes": {
++        "wght": [
++          400,
++          800
++        ]
++      },
++      "fixedWidth": null,
++      "codepointCount": 232,
++      "codepoints": [
++        32,
++        33,
++        34,
++        35,
++        36,
++        37,
++        38,
++        39,
++        40,
++        41,
++        42,
++        43,
++        44,
++        45,
++        46,
++        47,
++        48,
++        49,
++        50,
++        51,
++        52,
++        53,
++        54,
++        55,
++        56,
++        57,
++        58,
++        59,
++        60,
++        61,
++        62,
++        63,
++        64,
++        65,
++        66,
++        67,
++        68,
++        69,
++        70,
++        71,
++        72,
++        73,
++        74,
++        75,
++        76,
++        77,
++        78,
++        79,
++        80,
++        81,
++        82,
++        83,
++        84,
++        85,
++        86,
++        87,
++        88,
++        89,
++        90,
++        91,
++        92,
++        93,
++        94,
++        95,
++        96,
++        97,
++        98,
++        99,
++        100,
++        101,
++        102,
++        103,
++        104,
++        105,
++        106,
++        107,
++        108,
++        109,
++        110,
++        111,
++        112,
++        113,
++        114,
++        115,
++        116,
++        117,
++        118,
++        119,
++        120,
++        121,
++        122,
++        123,
++        124,
++        125,
++        126,
++        160,
++        161,
++        162,
++        163,
++        164,
++        165,
++        166,
++        167,
++        168,
++        169,
++        170,
++        171,
++        172,
++        173,
++        174,
++        175,
++        176,
++        177,
++        178,
++        179,
++        180,
++        181,
++        182,
++        183,
++        184,
++        185,
++        186,
++        187,
++        188,
++        189,
++        190,
++        191,
++        192,
++        193,
++        194,
++        195,
++        196,
++        197,
++        198,
++        199,
++        200,
++        201,
++        202,
++        203,
++        204,
++        205,
++        206,
++        207,
++        208,
++        209,
++        210,
++        211,
++        212,
++        213,
++        214,
++        215,
++        216,
++        217,
++        218,
++        219,
++        220,
++        221,
++        222,
++        223,
++        224,
++        225,
++        226,
++        227,
++        228,
++        229,
++        230,
++        231,
++        232,
++        233,
++        234,
++        235,
++        236,
++        237,
++        238,
++        239,
++        240,
++        241,
++        242,
++        243,
++        244,
++        245,
++        246,
++        247,
++        248,
++        249,
++        250,
++        251,
++        252,
++        253,
++        254,
++        255,
++        305,
++        338,
++        339,
++        699,
++        700,
++        710,
++        730,
++        732,
++        768,
++        769,
++        771,
++        772,
++        776,
++        777,
++        803,
++        8201,
++        8203,
++        8211,
++        8212,
++        8216,
++        8217,
++        8218,
++        8220,
++        8221,
++        8222,
++        8226,
++        8230,
++        8242,
++        8243,
++        8249,
++        8250,
++        8260,
++        8364,
++        8482,
++        8593,
++        8594,
++        8595,
++        8722,
++        8725,
++        8730,
++        8805
++      ],
++      "license": "SIL Open Font License 1.1",
++      "licenseFile": "web/src/assets/fonts/baloo-2/OFL.txt"
++    },
++    {
++      "family": "Archivo",
++      "ttf": "archivo/archivo-variable.ttf",
++      "woff2": "archivo/archivo-latin-variable.woff2",
++      "sourceUrl": "https://fonts.gstatic.com/l/font?kit=k3kPo8UDI-1M0wlSV9XAw6lQkqWY8Q82sIyfKZ-Fna1FS9D22ldh2R1HA2fEe_RgElwhj2oH71YoNJu0Z6cAmjYSxldZndVg_ReQo2vJeX9QtKIqy6HBh-9NA4wfO3yk3ukpXmzjjbkxUTOgamWGvCtKbIAGU9T7T2b2nikJXHDgDV7yw2E6ZbX7p2tE-Av4E10x-D3pciaCTePLxW70RAS1jb4FsJENh99eukmrkoe00YMOMhbGGwN4__J14NeJSN2M7GVAaMfXJ8i45UaZj1rNgnHs05fw-_1nZ8SO_WYs35KNAcyt1moiB2O-Mwx-RbM226-DRG148bBawsRKun3u6D_PO45TxS0VqBf_Br2GlwVcL_n8qNIKQpPml_raez_iyAW4NULKJRFvywdBVo5cypPXAgORmnqyGWdA-lTEavxr3BX-ZvClWpKb0DNwM3_vuPIgQ2lTM0rwwYcyC4SjkeuWPLTRtIPEmvUY49XTddY6awPgTnpRPm0Ir-QmZEoyuLQ1_Wyg6Lco7KC5Ifazv7JV91LHSoNrHUPFMFh1kZw3BEw&skey=8131191f4580dfcb&v=v25",
++      "sourceCss": "https://fonts.googleapis.com/css2?family=Archivo:wght@100..900&display=swap&text=%20!%22%23%24%25%26'()*%2B%2C-.%2F0123456789%3A%3B%3C%3D%3E%3F%40ABCDEFGHIJKLMNOPQRSTUVWXYZ%5B%5C%5D%5E_%60abcdefghijklmnopqrstuvwxyz%7B%7C%7D~%C2%A0%C2%A1%C2%A2%C2%A3%C2%A4%C2%A5%C2%A6%C2%A7%C2%A8%C2%A9%C2%AA%C2%AB%C2%AC%C2%AD%C2%AE%C2%AF%C2%B0%C2%B1%C2%B2%C2%B3%C2%B4%C2%B5%C2%B6%C2%B7%C2%B8%C2%B9%C2%BA%C2%BB%C2%BC%C2%BD%C2%BE%C2%BF%C3%80%C3%81%C3%82%C3%83%C3%84%C3%85%C3%86%C3%87%C3%88%C3%89%C3%8A%C3%8B%C3%8C%C3%8D%C3%8E%C3%8F%C3%90%C3%91%C3%92%C3%93%C3%94%C3%95%C3%96%C3%97%C3%98%C3%99%C3%9A%C3%9B%C3%9C%C3%9D%C3%9E%C3%9F%C3%A0%C3%A1%C3%A2%C3%A3%C3%A4%C3%A5%C3%A6%C3%A7%C3%A8%C3%A9%C3%AA%C3%AB%C3%AC%C3%AD%C3%AE%C3%AF%C3%B0%C3%B1%C3%B2%C3%B3%C3%B4%C3%B5%C3%B6%C3%B7%C3%B8%C3%B9%C3%BA%C3%BB%C3%BC%C3%BD%C3%BE%C3%BF%C4%82%C4%B1%C5%92%C5%93%CA%BC%CB%86%CB%9A%CB%9C%CC%80%CC%81%CC%83%CC%84%CC%88%CC%89%CC%A3%E2%80%89%E2%80%93%E2%80%94%E2%80%98%E2%80%99%E2%80%9A%E2%80%9C%E2%80%9D%E2%80%9E%E2%80%A2%E2%80%A6%E2%80%B2%E2%80%B3%E2%80%B9%E2%80%BA%E2%81%84%E2%82%AC%E2%84%A2%E2%86%91%E2%86%92%E2%86%93%E2%88%92%E2%88%95%E2%88%9A%E2%89%A5",
++      "bytes": 38924,
++      "sha256": "0ef853834daeefe81fae808b19f19ca84199a64fafaedd3798949cd6316002c6",
++      "sha256Ttf": "0e094a7d3c7c4c25cf1310c4b30014f1dae9332220b1c2c88f4fa996f0b05053",
++      "version": "2.001",
++      "axes": {
++        "wght": [
++          100,
++          900
++        ]
++      },
++      "fixedWidth": 100,
++      "codepointCount": 231,
++      "codepoints": [
++        32,
++        33,
++        34,
++        35,
++        36,
++        37,
++        38,
++        39,
++        40,
++        41,
++        42,
++        43,
++        44,
++        45,
++        46,
++        47,
++        48,
++        49,
++        50,
++        51,
++        52,
++        53,
++        54,
++        55,
++        56,
++        57,
++        58,
++        59,
++        60,
++        61,
++        62,
++        63,
++        64,
++        65,
++        66,
++        67,
++        68,
++        69,
++        70,
++        71,
++        72,
++        73,
++        74,
++        75,
++        76,
++        77,
++        78,
++        79,
++        80,
++        81,
++        82,
++        83,
++        84,
++        85,
++        86,
++        87,
++        88,
++        89,
++        90,
++        91,
++        92,
++        93,
++        94,
++        95,
++        96,
++        97,
++        98,
++        99,
++        100,
++        101,
++        102,
++        103,
++        104,
++        105,
++        106,
++        107,
++        108,
++        109,
++        110,
++        111,
++        112,
++        113,
++        114,
++        115,
++        116,
++        117,
++        118,
++        119,
++        120,
++        121,
++        122,
++        123,
++        124,
++        125,
++        126,
++        160,
++        161,
++        162,
++        163,
++        164,
++        165,
++        166,
++        167,
++        168,
++        169,
++        170,
++        171,
++        172,
++        173,
++        174,
++        175,
++        176,
++        177,
++        178,
++        179,
++        180,
++        181,
++        182,
++        183,
++        184,
++        185,
++        186,
++        187,
++        188,
++        189,
++        190,
++        191,
++        192,
++        193,
++        194,
++        195,
++        196,
++        197,
++        198,
++        199,
++        200,
++        201,
++        202,
++        203,
++        204,
++        205,
++        206,
++        207,
++        208,
++        209,
++        210,
++        211,
++        212,
++        213,
++        214,
++        215,
++        216,
++        217,
++        218,
++        219,
++        220,
++        221,
++        222,
++        223,
++        224,
++        225,
++        226,
++        227,
++        228,
++        229,
++        230,
++        231,
++        232,
++        233,
++        234,
++        235,
++        236,
++        237,
++        238,
++        239,
++        240,
++        241,
++        242,
++        243,
++        244,
++        245,
++        246,
++        247,
++        248,
++        249,
++        250,
++        251,
++        252,
++        253,
++        254,
++        255,
++        258,
++        305,
++        338,
++        339,
++        700,
++        710,
++        730,
++        732,
++        768,
++        769,
++        771,
++        772,
++        776,
++        777,
++        803,
++        8201,
++        8211,
++        8212,
++        8216,
++        8217,
++        8218,
++        8220,
++        8221,
++        8222,
++        8226,
++        8230,
++        8242,
++        8243,
++        8249,
++        8250,
++        8260,
++        8364,
++        8482,
++        8593,
++        8594,
++        8595,
++        8722,
++        8725,
++        8730,
++        8805
++      ],
++      "license": "SIL Open Font License 1.1",
++      "licenseFile": "web/src/assets/fonts/archivo/OFL.txt"
++    }
++  ]
++}
+diff --git a/references/audits/public-assets.json b/references/audits/public-assets.json
+index fc87cc2..bf93c16 100644
+--- a/references/audits/public-assets.json
++++ b/references/audits/public-assets.json
+@@ -103,6 +103,32 @@
+       "delivery": "license-file",
+       "provenance": null,
+       "license": "SIL Open Font License 1.1"
++    },
++    {
++      "source": "references/audits/final-qa/logs/font-baloo-source.json",
++      "destination": "web/src/assets/fonts/baloo-2/baloo-2-latin-variable.woff2",
++      "bytes": 35960,
++      "sha256_source": null,
++      "sha256_destination": "6c51534b303386a28583bada93cb2e4b24f67225409abc423ae0b43f0f8bc6a7",
++      "matches": true,
++      "role": "Baloo 2 Latin variable subset (+U+2192, U+221A, U+2265) for next/font/local",
++      "delivery": "next-font-local",
++      "provenance": "https://fonts.gstatic.com/l/font?kit=wXKrE3kTposypRyd11rOjucKvFUQkf30qaJG9HmJwVEjiwQIvt4AbAIyzjXlxFfVVqPDoZqVkApyF8i3vrMtN0GasoRZ65z2TG_EaB0iz4uZwyMPfpM4L2X9gahcY_C64jPEGAtb5zCTMytZN2dVI-Ktwt0cmX5qJyiD6uA089mCqscCO9A1BpauhkeLdQaI9JvuJPsBUkaf4FRxumwzQQY_lQAvp1fvwdLsqjFdhvZOREotBPvHrJUHiI1Nmy49kIYO_CARyOtULevVt3IFjo6JToYwP4JdC01oMNzH1eYtSleKyTv3uuMC2CFvFE4y9jbait7bm-u2RqwIggmXxWkFmQZ-x79UWdRm37WvcGpqNDCRpUTfe5cJMnH-I2mf4avkp4zDwju8xHgDt48oVXAdM4rJYjOGxlXWotwxF3yavA0VinUf75dYcX7tB3q-yJW-nwqTqO0vddlwx2d2i0BQLhhkpJWgtu9wZzVTf6jI_V8JlCDmAi4Ijz5UMKnKzlqLjIC9T9s2Hnh2ARxVPv7_NfUfAadOVFMFKA&skey=f84d20f19091b325&v=v23",
++      "license": "SIL Open Font License 1.1",
++      "license_source": "web/src/assets/fonts/baloo-2/OFL.txt"
++    },
++    {
++      "source": "references/audits/final-qa/logs/font-archivo-source.json",
++      "destination": "web/src/assets/fonts/archivo/archivo-latin-variable.woff2",
++      "bytes": 38924,
++      "sha256_source": null,
++      "sha256_destination": "0ef853834daeefe81fae808b19f19ca84199a64fafaedd3798949cd6316002c6",
++      "matches": true,
++      "role": "Archivo Latin variable subset (+U+2192, U+221A, U+2265) for next/font/local",
++      "delivery": "next-font-local",
++      "provenance": "https://fonts.gstatic.com/l/font?kit=k3kPo8UDI-1M0wlSV9XAw6lQkqWY8Q82sIyfKZ-Fna1FS9D22ldh2R1HA2fEe_RgElwhj2oH71YoNJu0Z6cAmjYSxldZndVg_ReQo2vJeX9QtKIqy6HBh-9NA4wfO3yk3ukpXmzjjbkxUTOgamWGvCtKbIAGU9T7T2b2nikJXHDgDV7yw2E6ZbX7p2tE-Av4E10x-D3pciaCTePLxW70RAS1jb4FsJENh99eukmrkoe00YMOMhbGGwN4__J14NeJSN2M7GVAaMfXJ8i45UaZj1rNgnHs05fw-_1nZ8SO_WYs35KNAcyt1moiB2O-Mwx-RbM226-DRG148bBawsRKun3u6D_PO45TxS0VqBf_Br2GlwVcL_n8qNIKQpPml_raez_iyAW4NULKJRFvywdBVo5cypPXAgORmnqyGWdA-lTEavxr3BX-ZvClWpKb0DNwM3_vuPIgQ2lTM0rwwYcyC4SjkeuWPLTRtIPEmvUY49XTddY6awPgTnpRPm0Ir-QmZEoyuLQ1_Wyg6Lco7KC5Ifazv7JV91LHSoNrHUPFMFh1kZw3BEw&skey=8131191f4580dfcb&v=v25",
++      "license": "SIL Open Font License 1.1",
++      "license_source": "web/src/assets/fonts/archivo/OFL.txt"
+     }
+   ]
+ }
+diff --git a/web/src/app/layout.tsx b/web/src/app/layout.tsx
+index 90d3d44..c41ce0c 100644
+--- a/web/src/app/layout.tsx
++++ b/web/src/app/layout.tsx
+@@ -5,8 +5,8 @@ import { Footer } from "@/components/shell/Footer";
+ import { GraphicsProvider, PauseMotionButton } from "@/features/graphics/GraphicsProvider";
+ import "./globals.css";
+ 
+-const baloo = localFont({ src: "../assets/fonts/baloo-2/baloo-2-variable.ttf", variable: "--font-baloo", display: "swap", weight: "400 800" });
+-const archivo = localFont({ src: "../assets/fonts/archivo/archivo-variable.ttf", variable: "--font-archivo", display: "swap", weight: "100 900" });
++const baloo = localFont({ src: "../assets/fonts/baloo-2/baloo-2-latin-variable.woff2", variable: "--font-baloo", display: "swap", weight: "400 800" });
++const archivo = localFont({ src: "../assets/fonts/archivo/archivo-latin-variable.woff2", variable: "--font-archivo", display: "swap", weight: "100 900" });
+ 
+ export const metadata: Metadata = {
+   title: { default: "Root Trust · A base que sustenta o crescimento", template: "%s · Root Trust" },
+diff --git a/web/src/features/newsletter/newsletter.module.css b/web/src/features/newsletter/newsletter.module.css
+index 4293f4e..3e0b5e9 100644
+--- a/web/src/features/newsletter/newsletter.module.css
++++ b/web/src/features/newsletter/newsletter.module.css
+@@ -94,9 +94,9 @@ a.pagerBtn:hover { background:#262626; color:var(--rt-superficie); }
+ .pagerBtn[aria-disabled="true"] { box-shadow:inset 0 0 0 1px #3C3C3C; color:#8a8a8a; cursor:not-allowed; }
+ .pagerInfo { font:600 15px/1.4 var(--font-body); }
+ 
+-.reading { max-width:720px; display:flex; flex-direction:column; align-items:flex-start; gap:24px; }
++.reading { width:100%; min-width:0; display:flex; flex-direction:column; align-items:flex-start; gap:24px; }
+ .readingText { margin:0; max-width:65ch; font:400 19px/1.7 var(--font-body); text-wrap:pretty; }
+-.previewTitle { margin:0; font:700 clamp(32px,4vw,52px)/1.08 var(--font-display); letter-spacing:-.02em; text-wrap:balance; overflow-wrap:anywhere; }
++.previewTitle { margin:0; width:100%; min-width:0; font:700 clamp(32px,4vw,52px)/1.08 var(--font-display); letter-spacing:-.02em; text-wrap:balance; overflow-wrap:anywhere; }
+ .back { display:inline-flex; align-items:center; gap:10px; min-height:44px; color:var(--rt-superficie); text-decoration:none; font:600 15px/1.4 var(--font-body); transition:color 160ms ease-out; }
+ .back:hover { color:var(--rt-folha); }
+ .requestCard { box-sizing:border-box; width:100%; display:flex; flex-direction:column; align-items:flex-start; gap:16px; padding:clamp(20px,3vw,32px); border-radius:12px; background:#1D1D1D; box-shadow:inset 0 0 0 1px #3C3C3C; }
+@@ -104,6 +104,25 @@ a.pagerBtn:hover { background:#262626; color:var(--rt-superficie); }
+ .requested { margin:0; font:400 13px/1.5 var(--font-body); color:var(--rt-menta); overflow-wrap:anywhere; }
+ .requestCard .body { max-width:560px; }
+ 
++.compactHero .heroText { max-width:none; width:100%; }
++.row { align-items:flex-start; }
++.rowBody { max-width:none; }
++.rowBody .abertura { max-width:65ch; }
++
++@media (min-width: 960px) {
++  .compactHero .heroText { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); column-gap:64px; row-gap:24px; align-items:start; }
++  .compactHero .heroText > .eyebrowRow { grid-column:1 / -1; }
++  .compactHero .heroText > .h1 { grid-column:1; grid-row:2 / span 2; }
++  .compactHero .heroText > .lead { grid-column:2; grid-row:2; }
++  .compactHero .heroText > .actions { grid-column:2; grid-row:3; }
++  .row { flex-wrap:nowrap; }
++  .rowBody { display:grid; grid-template-columns:minmax(0,1fr) auto; column-gap:48px; row-gap:16px; align-items:start; }
++  .rowBody > .rowTitle, .rowBody > .abertura { grid-column:1; }
++  .rowBody > div { grid-column:2; grid-row:1 / span 2; align-self:center; }
++  .requestCard { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); column-gap:64px; row-gap:16px; align-items:start; }
++  .requestCard > form { grid-column:2; grid-row:1 / span 3; }
++}
++
+ @media (max-width: 720px) {
+   .hero, .compactHero { padding-top:110px; padding-bottom:56px; }
+   .previewHero { padding-top:96px; }
+diff --git a/web/tests/e2e/foundation.spec.ts b/web/tests/e2e/foundation.spec.ts
+index cf8af6e..7c836bb 100644
+--- a/web/tests/e2e/foundation.spec.ts
++++ b/web/tests/e2e/foundation.spec.ts
+@@ -21,9 +21,13 @@ test("server content, local resources and keyboard navigation", async ({ page })
+ });
+ 
+ test("contact validates, prevents duplicate requests, and retains fields after demo failure", async ({ page }) => {
++  await page.clock.install();
+   await page.goto("/");
+   const form = page.getByRole("form", { name: "Solicitar diagnóstico" });
+-  await form.getByRole("button", { name: "Solicitar diagnóstico" }).click();
++  const submit = form.getByRole("button", { name: "Solicitar diagnóstico" });
++  await expect(submit).toBeEnabled();
++  await page.clock.pauseAt(Date.now() + 1000);
++  await submit.click();
+   await expect(form.getByLabel("Nome", { exact: true })).toBeFocused();
+   await expect(form.getByText("Informe a empresa.", { exact: true })).toBeVisible();
+   await form.getByLabel("Nome", { exact: true }).fill("Pessoa de teste");
+@@ -36,12 +40,49 @@ test("contact validates, prevents duplicate requests, and retains fields after d
+   await form.getByLabel("Resultado da demonstração").selectOption("error");
+   const requests: string[] = [];
+   page.on("request", (request) => { if (request.method() !== "GET") requests.push(request.url()); });
+-  await form.getByRole("button", { name: "Solicitar diagnóstico" }).click();
+-  await expect(form.getByRole("button", { name: "Enviando solicitação…" })).toBeDisabled();
++  // Counts the 350ms submission timers scheduled from here on, so the duplicate guard is observable beyond `disabled`.
++  await page.evaluate(() => {
++    const w = window as Window & { __submitTimers?: number };
++    w.__submitTimers = 0;
++    const original = window.setTimeout;
++    Object.defineProperty(window, "setTimeout", {
++      configurable: true,
++      writable: true,
++      value: (...args: unknown[]): number => {
++        if (args[1] === 350) w.__submitTimers = (w.__submitTimers ?? 0) + 1;
++        return Reflect.apply(original, window, args) as number;
++      },
++    });
++  });
++  const submitTimers = () => page.evaluate(() => (window as Window & { __submitTimers?: number }).__submitTimers);
++  const busyButton = form.getByRole("button", { name: "Enviando solicitação…" });
++
++  // Two submit events in the same tick while the first request is still active.
++  await page.evaluate(() => {
++    const target = document.querySelector<HTMLFormElement>('form[aria-label="Solicitar diagnóstico"]');
++    if (!target) throw new Error("Contact form not found");
++    target.requestSubmit();
++    target.requestSubmit();
++  });
++  await expect(busyButton).toBeDisabled();
++  await expect(form).toHaveAttribute("aria-busy", "true");
++  expect(await submitTimers()).toBe(1);
++  await page.clock.runFor(349);
++  await expect(busyButton).toBeDisabled();
++  await expect(form).toHaveAttribute("aria-busy", "true");
++  await page.clock.runFor(1);
+   await expect(form.getByRole("status")).toContainText("Tente novamente");
++  await expect(form).toHaveAttribute("aria-busy", "false");
++  await expect(submit).toBeEnabled();
+   await expect(form.getByLabel("Nome", { exact: true })).toHaveValue("Pessoa de teste");
++  await expect(form.getByLabel("Empresa", { exact: true })).toHaveValue("Empresa demonstrativa");
++  await expect(form.getByLabel("WhatsApp", { exact: true })).toHaveValue("11940084692");
+   await form.getByLabel("Resultado da demonstração").selectOption("success");
+   await form.getByLabel("WhatsApp", { exact: true }).press("Enter");
++  await expect(busyButton).toBeDisabled();
++  await expect(form).toHaveAttribute("aria-busy", "true");
++  expect(await submitTimers()).toBe(2);
++  await page.clock.runFor(350);
+   await expect(form.getByRole("status")).toContainText("Nenhum dado foi enviado");
+   await expect(form.getByRole("status")).toContainText("aceita localmente");
+   expect(requests).toEqual([]);
+diff --git a/web/tests/e2e/newsletter-layout.spec.ts b/web/tests/e2e/newsletter-layout.spec.ts
+new file mode 100644
+index 0000000..f2c8726
+--- /dev/null
++++ b/web/tests/e2e/newsletter-layout.spec.ts
+@@ -0,0 +1,54 @@
++import { expect, test, type Page } from "@playwright/test";
++import { EDICOES_PUBLICAS } from "../../src/features/newsletter/catalog";
++
++const INNER = 1200;
++
++async function width(page: Page, selector: string) {
++  const box = await page.locator(selector).first().boundingBox();
++  if (!box) throw new Error(`sem caixa para ${selector}`);
++  return Math.round(box.width);
++}
++
++test.describe("desktop 1440", () => {
++  test.use({ viewport: { width: 1440, height: 900 } });
++
++  test("arquivo: abertura, destaque e lista usam toda a largura útil", async ({ page }) => {
++    await page.goto("/newsletter/edicoes");
++    const heroText = page.locator("section[aria-labelledby='titulo'] > div > div").first();
++    expect(Math.round((await heroText.boundingBox())!.width)).toBe(INNER);
++    expect(await width(page, "#destaque >> xpath=ancestor::section[1]")).toBe(INNER);
++    expect(await width(page, "ol > li article")).toBe(INNER);
++    const lead = Math.round((await page.locator("section[aria-labelledby='titulo'] p").first().boundingBox())!.width);
++    const h1 = Math.round((await page.locator("#titulo").boundingBox())!.width);
++    expect(h1 + lead).toBeGreaterThan(INNER / 2 + 400);
++  });
++
++  for (const edicao of EDICOES_PUBLICAS) {
++    test(`prévia ${edicao.slug}: artigo, título e card em toda a largura, parágrafo legível`, async ({ page }) => {
++      await page.goto(`/newsletter/edicoes/${edicao.slug}`);
++      expect(await width(page, "article[aria-labelledby='titulo']")).toBe(INNER);
++      expect(await width(page, "#titulo")).toBe(INNER);
++      expect(await width(page, "#receba >> xpath=ancestor::div[1]")).toBe(INNER);
++      const paragraph = await width(page, "article[aria-labelledby='titulo'] > p:last-child");
++      expect(paragraph).toBeLessThan(INNER);
++      expect(paragraph).toBeLessThanOrEqual(820);
++    });
++  }
++
++  test("landing /newsletter mantém o bloco de abertura limitado", async ({ page }) => {
++    await page.goto("/newsletter");
++    expect(await width(page, "section[aria-labelledby='titulo'] p")).toBeLessThanOrEqual(560);
++  });
++});
++
++for (const vw of [320, 390]) {
++  test(`arquivo e prévias sem overflow em ${vw}px`, async ({ page }) => {
++    await page.setViewportSize({ width: vw, height: 844 });
++    for (const path of ["/newsletter/edicoes", ...EDICOES_PUBLICAS.map((e) => `/newsletter/edicoes/${e.slug}`)]) {
++      await page.goto(path);
++      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
++      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
++      expect(overflow, path).toBeLessThanOrEqual(0);
++    }
++  });
++}
+diff --git a/web/tests/unit/font-assets.test.ts b/web/tests/unit/font-assets.test.ts
+new file mode 100644
+index 0000000..2c20f05
+--- /dev/null
++++ b/web/tests/unit/font-assets.test.ts
+@@ -0,0 +1,46 @@
++import { createHash } from "node:crypto";
++import { readdirSync, readFileSync, statSync } from "node:fs";
++import { createRequire } from "node:module";
++import { join } from "node:path";
++import { describe, expect, it } from "vitest";
++
++interface FontFace { characterSet: number[]; variationAxes: Record<string, { min: number; max: number; default: number }> }
++const parseFont = createRequire(import.meta.url)("next/dist/compiled/@next/font/dist/fontkit").default as (buffer: Buffer) => FontFace;
++
++const fontsDir = join(__dirname, "../../src/assets/fonts");
++const srcDir = join(__dirname, "../../src");
++const audit = JSON.parse(readFileSync(join(__dirname, "../../../references/audits/font-optimization.json"), "utf8")) as { fonts: Array<{ ttf: string; woff2: string; sha256: string; bytes: number; version: string; axes: Record<string, [number, number]> }> };
++
++function sourceCodePoints(dir: string, found = new Set<number>()): Set<number> {
++  for (const name of readdirSync(dir)) {
++    const path = join(dir, name);
++    if (statSync(path).isDirectory()) sourceCodePoints(path, found);
++    else if (/\.(tsx?|css|json|md)$/.test(name)) for (const char of readFileSync(path, "utf8")) found.add(char.codePointAt(0)!);
++  }
++  return found;
++}
++
++describe("optimized Latin WOFF2 fonts", () => {
++  const used = sourceCodePoints(srcDir);
++  for (const entry of audit.fonts) {
++    const original = parseFont(readFileSync(join(fontsDir, entry.ttf)));
++    const bytes = readFileSync(join(fontsDir, entry.woff2));
++    const optimized = parseFont(bytes);
++
++    it(`${entry.woff2} matches the audited hash and size`, () => {
++      expect(createHash("sha256").update(bytes).digest("hex")).toBe(entry.sha256);
++      expect(bytes.length).toBe(entry.bytes);
++    });
++    it(`${entry.woff2} keeps the weight axis and a fixed default width`, () => {
++      for (const [axis, [min, max]] of Object.entries(entry.axes)) expect(optimized.variationAxes[axis]).toMatchObject({ min, max });
++      expect(Object.keys(optimized.variationAxes).sort()).toEqual(Object.keys(entry.axes).sort());
++      expect(optimized.variationAxes.wght.default).toBe(original.variationAxes.wght.default);
++    });
++    it(`${entry.woff2} covers every source character the original TTF supports`, () => {
++      const originalSet = new Set(original.characterSet);
++      const optimizedSet = new Set(optimized.characterSet);
++      const lost = [...used].filter((cp) => originalSet.has(cp) && !optimizedSet.has(cp)).map((cp) => `U+${cp.toString(16).toUpperCase().padStart(4, "0")}`);
++      expect(lost).toEqual([]);
++    });
++  }
++});

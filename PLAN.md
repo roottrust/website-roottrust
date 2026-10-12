@@ -180,6 +180,8 @@ Somente layout.tsx, duas novas fontes locais WOFF2 Latin + símbolos públicos �
 
 Baseline anterior preservada em lighthouse-before-p7; baseline comparável pós-layout em lighthouse-before-p8-fonts. Diagnóstico curto em logs/p8-lcp-diagnostic.json; comparação em logs/font-candidate-metrics.json. LCP observado282–312ms não é o simulado4800–4878ms; não somar esses tempos.
 
+P8.3 checkpoint WIP LOCAL: 8d8a57f10506d27f9f049dcbd1dcef02f9e6e8c3. Dono Sonnet: layout, dois WOFF2 novos, auditoria/allowlist e teste unitário pequeno de cobertura/eixos/hash usando fontkit já transitivo no Next (sem dependência nova). O teste deve detectar futuro caractere que os originais suportam e os WOFF2 não; nenhuma promessa de cobertura mundial. GPT gates após sessão terminal.
+
 ## 8. Progresso e aprovação
 
 | Tarefa | Responsável | Estado | Evidência/dependência |
@@ -190,7 +192,7 @@ Baseline anterior preservada em lighthouse-before-p7; baseline comparável pós-
 | P7.2 Aviso/select | Sonnet | Concluído | Gates34414 lint/types/101unit/build/270E2E6skip; revisão6d65922a e geometria320/390/1440 aprovadas. |
 | P7.3 Newsletter | Sonnet | Gates concluídos | Exec57880 lint/types/101unit/build/284E2E6skip; captura/revisão consolidada emP9.1. |
 | P8.1 E2E | Sonnet | Concluído | Gates26247 lint/types/101unit/build/284E2E6skip +20repetições(10desktop/10mobile), retries0. |
-| P8.2 Diagnóstico LCP | GPT + Sonnet consulta | Em execução | Baseline pós-layout concluída: 12rodadas, LCP4875,84/4800,737/4878,077/4860ms, CLS0. Consulta27c0e342 em execução; fontes517372bytes transferidos. |
+| P8.2 Diagnóstico LCP | GPT + Sonnet consulta | Concluído | Baseline pós-layout concluída: 12rodadas, LCP4875,84/4800,737/4878,077/4860ms, CLS0. Consulta27c0e342 succeeded45s+8s: GO condicionado, cobertura/eixos/CLS/procedência; fontes517372bytes transferidos. |
 | P8.3 Otimização | Sonnet + GPT gates | Preparando execução | P8.2; consultar se sair do escopo. |
 | P9.1 Revisão/gates | Sonnet independente + GPT | Aguardando aprovação | P7/P8. |
 | P9.2 Contexto/evidências | Sonnet + GPT PLAN | Aguardando aprovação | P9.1. |

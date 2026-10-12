@@ -1,0 +1,54 @@
+
+> roottrust-website@0.1.0 lint
+> eslint .
+
+
+> roottrust-website@0.1.0 typecheck
+> tsc --noEmit
+
+
+> roottrust-website@0.1.0 test
+> vitest run
+
+
+ RUN  v5.0.3 E:/Development/RootTrust/RootTrust/website-roottrust/web
+
+ ❯ tests/unit/font-assets.test.ts (6 tests | 2 failed) 33ms
+   ❯ optimized Latin WOFF2 fonts (6)
+     × baloo-2/baloo-2-latin-variable.woff2 covers every source character the original TTF supports 7ms
+     × archivo/archivo-latin-variable.woff2 covers every source character the original TTF supports 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/font-assets.test.ts > optimized Latin WOFF2 fonts > baloo-2/baloo-2-latin-variable.woff2 covers every source character the original TTF supports
+ FAIL  tests/unit/font-assets.test.ts > optimized Latin WOFF2 fonts > archivo/archivo-latin-variable.woff2 covers every source character the original TTF supports
+AssertionError: expected [ 'U+000D' ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "U+000D",
++ ]
+
+ ❯ tests/unit/font-assets.test.ts:43:20
+     41|       const optimizedSet = new Set(optimized.characterSet);
+     42|       const lost = [...used].filter((cp) => originalSet.has(cp) && !op…
+     43|       expect(lost).toEqual([]);
+       |                    ^
+     44|     });
+     45|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed | 12 passed (13)
+      Tests  2 failed | 105 passed (107)
+   Start at  21:40:16
+   Duration  952ms (transform 62%, import 19%, worker 15%, tests 4%)
+
+  Transform  transforming modules took 2.96s · 62% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+
