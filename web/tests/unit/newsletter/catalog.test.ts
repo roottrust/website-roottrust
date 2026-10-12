@@ -11,7 +11,7 @@ import {
   type EdicaoPublica,
 } from "../../../src/features/newsletter/catalog";
 
-const SOURCE_PATH = fileURLToPath(new URL("../../../../references/claude-design/newsletter-edicoes.js", import.meta.url));
+const SOURCE_PATH = fileURLToPath(new URL("../../fixtures/newsletter-edicoes.js", import.meta.url));
 const EDICAO_KEYS = ["abertura", "data", "demo", "id", "pilar", "slug", "titulo"];
 
 function loadSourceEdicoes(): unknown[] {

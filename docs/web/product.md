@@ -280,7 +280,7 @@ Estrutura editorial: identificação do responsável/controlador → finalidades
 
 **404:** H1 “Página não encontrada.” Texto “O endereço pode estar incorreto ou a página pode não estar disponível.” Ações “Voltar à Home” e “Conhecer os serviços” (menu ou links das três páginas).  
 **Erro de carregamento:** “Não foi possível carregar este conteúdo. Tente novamente.”  
-**Sem integração:** “Demonstração do formulário. Nenhum dado será enviado.”  
+**Modo de demonstração (`FORM_MODE=demo`):** “Demonstração do formulário. Nenhum dado será enviado.”  
 **Demais estados:** copy de campo inválido, envio, cancelamento e confirmação em [fluxos](product.md).
 
 | Página | Título para busca | Descrição para busca proposta |

@@ -9,7 +9,7 @@ const parseFont = createRequire(import.meta.url)("next/dist/compiled/@next/font/
 
 const fontsDir = join(__dirname, "../../src/assets/fonts");
 const srcDir = join(__dirname, "../../src");
-const audit = JSON.parse(readFileSync(join(__dirname, "../../../references/audits/font-optimization.json"), "utf8")) as { fonts: Array<{ ttf: string; woff2: string; sha256: string; bytes: number; version: string; axes: Record<string, [number, number]> }> };
+const audit = JSON.parse(readFileSync(join(__dirname, "../fixtures/font-optimization.json"), "utf8")) as { fonts: Array<{ ttf: string; woff2: string; sha256: string; bytes: number; version: string; axes: Record<string, [number, number]> }> };
 
 function sourceCodePoints(dir: string, found = new Set<number>()): Set<number> {
   for (const name of readdirSync(dir)) {

@@ -119,3 +119,7 @@ Ver [QA final](references/audits/final-qa.md). Capturas P9: 44 JPG/22 pares, 11 
 ### Rechecagem documental final — 11/10/2026
 
 **Histórico, superado pelos gates P8.3 acima (não é estado atual):** rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.
+
+## Encerramento e referências locais
+
+Frontend e correções finais receberam aceite humano. `PLAN.md` é um apontador para o plano concluído em `docs/plans/frontend-corrections-completed.md`; não há tarefa ativa. Por decisão do usuário, `references/` permanece local e ignorado pelo Git. Links, exports e auditorias dessa pasta não estarão disponíveis em clones novos; capturas comparativas exigem restaurá-la. Fixtures necessárias aos testes unitários estão versionadas em `web/tests/fixtures/`. Integrações reais serão planejadas separadamente.
