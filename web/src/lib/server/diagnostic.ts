@@ -56,8 +56,6 @@ const clean = (value: string): string =>
     .trim()
     .slice(0, 200);
 
-export { clean as cleanDiscordText };
-
 export function formatDiscordMessage(record: DiagnosticRecord): string {
   return [
     `Novo pedido de diagnóstico — ID ${record.id}`,

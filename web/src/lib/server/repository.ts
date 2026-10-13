@@ -1,5 +1,6 @@
 import { randomInt, randomUUID } from "node:crypto";
 import { opaqueId } from "./ids";
+import { MAX_REGENERATIONS_PER_DAY, type DecisionAction, type DecisionResult } from "./newsletter-protocol";
 import { checkEmail, extractOpening, type EditionInput } from "./validation";
 import { enqueueJob } from "./jobs";
 import type { Denied, Gate } from "./limits";
@@ -200,7 +201,7 @@ export async function saveEditionRevision(
   options: { regenerationOnly?: boolean; gate?: Gate; enqueue?: (tx: Tx, saved: { draftId: string; revision: number }) => Promise<void> } = {},
 ): Promise<
   | { ok: true; draftId: string; revision: number }
-  | { ok: false; reason: "not_found" | "approved" | "invalid_body" | "not_regenerating" }
+  | { ok: false; reason: "not_found" | "approved" | "invalid_body" | "not_regenerating" | "slug_mismatch" }
   | ({ ok: false; reason: "rate_limited" } & Denied)
 > {
   const abertura = extractOpening(input.corpo);
@@ -211,6 +212,7 @@ export async function saveEditionRevision(
     if (input.draftId && !current) return { ok: false as const, reason: "not_found" as const };
     if (current?.status === "approved") return { ok: false as const, reason: "approved" as const };
     if (options.regenerationOnly && current && current.status !== "regeneration_requested") return { ok: false as const, reason: "not_regenerating" as const };
+    if (current && current.slug !== input.slug) return { ok: false as const, reason: "slug_mismatch" as const };
     const draftId = current?.id ?? `ed_${randomUUID()}`;
     const revision = (current?.currentRevision ?? 0) + 1;
     const id = `${draftId}.${revision}`;
@@ -277,5 +279,60 @@ export async function publishEditionRevision(
     tx.set(COLLECTIONS.editionsPublic, record.slug, projectPublicEdition(record, at));
     tx.set(COLLECTIONS.editionDrafts, draftId, { ...draft, status: "approved", approvedRevision: revision, updatedAt: at });
     return "published";
+  });
+}
+
+// Binds the Discord control message to exactly one revision. Written only if that revision is still the current, pending
+// one and has no binding yet; otherwise the message that was posted simply never matches (its buttons are stale).
+export async function bindEditionNotification(
+  store: Store,
+  notification: { draftId: string; revision: number; channelId: string; messageId: string },
+  now: Date,
+): Promise<boolean> {
+  return store.transaction(async (tx) => {
+    const draft = await tx.get<EditionDraftRecord>(COLLECTIONS.editionDrafts, notification.draftId);
+    if (!draft || draft.currentRevision !== notification.revision || draft.status !== "pending" || draft.notification) return false;
+    const at = now.toISOString();
+    tx.set(COLLECTIONS.editionDrafts, draft.id, {
+      ...draft,
+      notification: { revision: notification.revision, channelId: notification.channelId, messageId: notification.messageId, at },
+      updatedAt: at,
+    });
+    return true;
+  });
+}
+
+const SAO_PAULO_DAY = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" });
+
+// Compare-and-set on the draft. Buttons are valid only for the current revision, in the exact channel and message recorded
+// for it, while the draft is still pending: rejecting or asking for a new version changes the status, and a new revision
+// replaces the binding, so every older button fails here. Approval is T4.3: this phase never publishes, so "approve" on a
+// valid pending revision writes nothing and answers "approval_unavailable".
+export async function decideEditionRevision(
+  store: Store,
+  input: { action: DecisionAction; draftId: string; revision: number; channelId: string; messageId: string },
+  now: Date,
+): Promise<DecisionResult> {
+  return store.transaction(async (tx) => {
+    const draft = await tx.get<EditionDraftRecord>(COLLECTIONS.editionDrafts, input.draftId);
+    if (!draft) return "not_found";
+    if (draft.currentRevision !== input.revision) return "stale";
+    const bound = draft.notification;
+    if (!bound || bound.revision !== input.revision || bound.channelId !== input.channelId || bound.messageId !== input.messageId) return "mismatch";
+    const at = now.toISOString();
+    if (input.action === "approve") return draft.status === "pending" ? "approval_unavailable" : "conflict";
+    if (input.action === "reject") {
+      if (draft.status === "rejected") return "already_rejected";
+      if (draft.status !== "pending") return "conflict";
+      tx.set(COLLECTIONS.editionDrafts, draft.id, { ...draft, status: "rejected", decidedAt: at, updatedAt: at });
+      return "rejected";
+    }
+    if (draft.status === "regeneration_requested") return "already_regenerating";
+    if (draft.status !== "pending") return "conflict";
+    const day = SAO_PAULO_DAY.format(now);
+    const used = draft.regenerations?.day === day ? draft.regenerations.count : 0;
+    if (used >= MAX_REGENERATIONS_PER_DAY) return "regeneration_limit";
+    tx.set(COLLECTIONS.editionDrafts, draft.id, { ...draft, status: "regeneration_requested", regenerations: { day, count: used + 1 }, decidedAt: at, updatedAt: at });
+    return "regeneration_requested";
   });
 }

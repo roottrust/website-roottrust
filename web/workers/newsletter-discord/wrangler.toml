@@ -1,0 +1,14 @@
+# Secrets are NEVER written here. Set them with `wrangler secret put`:
+#   INTERNAL_KEY_PUBLISH, ROUTINE_FIRE_TOKEN (optional)
+name = "roottrust-newsletter-discord"
+main = "index.ts"
+compatibility_date = "2026-10-01"
+
+[vars]
+# Public identifiers only (no tokens). Fill in at deploy time.
+DISCORD_PUBLIC_KEY = ""
+DISCORD_APPLICATION_ID = ""
+DISCORD_GUILD_ID = ""
+DISCORD_NEWSLETTER_CHANNEL_ID = ""
+SITE_ORIGIN = ""
+# ROUTINE_FIRE_URL = ""  # optional, best-effort wake-up of the Routine

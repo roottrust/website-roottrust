@@ -2,6 +2,7 @@
 export const DECISION_ACTIONS = ["approve", "reject", "regenerate"] as const;
 export type DecisionAction = (typeof DECISION_ACTIONS)[number];
 
+export const DRAFT_PATH = "/api/internal/newsletter/draft";
 export const DECISION_PATH = "/api/internal/newsletter/decision";
 export const MAX_CUSTOM_ID_LENGTH = 100;
 export const SNOWFLAKE = /^\d{17,20}$/;
@@ -22,3 +23,20 @@ export function parseCustomId(value: unknown): { action: DecisionAction; draftId
   const action = DECISION_ACTIONS.find((candidate) => CODES[candidate] === match[1]);
   return action ? { action, draftId: match[2], revision: Number(match[3]) } : undefined;
 }
+
+// Business outcomes of POST DECISION_PATH. The Worker maps each one to a message; anything else is an error code.
+export const DECISION_RESULTS = [
+  "rejected",
+  "already_rejected",
+  "regeneration_requested",
+  "already_regenerating",
+  "approval_unavailable",
+  "not_found",
+  "stale",
+  "mismatch",
+  "conflict",
+  "regeneration_limit",
+] as const;
+export type DecisionResult = (typeof DECISION_RESULTS)[number];
+
+export const MAX_REGENERATIONS_PER_DAY = 3;

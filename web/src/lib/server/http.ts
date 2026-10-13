@@ -1,7 +1,8 @@
 import { clientIpKey, hasIdSecret, isTrustedOrigin, loadDefenseConfig, verifyTurnstile, type DefenseConfig } from "./defense";
 import { createDiagnosticHandler, loadDiagnosticConfig, type DiagnosticConfig } from "./diagnostic";
 import { authenticateInternal, loadInternalKeys, type InternalKeys } from "./internal-auth";
-import { processJobs, purgeExpired, type JobHandlers } from "./jobs";
+import { enqueueJob, processJobs, purgeExpired, type JobHandlers } from "./jobs";
+import { createNewsletterHandler, loadNewsletterConfig, type NewsletterConfig } from "./newsletter";
 import {
   consumeLimits,
   diagnosticLimitSpecs,
@@ -16,11 +17,11 @@ import {
 import { resolveBackendMode, type BackendMode } from "./mode";
 import { createReportHandler, loadReportConfig, type ReportConfig } from "./report";
 import { purgeInactiveLeads } from "./retention";
-import { recordDiagnostic, recordReportRequest, requestSubscription } from "./repository";
+import { decideEditionRevision, recordDiagnostic, recordReportRequest, requestSubscription, saveEditionRevision } from "./repository";
 import { logEvent, safeErrorCode } from "./safe";
 import { loadFirestoreStore, type Store } from "./store";
-import { JOB_KINDS } from "./types";
-import { MAX_BODY_BYTES, parseDiagnostic, parseReport, parseSubscription, type Parsed } from "./validation";
+import { COLLECTIONS, JOB_KINDS } from "./types";
+import { MAX_BODY_BYTES, MAX_EDITION_BYTES, parseDecision, parseDiagnostic, parseDraftRequest, parseReport, parseSubscription, type Parsed } from "./validation";
 
 if (typeof window !== "undefined") throw new Error("lib/server must not be imported in the browser");
 
@@ -37,6 +38,8 @@ export interface Deps {
   diagnostic?: DiagnosticConfig;
   // Report e-mails are operational only with Resend configured and attested; absent => 503.
   report?: ReportConfig;
+  // The private newsletter review channel (bot token + Discord IDs); absent => the draft and decision endpoints answer 503.
+  newsletter?: NewsletterConfig;
   // Monotonic milliseconds for the jobs request's time plan; tests inject it.
   clock?: () => number;
 }
@@ -48,6 +51,7 @@ export function defaultDeps(env: Record<string, string | undefined> = process.en
   const now = () => new Date();
   const diagnostic = loadDiagnosticConfig(env);
   const report = loadReportConfig(env);
+  const newsletter = loadNewsletterConfig(env);
   return {
     mode: resolveBackendMode(env.BACKEND_MODE),
     idSecret: env.DATA_ID_SECRET,
@@ -57,7 +61,9 @@ export function defaultDeps(env: Record<string, string | undefined> = process.en
     internalKeys: loadInternalKeys(env),
     diagnostic,
     report,
+    newsletter,
     jobHandlers: {
+      ...(newsletter ? { [JOB_KINDS.newsletterDiscord]: (job, context) => getStore().then((store) => createNewsletterHandler(store, newsletter, now)(job, context)) } : {}),
       ...(diagnostic ? { [JOB_KINDS.diagnosticDiscord]: (job, context) => getStore().then((store) => createDiagnosticHandler(store, diagnostic, now)(job, context)) } : {}),
       ...(report ? { [JOB_KINDS.reportEmail]: (job, context) => getStore().then((store) => createReportHandler(store, report, now)(job, context)) } : {}),
     },
@@ -246,6 +252,105 @@ export async function handleJobsProcess(request: Request, deps: Deps = defaultDe
     return json(200, { ...summary, purged, leadPurge, deadlineReached });
   } catch (error) {
     logEvent("error", "jobs_failed", { error: safeErrorCode(error) });
+    return unavailable("storage_unavailable");
+  }
+}
+
+const DRAFT_MAX_BODY_BYTES = MAX_EDITION_BYTES + 4096; // the edition itself is capped at 64 KiB; the rest is JSON framing
+const DECISION_MAX_BODY_BYTES = 2048;
+const DRAFT_DAILY_LIMIT = 8;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+type NewsletterAuth = { ok: true; store: Store; body: Uint8Array; config: NewsletterConfig; secret: string } | { ok: false; response: Response };
+
+// Authentication first, then the body: the signature already covers the exact bytes. A draft key can never decide and a
+// publish key can never post drafts (scopes are separate credentials).
+async function authenticateNewsletter(request: Request, deps: Deps, scope: "draft" | "publish", maxBodyBytes: number): Promise<NewsletterAuth> {
+  if (deps.mode !== "pilot") return { ok: false, response: unavailable("unavailable") };
+  const secret = deps.idSecret;
+  if (!hasIdSecret(secret) || !deps.internalKeys?.[scope]?.length) {
+    logEvent("error", "pilot_misconfigured", { action: `newsletter-${scope}` });
+    return { ok: false, response: unavailable("misconfigured") };
+  }
+  if (!deps.newsletter) return { ok: false, response: unavailable("not_operational") };
+  const store = await deps.getStore();
+  const auth = await authenticateInternal(request, { scope, keys: deps.internalKeys, store, idSecret: secret, now: deps.now(), maxBodyBytes });
+  if (!auth.ok) {
+    logEvent("warn", "internal_auth_failed", { scope, reason: auth.reason });
+    return { ok: false, response: auth.status === 401 ? json(401, { code: "unauthorized" }) : json(auth.status, { code: auth.reason }) };
+  }
+  return { ok: true, store, body: auth.body, config: deps.newsletter, secret };
+}
+
+function parseSignedJson(body: Uint8Array): { ok: true; value: unknown } | { ok: false } {
+  try {
+    return { ok: true, value: JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(body)) as unknown };
+  } catch {
+    return { ok: false };
+  }
+}
+
+// Internal, scope "draft" (the Routine). Persists an immutable revision and its Discord job in one transaction; it never
+// approves, publishes or sends. A body with `draftId` is only accepted when a reviewer asked to regenerate that draft.
+export async function handleNewsletterDraft(request: Request, deps: Deps = defaultDeps()): Promise<Response> {
+  try {
+    const auth = await authenticateNewsletter(request, deps, "draft", DRAFT_MAX_BODY_BYTES);
+    if (!auth.ok) return auth.response;
+    const read = parseSignedJson(auth.body);
+    if (!read.ok) return json(400, { code: "invalid_request" });
+    const parsed = parseDraftRequest(read.value);
+    if (!parsed.ok) return json(400, { code: "invalid_request", fields: parsed.fields });
+    const { store, secret } = auth;
+    const now = deps.now();
+
+    if (!parsed.value.draftId) {
+      const taken = await store.queryEquals(COLLECTIONS.editionDrafts, "slug", parsed.value.slug, 1);
+      const published = await store.transaction((tx) => tx.get(COLLECTIONS.editionsPublic, parsed.value.slug));
+      if (taken.length || published) return json(409, { code: "slug_exists" });
+    }
+    const gate = gateOf(secret, [{ name: "nl-draft-day", identity: "global", limit: DRAFT_DAILY_LIMIT, windowMs: DAY_MS }], now);
+    const result = await saveEditionRevision(store, parsed.value, now, {
+      regenerationOnly: true,
+      gate,
+      enqueue: async (tx, saved) => {
+        await enqueueJob(
+          tx,
+          secret,
+          { kind: JOB_KINDS.newsletterDiscord, key: `${saved.draftId}.${saved.revision}`, payload: { draftId: saved.draftId, revision: String(saved.revision) }, maxAttempts: 8 },
+          now,
+        );
+      },
+    });
+    if (result.ok) return json(202, { status: "queued", draftId: result.draftId, revision: result.revision });
+    if (result.reason === "rate_limited") return rateLimited(result);
+    if (result.reason === "not_found") return json(404, { code: "draft_not_found" });
+    if (result.reason === "invalid_body") return json(400, { code: "invalid_request", fields: ["corpo"] });
+    return json(409, { code: result.reason });
+  } catch (error) {
+    logEvent("error", "newsletter_draft_failed", { error: safeErrorCode(error) });
+    return unavailable("storage_unavailable");
+  }
+}
+
+// Internal, scope "publish" (the Discord Worker, after it verified Discord's Ed25519 signature). The Worker forwards the
+// application, guild, channel and message IDs it saw; they are compared with the configured review channel and with the
+// binding stored for the revision. T4.2 only rejects or requests regeneration: approval answers "approval_unavailable".
+export async function handleNewsletterDecision(request: Request, deps: Deps = defaultDeps()): Promise<Response> {
+  try {
+    const auth = await authenticateNewsletter(request, deps, "publish", DECISION_MAX_BODY_BYTES);
+    if (!auth.ok) return auth.response;
+    const read = parseSignedJson(auth.body);
+    if (!read.ok) return json(400, { code: "invalid_request" });
+    const parsed = parseDecision(read.value);
+    if (!parsed.ok) return json(400, { code: "invalid_request", fields: parsed.fields });
+    const { config, store } = auth;
+    const { applicationId, guildId, channelId, messageId, ...decision } = parsed.value;
+    if (applicationId !== config.applicationId || guildId !== config.guildId || channelId !== config.channelId) return json(403, { code: "forbidden_binding" });
+    const result = await decideEditionRevision(store, { ...decision, channelId, messageId }, deps.now());
+    // Every outcome of a well-formed decision is a 200 with `result`; any other status is an error and carries no decision.
+    return json(200, { result });
+  } catch (error) {
+    logEvent("error", "newsletter_decision_failed", { error: safeErrorCode(error) });
     return unavailable("storage_unavailable");
   }
 }

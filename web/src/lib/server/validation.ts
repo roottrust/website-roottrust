@@ -1,5 +1,6 @@
 import { validateContact, validateEmail } from "../forms";
 import { PILARES } from "../../features/newsletter/catalog";
+import { DECISION_ACTIONS, DRAFT_ID, SNOWFLAKE, type DecisionAction } from "./newsletter-protocol";
 import { TOOL_IDS, type EditionOpeningSegment, type EditionSource, type ToolId } from "./types";
 
 export const MAX_BODY_BYTES = 8 * 1024;
@@ -143,7 +144,7 @@ export function parseEditionInput(body: unknown): Parsed<EditionInput> {
   const abertura = typeof corpo === "string" && Buffer.byteLength(corpo) <= MAX_EDITION_BYTES ? extractOpening(corpo) : undefined;
   if (!abertura) fields.push("corpo");
   const sources: EditionSource[] = [];
-  let sourcesOk = Array.isArray(fontes) && fontes.length <= 20;
+  let sourcesOk = Array.isArray(fontes) && fontes.length >= 1 && fontes.length <= 20;
   for (const item of sourcesOk ? (fontes as unknown[]) : []) {
     const source = asRecord(item);
     const href = source && !unknownKeys(source, ["titulo", "href"]).length ? checkHttpsUrl(source.href) : undefined;
@@ -154,4 +155,55 @@ export function parseEditionInput(body: unknown): Parsed<EditionInput> {
   if (!sourcesOk) fields.push("fontes");
   if (fields.length || !abertura) return { ok: false, fields };
   return { ok: true, value: { slug: slug as string, data: data as string, pilar: pilar as string, titulo: title, corpo: corpo as string, fontes: sources, abertura } };
+}
+
+// Draft endpoint body: the edition plus an optional `draftId` that turns it into the next revision of a draft a reviewer
+// asked to regenerate. Anything else is rejected, so the routine cannot send a status, notification or approval field.
+export function parseDraftRequest(body: unknown): Parsed<EditionInput & { draftId?: string }> {
+  const record = asRecord(body);
+  if (!record) return { ok: false, fields: ["body"] };
+  const { draftId, ...rest } = record;
+  if (draftId !== undefined && (typeof draftId !== "string" || !DRAFT_ID.test(draftId))) return { ok: false, fields: ["draftId"] };
+  const parsed = parseEditionInput(rest);
+  if (!parsed.ok) return parsed;
+  return { ok: true, value: typeof draftId === "string" ? { ...parsed.value, draftId } : parsed.value };
+}
+
+export interface DecisionInput {
+  action: DecisionAction;
+  draftId: string;
+  revision: number;
+  applicationId: string;
+  guildId: string;
+  channelId: string;
+  messageId: string;
+}
+
+// Decision endpoint body, signed by the Discord Worker: exact keys, every binding field present.
+export function parseDecision(body: unknown): Parsed<DecisionInput> {
+  const record = asRecord(body);
+  if (!record) return { ok: false, fields: ["body"] };
+  const extra = unknownKeys(record, ["action", "draftId", "revision", "applicationId", "guildId", "channelId", "messageId"]);
+  const action = DECISION_ACTIONS.find((candidate) => candidate === record.action);
+  const { draftId, revision, applicationId, guildId, channelId, messageId } = record;
+  const fields = [...extra];
+  if (!action) fields.push("action");
+  if (typeof draftId !== "string" || !DRAFT_ID.test(draftId)) fields.push("draftId");
+  if (typeof revision !== "number" || !Number.isInteger(revision) || revision < 1 || revision > 999_999) fields.push("revision");
+  for (const [name, value] of [["applicationId", applicationId], ["guildId", guildId], ["channelId", channelId], ["messageId", messageId]] as const) {
+    if (typeof value !== "string" || !SNOWFLAKE.test(value)) fields.push(name);
+  }
+  if (fields.length || !action) return { ok: false, fields };
+  return {
+    ok: true,
+    value: {
+      action,
+      draftId: draftId as string,
+      revision: revision as number,
+      applicationId: applicationId as string,
+      guildId: guildId as string,
+      channelId: channelId as string,
+      messageId: messageId as string,
+    },
+  };
 }
