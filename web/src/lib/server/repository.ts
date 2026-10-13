@@ -189,13 +189,20 @@ export async function withdrawCommercialConsent(
 }
 
 // A revision is written once and never updated: approval (T4.3) binds to `${draftId}.${revision}` and so to the exact text
-// that was reviewed. Saving never publishes. A new revision (regeneration) resets the draft to "pending" and moves
-// `currentRevision`, which is what makes older revisions stale for any later approval. Approved drafts are frozen.
+// that was reviewed. Saving never publishes. A new revision (regeneration) resets the draft to "pending", moves
+// `currentRevision` and drops the Discord binding, which is what makes older revisions and their buttons stale.
+// Approved drafts are frozen. `regenerationOnly` (the draft endpoint) additionally refuses to touch a draft that no reviewer
+// asked to regenerate. `gate` and `enqueue` run inside the same transaction, so the outbox job commits with the revision.
 export async function saveEditionRevision(
   store: Store,
   input: EditionInput & { draftId?: string },
   now: Date,
-): Promise<{ ok: true; draftId: string; revision: number } | { ok: false; reason: "not_found" | "approved" | "invalid_body" }> {
+  options: { regenerationOnly?: boolean; gate?: Gate; enqueue?: (tx: Tx, saved: { draftId: string; revision: number }) => Promise<void> } = {},
+): Promise<
+  | { ok: true; draftId: string; revision: number }
+  | { ok: false; reason: "not_found" | "approved" | "invalid_body" | "not_regenerating" }
+  | ({ ok: false; reason: "rate_limited" } & Denied)
+> {
   const abertura = extractOpening(input.corpo);
   if (!abertura) return { ok: false, reason: "invalid_body" };
   const at = now.toISOString();
@@ -203,10 +210,13 @@ export async function saveEditionRevision(
     const current = input.draftId ? await tx.get<EditionDraftRecord>(COLLECTIONS.editionDrafts, input.draftId) : undefined;
     if (input.draftId && !current) return { ok: false as const, reason: "not_found" as const };
     if (current?.status === "approved") return { ok: false as const, reason: "approved" as const };
+    if (options.regenerationOnly && current && current.status !== "regeneration_requested") return { ok: false as const, reason: "not_regenerating" as const };
     const draftId = current?.id ?? `ed_${randomUUID()}`;
     const revision = (current?.currentRevision ?? 0) + 1;
     const id = `${draftId}.${revision}`;
     if (await tx.get(COLLECTIONS.editionRevisions, id)) throw new Error("edition_revision_exists");
+    const denied = await options.gate?.(tx);
+    if (denied) return { reason: "rate_limited" as const, ...denied };
     const record: EditionRevisionRecord = {
       id,
       draftId,
@@ -220,9 +230,13 @@ export async function saveEditionRevision(
       fontes: input.fontes,
       createdAt: at,
     };
-    const draft: EditionDraftRecord = { id: draftId, slug: input.slug, currentRevision: revision, status: "pending", createdAt: current?.createdAt ?? at, updatedAt: at };
+    const carried: Partial<EditionDraftRecord> = { ...current };
+    delete carried.notification;
+    delete carried.decidedAt;
+    const draft: EditionDraftRecord = { ...carried, id: draftId, slug: input.slug, currentRevision: revision, status: "pending", createdAt: current?.createdAt ?? at, updatedAt: at };
     tx.set(COLLECTIONS.editionRevisions, id, record);
     tx.set(COLLECTIONS.editionDrafts, draftId, draft);
+    await options.enqueue?.(tx, { draftId, revision });
     return { ok: true as const, draftId, revision };
   });
 }

@@ -89,7 +89,7 @@ export interface JobRecord {
   updatedAt: string;
 }
 
-export const JOB_KINDS = { diagnosticDiscord: "diagnostic.discord", reportEmail: "report.email" } as const;
+export const JOB_KINDS = { diagnosticDiscord: "diagnostic.discord", reportEmail: "report.email", newsletterDiscord: "newsletter.discord" } as const;
 
 // One record per diagnostic request, keyed by its team-visible ID, so repeated requests from the same WhatsApp keep
 // their own Name/Company. `notifiedAt` is set once the private Discord message is confirmed.
@@ -152,13 +152,27 @@ export interface EditionRevisionRecord {
   createdAt: string;
 }
 
-export type EditionDraftStatus = "pending" | "approved" | "rejected";
+// "regeneration_requested": a reviewer asked for a new revision; the current one is dead until saveEditionRevision
+// (draft scope, with this draftId) writes the next one.
+export type EditionDraftStatus = "pending" | "approved" | "rejected" | "regeneration_requested";
+// Binds the private Discord message (and so its buttons) to exactly one revision. Rewritten on every new revision, so
+// buttons of older revisions can never match.
+export interface EditionNotification {
+  revision: number;
+  channelId: string;
+  messageId: string;
+  at: string;
+}
 export interface EditionDraftRecord {
   id: string;
   slug: string;
   currentRevision: number;
   status: EditionDraftStatus;
   approvedRevision?: number;
+  notification?: EditionNotification;
+  // Regeneration requests per São Paulo calendar day (PLAN 4.3: at most 3 per edition/day).
+  regenerations?: { day: string; count: number };
+  decidedAt?: string;
   createdAt: string;
   updatedAt: string;
 }
