@@ -30,7 +30,9 @@ export const DECISION_RESULTS = [
   "already_rejected",
   "regeneration_requested",
   "already_regenerating",
-  "approval_unavailable",
+  "approved",
+  "already_approved",
+  "slug_unavailable",
   "not_found",
   "stale",
   "mismatch",
@@ -40,3 +42,10 @@ export const DECISION_RESULTS = [
 export type DecisionResult = (typeof DECISION_RESULTS)[number];
 
 export const MAX_REGENERATIONS_PER_DAY = 3;
+
+// The Discord interaction exactly as received by the Worker: Ed25519 over `timestamp + body`. The Worker forwards it inside
+// the HMAC-signed decision so the server can verify it again; an HMAC key alone cannot produce it.
+export const PROOF_TIMESTAMP = /^\d{10}$/;
+export const PROOF_SIGNATURE = /^[0-9a-f]{128}$/i;
+export const MAX_PROOF_BODY_BYTES = 16 * 1024;
+export const PROOF_TOLERANCE_S = 300;

@@ -5,7 +5,7 @@ import { checkEmail, extractOpening, type EditionInput } from "./validation";
 import { enqueueJob } from "./jobs";
 import type { Denied, Gate } from "./limits";
 import type { Store, Tx } from "./store";
-import { COLLECTIONS, JOB_KINDS, type DiagnosticRecord, type EditionDraftRecord, type EditionPublicRecord, type EditionRevisionRecord, type JobRecord, type LeadEventRecord, type LeadRecord, type ReportDeliveryRecord, type SubscriptionRecord, type SubscriptionStatus, type ToolId } from "./types";
+import { COLLECTIONS, JOB_KINDS, type DiagnosticRecord, type EditionBroadcastRecord, type EditionDraftRecord, type EditionPublicRecord, type EditionRevisionRecord, type JobRecord, type LeadEventRecord, type LeadRecord, type ReplayRecord, type ReportDeliveryRecord, type SlugReservationRecord, type SubscriptionRecord, type SubscriptionStatus, type ToolId } from "./types";
 
 const REPORT_MAX_ATTEMPTS = 8;
 
@@ -192,6 +192,8 @@ export async function withdrawCommercialConsent(
 // A revision is written once and never updated: approval (T4.3) binds to `${draftId}.${revision}` and so to the exact text
 // that was reviewed. Saving never publishes. A new revision (regeneration) resets the draft to "pending", moves
 // `currentRevision` and drops the Discord binding, which is what makes older revisions and their buttons stale.
+// A first revision also reserves its slug (`slug_reservations`, doc ID = slug) in the same transaction: two concurrent first
+// revisions with one slug cannot both commit, and a slug already published by another draft is refused too.
 // Approved drafts are frozen. `regenerationOnly` (the draft endpoint) additionally refuses to touch a draft that no reviewer
 // asked to regenerate. `gate` and `enqueue` run inside the same transaction, so the outbox job commits with the revision.
 export async function saveEditionRevision(
@@ -201,7 +203,7 @@ export async function saveEditionRevision(
   options: { regenerationOnly?: boolean; gate?: Gate; enqueue?: (tx: Tx, saved: { draftId: string; revision: number }) => Promise<void> } = {},
 ): Promise<
   | { ok: true; draftId: string; revision: number }
-  | { ok: false; reason: "not_found" | "approved" | "invalid_body" | "not_regenerating" | "slug_mismatch" }
+  | { ok: false; reason: "not_found" | "approved" | "invalid_body" | "not_regenerating" | "slug_mismatch" | "slug_exists" }
   | ({ ok: false; reason: "rate_limited" } & Denied)
 > {
   const abertura = extractOpening(input.corpo);
@@ -217,6 +219,9 @@ export async function saveEditionRevision(
     const revision = (current?.currentRevision ?? 0) + 1;
     const id = `${draftId}.${revision}`;
     if (await tx.get(COLLECTIONS.editionRevisions, id)) throw new Error("edition_revision_exists");
+    const reservation = current ? undefined : await tx.get<SlugReservationRecord>(COLLECTIONS.slugReservations, input.slug);
+    const published = current ? undefined : await tx.get<EditionPublicRecord>(COLLECTIONS.editionsPublic, input.slug);
+    if (reservation || published) return { ok: false as const, reason: "slug_exists" as const };
     const denied = await options.gate?.(tx);
     if (denied) return { reason: "rate_limited" as const, ...denied };
     const record: EditionRevisionRecord = {
@@ -238,6 +243,7 @@ export async function saveEditionRevision(
     const draft: EditionDraftRecord = { ...carried, id: draftId, slug: input.slug, currentRevision: revision, status: "pending", createdAt: current?.createdAt ?? at, updatedAt: at };
     tx.set(COLLECTIONS.editionRevisions, id, record);
     tx.set(COLLECTIONS.editionDrafts, draftId, draft);
+    if (!current) tx.set(COLLECTIONS.slugReservations, input.slug, { slug: input.slug, draftId, createdAt: at } satisfies SlugReservationRecord);
     await options.enqueue?.(tx, { draftId, revision });
     return { ok: true as const, draftId, revision };
   });
@@ -258,8 +264,8 @@ export function projectPublicEdition(revision: EditionRevisionRecord, publishedA
   };
 }
 
-// Library function for the approval flow (T4.3); no route or job calls it yet. Compare-and-set on the draft: only the
-// current revision of a pending draft can be approved; a repeat for the same revision is "already", never a second write.
+// One-step approve+publish compare-and-set. The real flow does not use it (approval and publication are separate steps:
+// decideEditionRevision then publishApprovedEdition); it stays as a self-contained library operation covered by tests.
 export async function publishEditionRevision(
   store: Store,
   draftId: string,
@@ -304,35 +310,143 @@ export async function bindEditionNotification(
 
 const SAO_PAULO_DAY = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" });
 
+export const NEWSLETTER_JOB_ATTEMPTS = 8;
+export type DecisionOutcome = DecisionResult | "proof_replay";
+
 // Compare-and-set on the draft. Buttons are valid only for the current revision, in the exact channel and message recorded
 // for it, while the draft is still pending: rejecting or asking for a new version changes the status, and a new revision
-// replaces the binding, so every older button fails here. Approval is T4.3: this phase never publishes, so "approve" on a
-// valid pending revision writes nothing and answers "approval_unavailable".
+// replaces the binding, so every older button fails here.
+// Approval is the only decision that starts publication, and it only records the decision: in ONE transaction the draft
+// becomes "approved" for exactly this revision and the durable publish job is enqueued (idempotent on draft+revision). A
+// repeat or a concurrent click finds "approved" and answers "already_approved" without a second job. The Discord proof
+// marker (`replay`) is consumed in the same transaction as the decision, so one signed interaction decides at most once.
 export async function decideEditionRevision(
   store: Store,
   input: { action: DecisionAction; draftId: string; revision: number; channelId: string; messageId: string },
   now: Date,
-): Promise<DecisionResult> {
+  context: { secret: string; replay: { id: string; expiresAt: string } },
+): Promise<DecisionOutcome> {
   return store.transaction(async (tx) => {
     const draft = await tx.get<EditionDraftRecord>(COLLECTIONS.editionDrafts, input.draftId);
+    const used = await tx.get<ReplayRecord>(COLLECTIONS.replays, context.replay.id);
+    if (used) return "proof_replay";
     if (!draft) return "not_found";
     if (draft.currentRevision !== input.revision) return "stale";
     const bound = draft.notification;
     if (!bound || bound.revision !== input.revision || bound.channelId !== input.channelId || bound.messageId !== input.messageId) return "mismatch";
     const at = now.toISOString();
-    if (input.action === "approve") return draft.status === "pending" ? "approval_unavailable" : "conflict";
+    const consume = () => tx.set(COLLECTIONS.replays, context.replay.id, { id: context.replay.id, expiresAt: context.replay.expiresAt } satisfies ReplayRecord);
+    if (input.action === "approve") {
+      if (draft.status === "approved") return draft.approvedRevision === input.revision ? "already_approved" : "conflict";
+      if (draft.status !== "pending") return "conflict";
+      const reservation = await tx.get<SlugReservationRecord>(COLLECTIONS.slugReservations, draft.slug);
+      const published = await tx.get<EditionPublicRecord>(COLLECTIONS.editionsPublic, draft.slug);
+      if (reservation?.draftId !== draft.id || (published && published.draftId !== draft.id)) return "slug_unavailable";
+      await enqueueJob(
+        tx,
+        context.secret,
+        { kind: JOB_KINDS.newsletterPublish, key: `${draft.id}.${input.revision}`, payload: { draftId: draft.id, revision: String(input.revision) }, maxAttempts: NEWSLETTER_JOB_ATTEMPTS },
+        now,
+      );
+      tx.set(COLLECTIONS.editionDrafts, draft.id, { ...draft, status: "approved", approvedRevision: input.revision, decidedAt: at, updatedAt: at });
+      consume();
+      return "approved";
+    }
     if (input.action === "reject") {
       if (draft.status === "rejected") return "already_rejected";
       if (draft.status !== "pending") return "conflict";
       tx.set(COLLECTIONS.editionDrafts, draft.id, { ...draft, status: "rejected", decidedAt: at, updatedAt: at });
+      consume();
       return "rejected";
     }
     if (draft.status === "regeneration_requested") return "already_regenerating";
     if (draft.status !== "pending") return "conflict";
     const day = SAO_PAULO_DAY.format(now);
-    const used = draft.regenerations?.day === day ? draft.regenerations.count : 0;
-    if (used >= MAX_REGENERATIONS_PER_DAY) return "regeneration_limit";
-    tx.set(COLLECTIONS.editionDrafts, draft.id, { ...draft, status: "regeneration_requested", regenerations: { day, count: used + 1 }, decidedAt: at, updatedAt: at });
+    const count = draft.regenerations?.day === day ? draft.regenerations.count : 0;
+    if (count >= MAX_REGENERATIONS_PER_DAY) return "regeneration_limit";
+    tx.set(COLLECTIONS.editionDrafts, draft.id, { ...draft, status: "regeneration_requested", regenerations: { day, count: count + 1 }, decidedAt: at, updatedAt: at });
+    consume();
     return "regeneration_requested";
+  });
+}
+
+export type PublishOutcome = "published" | "already";
+export class PublicationBlocked extends Error {
+  override name = "PublicationBlocked";
+  constructor(readonly reason: "not_approved" | "not_found" | "slug_taken") {
+    super(reason);
+  }
+}
+
+// Publication step, run by the durable job. It trusts nothing but storage: the draft must be approved for exactly this
+// revision (the stored decision, not the job payload), the revision must exist and the slug must belong to this draft.
+// It writes only the allowlisted public projection (idempotent: an existing record of the same draft is left as is) and,
+// in the same transaction, enqueues the broadcast job, so "published" and "delivery scheduled" commit together while
+// staying separate states (a delivery failure never un-publishes).
+export async function publishApprovedEdition(store: Store, secret: string, draftId: string, revision: number, now: Date): Promise<PublishOutcome> {
+  return store.transaction(async (tx) => {
+    const draft = await tx.get<EditionDraftRecord>(COLLECTIONS.editionDrafts, draftId);
+    const record = await tx.get<EditionRevisionRecord>(COLLECTIONS.editionRevisions, `${draftId}.${revision}`);
+    if (!draft || !record) throw new PublicationBlocked("not_found");
+    if (draft.status !== "approved" || draft.approvedRevision !== revision) throw new PublicationBlocked("not_approved");
+    const reservation = await tx.get<SlugReservationRecord>(COLLECTIONS.slugReservations, record.slug);
+    const existing = await tx.get<EditionPublicRecord>(COLLECTIONS.editionsPublic, record.slug);
+    if (reservation?.draftId !== draftId || (existing && (existing.draftId !== draftId || existing.revision !== revision))) throw new PublicationBlocked("slug_taken");
+    await enqueueJob(
+      tx,
+      secret,
+      { kind: JOB_KINDS.newsletterBroadcast, key: `${draftId}.${revision}`, payload: { draftId, revision: String(revision) }, maxAttempts: NEWSLETTER_JOB_ATTEMPTS },
+      now,
+    );
+    if (existing) return "already";
+    tx.set(COLLECTIONS.editionsPublic, record.slug, projectPublicEdition(record, now.toISOString()));
+    return "published";
+  });
+}
+
+export interface BroadcastBasis {
+  revision: EditionRevisionRecord;
+  state: EditionBroadcastRecord;
+}
+
+export const broadcastName = (draftId: string, revision: number) => `rt-newsletter ${draftId}.${revision}`;
+
+// Loads (creating on first use) the delivery state of an approved revision. Refuses anything not approved for exactly this
+// revision or not yet published, so a Broadcast can only ever carry text a human approved and the site already shows.
+export async function loadBroadcastBasis(store: Store, draftId: string, revision: number, segmentId: string, now: Date): Promise<BroadcastBasis> {
+  return store.transaction(async (tx) => {
+    const draft = await tx.get<EditionDraftRecord>(COLLECTIONS.editionDrafts, draftId);
+    const record = await tx.get<EditionRevisionRecord>(COLLECTIONS.editionRevisions, `${draftId}.${revision}`);
+    if (!draft || !record) throw new PublicationBlocked("not_found");
+    if (draft.status !== "approved" || draft.approvedRevision !== revision) throw new PublicationBlocked("not_approved");
+    const published = await tx.get<EditionPublicRecord>(COLLECTIONS.editionsPublic, record.slug);
+    if (published?.draftId !== draftId || published.revision !== revision) throw new PublicationBlocked("not_found");
+    const id = `${draftId}.${revision}`;
+    const current = await tx.get<EditionBroadcastRecord>(COLLECTIONS.editionBroadcasts, id);
+    if (current) return { revision: record, state: current };
+    const at = now.toISOString();
+    const state: EditionBroadcastRecord = { id, draftId, revision, slug: record.slug, name: broadcastName(draftId, revision), segmentId, createdAt: at, updatedAt: at };
+    tx.set(COLLECTIONS.editionBroadcasts, id, state);
+    return { revision: record, state };
+  });
+}
+
+// Compare-and-set on the delivery state: `change` runs on the freshly read record and returns the fields to change, or
+// undefined to leave it untouched (the caller then sees the record as it is). Used to stamp attempts BEFORE a provider call.
+export async function updateBroadcastState(
+  store: Store,
+  id: string,
+  now: Date,
+  change: (current: EditionBroadcastRecord) => { set?: Partial<EditionBroadcastRecord>; clear?: (keyof EditionBroadcastRecord)[] } | undefined,
+): Promise<{ applied: boolean; state: EditionBroadcastRecord }> {
+  return store.transaction(async (tx) => {
+    const current = await tx.get<EditionBroadcastRecord>(COLLECTIONS.editionBroadcasts, id);
+    if (!current) throw new Error("broadcast_state_missing");
+    const patch = change(current);
+    if (!patch) return { applied: false, state: current };
+    const next: EditionBroadcastRecord = { ...current, ...patch.set, updatedAt: now.toISOString() };
+    for (const key of patch.clear ?? []) delete next[key];
+    tx.set(COLLECTIONS.editionBroadcasts, id, next);
+    return { applied: true, state: next };
   });
 }

@@ -1,6 +1,6 @@
 import { validateContact, validateEmail } from "../forms";
 import { PILARES } from "../../features/newsletter/catalog";
-import { DECISION_ACTIONS, DRAFT_ID, SNOWFLAKE, type DecisionAction } from "./newsletter-protocol";
+import { DECISION_ACTIONS, DRAFT_ID, MAX_PROOF_BODY_BYTES, PROOF_SIGNATURE, PROOF_TIMESTAMP, SNOWFLAKE, type DecisionAction } from "./newsletter-protocol";
 import { TOOL_IDS, type EditionOpeningSegment, type EditionSource, type ToolId } from "./types";
 
 export const MAX_BODY_BYTES = 8 * 1024;
@@ -177,13 +177,21 @@ export interface DecisionInput {
   guildId: string;
   channelId: string;
   messageId: string;
+  proof: DiscordProof;
 }
 
-// Decision endpoint body, signed by the Discord Worker: exact keys, every binding field present.
+// The Discord interaction as received (see PROOF_* in newsletter-protocol): `body` is the exact raw text that was signed.
+export interface DiscordProof {
+  timestamp: string;
+  signature: string;
+  body: string;
+}
+
+// Decision endpoint body, signed by the Discord Worker: exact keys, every binding field present, plus the Discord proof.
 export function parseDecision(body: unknown): Parsed<DecisionInput> {
   const record = asRecord(body);
   if (!record) return { ok: false, fields: ["body"] };
-  const extra = unknownKeys(record, ["action", "draftId", "revision", "applicationId", "guildId", "channelId", "messageId"]);
+  const extra = unknownKeys(record, ["action", "draftId", "revision", "applicationId", "guildId", "channelId", "messageId", "proof"]);
   const action = DECISION_ACTIONS.find((candidate) => candidate === record.action);
   const { draftId, revision, applicationId, guildId, channelId, messageId } = record;
   const fields = [...extra];
@@ -193,10 +201,23 @@ export function parseDecision(body: unknown): Parsed<DecisionInput> {
   for (const [name, value] of [["applicationId", applicationId], ["guildId", guildId], ["channelId", channelId], ["messageId", messageId]] as const) {
     if (typeof value !== "string" || !SNOWFLAKE.test(value)) fields.push(name);
   }
-  if (fields.length || !action) return { ok: false, fields };
+  const proofRecord = asRecord(record.proof);
+  const proofOk =
+    proofRecord !== undefined &&
+    !unknownKeys(proofRecord, ["timestamp", "signature", "body"]).length &&
+    typeof proofRecord.timestamp === "string" &&
+    PROOF_TIMESTAMP.test(proofRecord.timestamp) &&
+    typeof proofRecord.signature === "string" &&
+    PROOF_SIGNATURE.test(proofRecord.signature) &&
+    typeof proofRecord.body === "string" &&
+    proofRecord.body.length > 0 &&
+    Buffer.byteLength(proofRecord.body) <= MAX_PROOF_BODY_BYTES;
+  if (!proofOk) fields.push("proof");
+  if (fields.length || !action || !proofRecord) return { ok: false, fields };
   return {
     ok: true,
     value: {
+      proof: { timestamp: proofRecord.timestamp as string, signature: proofRecord.signature as string, body: proofRecord.body as string },
       action,
       draftId: draftId as string,
       revision: revision as number,

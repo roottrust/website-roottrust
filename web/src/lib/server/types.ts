@@ -12,6 +12,8 @@ export const COLLECTIONS = {
   editionDrafts: "edition_drafts",
   editionRevisions: "edition_revisions",
   editionsPublic: "editions_public",
+  slugReservations: "slug_reservations",
+  editionBroadcasts: "edition_broadcasts",
 } as const;
 export type Collection = (typeof COLLECTIONS)[keyof typeof COLLECTIONS];
 
@@ -89,7 +91,13 @@ export interface JobRecord {
   updatedAt: string;
 }
 
-export const JOB_KINDS = { diagnosticDiscord: "diagnostic.discord", reportEmail: "report.email", newsletterDiscord: "newsletter.discord" } as const;
+export const JOB_KINDS = {
+  diagnosticDiscord: "diagnostic.discord",
+  reportEmail: "report.email",
+  newsletterDiscord: "newsletter.discord",
+  newsletterPublish: "newsletter.publish",
+  newsletterBroadcast: "newsletter.broadcast",
+} as const;
 
 // One record per diagnostic request, keyed by its team-visible ID, so repeated requests from the same WhatsApp keep
 // their own Name/Company. `notifiedAt` is set once the private Discord message is confirmed.
@@ -188,4 +196,32 @@ export interface EditionPublicRecord {
   draftId: string;
   revision: number;
   publishedAt: string;
+}
+
+// Doc ID is the slug: one slug belongs to at most one draft, reserved in the same transaction that creates the draft (so two
+// concurrent first revisions with the same slug cannot both commit). Never released automatically.
+export interface SlugReservationRecord {
+  slug: string;
+  draftId: string;
+  createdAt: string;
+}
+
+// Delivery state of one approved revision (id `${draftId}.${revision}`), separate from publication (`editions_public`).
+// Resend Broadcasts have no idempotency key, so every call whose outcome may be unknown is stamped first
+// (`createAttemptAt` / `sendAttemptAt`) and the provider ID is persisted before sending. `reconcile` means the state is
+// ambiguous or unsafe to retry: only a person resolves it. Holds no recipient data.
+export interface EditionBroadcastRecord {
+  id: string;
+  draftId: string;
+  revision: number;
+  slug: string;
+  name: string; // deterministic Broadcast name, used to find a Broadcast whose create call timed out
+  segmentId: string;
+  createAttemptAt?: string;
+  broadcastId?: string;
+  sendAttemptAt?: string;
+  sentAt?: string;
+  reconcile?: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
