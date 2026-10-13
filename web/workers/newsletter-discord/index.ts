@@ -1,8 +1,10 @@
 import { DECISION_PATH, MAX_CUSTOM_ID_LENGTH, SNOWFLAKE, parseCustomId, type DecisionResult } from "../../src/lib/server/newsletter-protocol";
 
 // Cloudflare Worker for Discord button interactions on the private newsletter review channel. It holds the Discord public
-// key and the `publish` HMAC key; it never holds the Routine's `draft` key, the bot token or any storage credential. T4.2:
-// it can reject or request regeneration; approving/publishing/sending belongs to T4.3.
+// key and the `publish` HMAC key; it never holds the Routine's `draft` key, the bot token or any storage credential. It
+// forwards each decision with the original Discord interaction (`proof`), so the server re-verifies the Ed25519 signature
+// itself and the HMAC key alone cannot approve anything. Approving only records the decision; publishing and sending are
+// durable server jobs.
 export interface Env {
   DISCORD_PUBLIC_KEY: string; // hex, 64 chars (Developer Portal "Public Key")
   DISCORD_APPLICATION_ID: string;
@@ -78,7 +80,9 @@ const MESSAGES: Record<DecisionResult, { text: string; closes: boolean }> = {
   already_rejected: { text: "Esta revisão já estava recusada. Nada foi publicado nem enviado.", closes: true },
   regeneration_requested: { text: "Nova versão solicitada; esta revisão fica encerrada. Nada foi publicado nem enviado.", closes: true },
   already_regenerating: { text: "A nova versão já foi solicitada. Nada foi publicado nem enviado.", closes: true },
-  approval_unavailable: { text: "Aprovação indisponível nesta fase. Nada foi publicado nem enviado.", closes: false },
+  approved: { text: "Edição aprovada. A prévia pública será publicada. O envio ao segmento piloto só ocorre se a configuração do piloto estiver ativa e a entrega rodar em até 24 h desta aprovação; depois disso, só a prévia pública permanece. Confirme a entrega no provedor.", closes: true },
+  already_approved: { text: "Esta revisão já estava aprovada. Nada foi alterado.", closes: true },
+  slug_unavailable: { text: "O endereço (slug) desta edição não está disponível. Nada foi publicado nem enviado.", closes: false },
   not_found: { text: "Edição não encontrada.", closes: false },
   stale: { text: "Há uma revisão mais recente; estes botões não valem mais.", closes: true },
   mismatch: { text: "Estes botões não correspondem à mensagem de controle desta revisão.", closes: false },
@@ -86,7 +90,7 @@ const MESSAGES: Record<DecisionResult, { text: string; closes: boolean }> = {
   regeneration_limit: { text: "Limite diário de novas versões desta edição atingido. Nada foi alterado.", closes: false },
 };
 
-const UNCERTAIN = "Não foi possível confirmar a decisão agora. Nada indica que algo foi publicado ou enviado; confira o estado e tente novamente.";
+const UNCERTAIN = "Não foi possível confirmar a decisão agora. Ela pode ter sido registrada: confira o estado da edição antes de tentar de novo.";
 
 interface InteractionPayload {
   type?: unknown;
@@ -131,8 +135,10 @@ export async function handleInteraction(request: Request, env: Env, context?: Ex
   if (!(await verifyDiscordSignature(env.DISCORD_PUBLIC_KEY, signature, timestamp, raw))) return new Response(null, { status: 401 });
 
   let payload: InteractionPayload;
+  let bodyText: string;
   try {
-    const parsed: unknown = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(raw));
+    bodyText = new TextDecoder("utf-8", { fatal: true }).decode(raw);
+    const parsed: unknown = JSON.parse(bodyText);
     if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) return new Response(null, { status: 400 });
     payload = parsed as InteractionPayload;
   } catch {
@@ -165,6 +171,7 @@ export async function handleInteraction(request: Request, env: Env, context?: Ex
     guildId,
     channelId,
     messageId,
+    proof: { timestamp, signature, body: bodyText },
   });
   const result = typeof outcome?.result === "string" && Object.hasOwn(MESSAGES, outcome.result) ? (outcome.result as DecisionResult) : undefined;
   if (!result) return ephemeral(UNCERTAIN);

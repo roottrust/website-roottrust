@@ -1,9 +1,10 @@
+import { generateKeyPairSync, sign as nodeSign } from "node:crypto";
 import { describe, expect, it, vi } from "vitest";
 import { handleNewsletterDecision, handleNewsletterDraft, type Deps } from "../../../src/lib/server/http";
 import { signInternalRequest, type InternalScope } from "../../../src/lib/server/internal-auth";
 import type { JobRecord } from "../../../src/lib/server/types";
 import { createMemoryStore } from "../../../src/lib/server/store";
-import { DECISION_PATH, DRAFT_PATH, buildCustomId, parseCustomId } from "../../../src/lib/server/newsletter-protocol";
+import { DECISION_PATH, DRAFT_PATH, buildCustomId, parseCustomId, type DecisionAction } from "../../../src/lib/server/newsletter-protocol";
 import {
   controlComponents,
   createNewsletterHandler,
@@ -33,6 +34,26 @@ const edition = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
+const pair = generateKeyPairSync("ed25519");
+const PUBLIC_HEX = (pair.publicKey.export({ format: "der", type: "spki" }) as Buffer).subarray(-32).toString("hex");
+
+// The original Discord interaction, signed like Discord does (Ed25519 over timestamp + raw body).
+let interactionSeq = 0;
+function discordProof(fields: Record<string, unknown>, options: { at?: number; signWith?: typeof pair.privateKey; interaction?: Record<string, unknown> } = {}) {
+  const body = JSON.stringify({
+    id: String(++interactionSeq),
+    type: 3,
+    application_id: fields.applicationId,
+    guild_id: fields.guildId,
+    channel_id: fields.channelId,
+    message: { id: fields.messageId },
+    data: { custom_id: buildCustomId(fields.action as DecisionAction, fields.draftId as string, fields.revision as number), component_type: 2 },
+    ...options.interaction,
+  });
+  const timestamp = String(Math.floor((options.at ?? NOW.getTime()) / 1000));
+  return { timestamp, signature: nodeSign(null, Buffer.from(timestamp + body), options.signWith ?? pair.privateKey).toString("hex"), body };
+}
+
 let seq = 0;
 function signedPost(path: string, scope: InternalScope, key: string, body: unknown, options: { at?: number; nonce?: string } = {}) {
   seq += 1;
@@ -51,12 +72,16 @@ function review() {
   const base = setup();
   let messageSeq = 0;
   const discord = vi.fn<typeof fetch>(async () => Response.json({ id: String(800000000000000000n + BigInt(++messageSeq)) }));
-  const newsletter: NewsletterConfig = { botToken: BOT_TOKEN, ...IDS, fetch: discord };
+  const newsletter: NewsletterConfig = { botToken: BOT_TOKEN, ...IDS, publicKey: PUBLIC_HEX, fetch: discord };
   const deps: Deps = { ...base.deps, newsletter, internalKeys: { jobs: ["j".repeat(32)], draft: [KEY_DRAFT], publish: [KEY_PUBLISH] } };
   const postDraft = (body: unknown, options?: { at?: number; nonce?: string }) =>
     handleNewsletterDraft(signedPost(DRAFT_PATH, "draft", KEY_DRAFT, body, options), deps);
-  const decide = (body: Record<string, unknown>, options?: { at?: number; nonce?: string }) =>
-    handleNewsletterDecision(signedPost(DECISION_PATH, "publish", KEY_PUBLISH, { ...IDS, ...body }, options), deps);
+  // `proof` defaults to a fresh valid interaction matching the decision; `false` omits it.
+  const decide = (body: Record<string, unknown>, options?: { at?: number; nonce?: string; proof?: Record<string, unknown> | false }) => {
+    const fields = { ...IDS, ...body };
+    const proof = options?.proof === false ? {} : { proof: options?.proof ?? discordProof(fields) };
+    return handleNewsletterDecision(signedPost(DECISION_PATH, "publish", KEY_PUBLISH, { ...fields, ...proof }, options), deps);
+  };
   const jobs = () => Object.values(base.store.dump(COLLECTIONS.jobs)) as JobRecord[];
   const draftOf = (id: string) => base.store.dump(COLLECTIONS.editionDrafts)[id] as EditionDraftRecord | undefined;
   const run = async (job: JobRecord) => createNewsletterHandler(base.store, newsletter, () => NOW)(job, { signal: new AbortController().signal });
@@ -188,7 +213,8 @@ describe("newsletter Discord job", () => {
     const buttons = (controlCall.components as { components: { custom_id: string; disabled?: boolean; label: string }[] }[])[0].components;
     expect(buttons.map((button) => parseCustomId(button.custom_id)?.action)).toEqual(["approve", "reject", "regenerate"]);
     expect(buttons.every((button) => button.custom_id.length < 100)).toBe(true);
-    expect(buttons[0]).toMatchObject({ disabled: true });
+    expect(buttons[0]).toMatchObject({ label: "Aprovar e publicar" });
+    expect(buttons.some((button) => button.disabled)).toBe(false);
     expect(calls[0][0]).toBe(`https://discord.com/api/v10/channels/${IDS.channelId}/messages`);
     expect((calls[0][1]?.headers as Record<string, string>).authorization).toBe(`Bot ${BOT_TOKEN}`);
     expect(ctx.draftOf(saved.draftId)?.notification).toMatchObject({ revision: 1, channelId: IDS.channelId, messageId: saved.messageId });
@@ -305,10 +331,12 @@ describe("newsletter Discord job", () => {
     const record = { slug: "s", draftId: "ed_x", revision: 1, data: "2026-10-13", pilar: "Software", titulo: "T", corpo: `a${String.fromCharCode(0x202e)}b${String.fromCharCode(7)}c`, fontes: [] } as unknown as EditionRevisionRecord;
     expect(formatReviewText(record)).toContain("abc");
     expect(controlComponents("ed_00000000-0000-4000-8000-000000000000", 1)[0].components).toHaveLength(3);
-    const env = { DISCORD_NEWSLETTER_BOT_TOKEN: BOT_TOKEN, DISCORD_APPLICATION_ID: IDS.applicationId, DISCORD_GUILD_ID: IDS.guildId, DISCORD_NEWSLETTER_CHANNEL_ID: IDS.channelId, JOBS_TRIGGER_CONFIRMED: "true" };
+    const env = { DISCORD_NEWSLETTER_BOT_TOKEN: BOT_TOKEN, DISCORD_APPLICATION_ID: IDS.applicationId, DISCORD_GUILD_ID: IDS.guildId, DISCORD_NEWSLETTER_CHANNEL_ID: IDS.channelId, DISCORD_PUBLIC_KEY: PUBLIC_HEX, JOBS_TRIGGER_CONFIRMED: "true" };
     expect(loadNewsletterConfig(env)).toMatchObject({ channelId: IDS.channelId });
     expect(loadNewsletterConfig({ ...env, JOBS_TRIGGER_CONFIRMED: undefined })).toBeUndefined();
     expect(loadNewsletterConfig({ ...env, DISCORD_GUILD_ID: "x" })).toBeUndefined();
+    expect(loadNewsletterConfig({ ...env, DISCORD_PUBLIC_KEY: undefined })).toBeUndefined();
+    expect(loadNewsletterConfig({ ...env, DISCORD_PUBLIC_KEY: "abcd" })).toBeUndefined();
     expect(loadNewsletterConfig({ ...env, DISCORD_NEWSLETTER_BOT_TOKEN: "short" })).toBeUndefined();
     expect(() => buildCustomId("approve", `ed_${"0".repeat(8)}-0000-0000-0000-${"0".repeat(12)}`, 1)).not.toThrow();
   });
@@ -359,15 +387,89 @@ describe("newsletter decision endpoint", () => {
     expect(ctx.draftOf(saved.draftId)?.status).toBe("pending");
   });
 
-  it("approval is unavailable in T4.2: it writes nothing and never reaches the public collection", async () => {
+  it("approving records the decision and one durable publish job, and still publishes nothing by itself", async () => {
     const ctx = review();
     const saved = await posted(ctx);
-    const before = JSON.stringify(ctx.store.dump(COLLECTIONS.editionDrafts));
     const response = await ctx.decide({ action: "approve", draftId: saved.draftId, revision: 1, messageId: saved.messageId });
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ result: "approval_unavailable" });
-    expect(JSON.stringify(ctx.store.dump(COLLECTIONS.editionDrafts))).toBe(before);
+    expect(await response.json()).toEqual({ result: "approved" });
+    expect(ctx.draftOf(saved.draftId)).toMatchObject({ status: "approved", approvedRevision: 1 });
+    expect(ctx.jobs().filter((job) => job.kind === JOB_KINDS.newsletterPublish)).toHaveLength(1);
     expect(ctx.store.dump(COLLECTIONS.editionsPublic)).toEqual({});
+    expect(ctx.jobs().some((job) => job.kind === JOB_KINDS.newsletterBroadcast)).toBe(false);
+  });
+
+  it("verifies the original Discord interaction on the server: absent, forged, stale or mismatched proofs change nothing", async () => {
+    const ctx = review();
+    const saved = await posted(ctx);
+    const body = { action: "approve", draftId: saved.draftId, revision: 1, messageId: saved.messageId };
+    const fields = { ...IDS, ...body };
+    const other = generateKeyPairSync("ed25519");
+    const valid = discordProof(fields);
+    const attempts: (Record<string, unknown> | false)[] = [
+      false,
+      discordProof(fields, { signWith: other.privateKey }),
+      { ...valid, body: valid.body.replace(saved.messageId, "800000000000000999") },
+      discordProof(fields, { at: NOW.getTime() - 3_600_000 }),
+      discordProof({ ...fields, action: "reject" }),
+      discordProof({ ...fields, revision: 2 }),
+      discordProof({ ...fields, messageId: "800000000000000999" }),
+      discordProof({ ...fields, channelId: "999999999999999999" }),
+      discordProof(fields, { interaction: { type: 2 } }),
+      discordProof(fields, { interaction: { data: { custom_id: buildCustomId("approve", saved.draftId, 1), component_type: 3 } } }),
+      { ...valid, signature: "0".repeat(128) },
+    ];
+    const before = JSON.stringify(ctx.store.dump(COLLECTIONS.editionDrafts));
+    for (const proof of attempts) {
+      const response = await ctx.decide(body, { proof });
+      expect(response.status).toBe(proof === false ? 400 : 403);
+    }
+    expect(JSON.stringify(ctx.store.dump(COLLECTIONS.editionDrafts))).toBe(before);
+    expect(ctx.jobs().filter((job) => job.kind === JOB_KINDS.newsletterPublish)).toHaveLength(0);
+  });
+
+  it("a signed interaction decides at most once: the same proof answers 409 and creates no second job", async () => {
+    const ctx = review();
+    const saved = await posted(ctx);
+    const body = { action: "approve", draftId: saved.draftId, revision: 1, messageId: saved.messageId };
+    const proof = discordProof({ ...IDS, ...body });
+    expect(await (await ctx.decide(body, { proof })).json()).toEqual({ result: "approved" });
+    const replay = await ctx.decide(body, { proof });
+    expect(replay.status).toBe(409);
+    expect(await replay.json()).toEqual({ code: "proof_replay" });
+    expect(await (await ctx.decide(body)).json()).toEqual({ result: "already_approved" });
+    expect(ctx.jobs().filter((job) => job.kind === JOB_KINDS.newsletterPublish)).toHaveLength(1);
+  });
+
+  it("concurrent approvals have exactly one winner and one publish job", async () => {
+    const ctx = review();
+    const saved = await posted(ctx);
+    const body = { action: "approve", draftId: saved.draftId, revision: 1, messageId: saved.messageId };
+    const results = await Promise.all([1, 2, 3, 4].map(async () => ((await (await ctx.decide(body)).json()) as { result: string }).result));
+    expect(results.filter((result) => result === "approved")).toHaveLength(1);
+    expect(results.filter((result) => result === "already_approved")).toHaveLength(3);
+    expect(ctx.jobs().filter((job) => job.kind === JOB_KINDS.newsletterPublish)).toHaveLength(1);
+  });
+
+  it("approval after another decision, on a stale revision or on another message is refused without a job", async () => {
+    const ctx = review();
+    const saved = await posted(ctx);
+    const target = { draftId: saved.draftId, revision: 1, messageId: saved.messageId };
+    expect(await (await ctx.decide({ action: "approve", ...target, messageId: "800000000000000999" })).json()).toEqual({ result: "mismatch" });
+    expect(await (await ctx.decide({ action: "approve", ...target, revision: 2 })).json()).toEqual({ result: "stale" });
+    await ctx.decide({ action: "reject", ...target });
+    expect(await (await ctx.decide({ action: "approve", ...target })).json()).toEqual({ result: "conflict" });
+    expect(ctx.jobs().some((job) => job.kind === JOB_KINDS.newsletterPublish)).toBe(false);
+  });
+
+  it("refuses approval when the slug no longer belongs to the draft", async () => {
+    const ctx = review();
+    const saved = await posted(ctx);
+    await ctx.store.transaction(async (tx) => tx.set(COLLECTIONS.slugReservations, "edicao-de-teste", { slug: "edicao-de-teste", draftId: "ed_11111111-1111-4111-8111-111111111111" }));
+    const response = await ctx.decide({ action: "approve", draftId: saved.draftId, revision: 1, messageId: saved.messageId });
+    expect(await response.json()).toEqual({ result: "slug_unavailable" });
+    expect(ctx.draftOf(saved.draftId)?.status).toBe("pending");
+    expect(ctx.jobs().some((job) => job.kind === JOB_KINDS.newsletterPublish)).toBe(false);
   });
 
   it("concurrent clicks on the same revision have exactly one winner", async () => {

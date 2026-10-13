@@ -373,8 +373,10 @@ export async function decideEditionRevision(
 export type PublishOutcome = "published" | "already";
 export class PublicationBlocked extends Error {
   override name = "PublicationBlocked";
-  constructor(readonly reason: "not_approved" | "not_found" | "slug_taken") {
+  readonly reason: "not_approved" | "not_found" | "slug_taken";
+  constructor(reason: "not_approved" | "not_found" | "slug_taken") {
     super(reason);
+    this.reason = reason;
   }
 }
 
@@ -382,8 +384,9 @@ export class PublicationBlocked extends Error {
 // revision (the stored decision, not the job payload), the revision must exist and the slug must belong to this draft.
 // It writes only the allowlisted public projection (idempotent: an existing record of the same draft is left as is) and,
 // in the same transaction, enqueues the broadcast job, so "published" and "delivery scheduled" commit together while
-// staying separate states (a delivery failure never un-publishes).
-export async function publishApprovedEdition(store: Store, secret: string, draftId: string, revision: number, now: Date): Promise<PublishOutcome> {
+// staying separate states (a delivery failure never un-publishes). Without a configured Broadcast (`scheduleBroadcast`
+// false) no delivery job is created: it would have no handler and would only crowd the claim window of other kinds.
+export async function publishApprovedEdition(store: Store, secret: string, draftId: string, revision: number, now: Date, scheduleBroadcast: boolean): Promise<PublishOutcome> {
   return store.transaction(async (tx) => {
     const draft = await tx.get<EditionDraftRecord>(COLLECTIONS.editionDrafts, draftId);
     const record = await tx.get<EditionRevisionRecord>(COLLECTIONS.editionRevisions, `${draftId}.${revision}`);
@@ -392,12 +395,14 @@ export async function publishApprovedEdition(store: Store, secret: string, draft
     const reservation = await tx.get<SlugReservationRecord>(COLLECTIONS.slugReservations, record.slug);
     const existing = await tx.get<EditionPublicRecord>(COLLECTIONS.editionsPublic, record.slug);
     if (reservation?.draftId !== draftId || (existing && (existing.draftId !== draftId || existing.revision !== revision))) throw new PublicationBlocked("slug_taken");
-    await enqueueJob(
-      tx,
-      secret,
-      { kind: JOB_KINDS.newsletterBroadcast, key: `${draftId}.${revision}`, payload: { draftId, revision: String(revision) }, maxAttempts: NEWSLETTER_JOB_ATTEMPTS },
-      now,
-    );
+    if (scheduleBroadcast) {
+      await enqueueJob(
+        tx,
+        secret,
+        { kind: JOB_KINDS.newsletterBroadcast, key: `${draftId}.${revision}`, payload: { draftId, revision: String(revision) }, maxAttempts: NEWSLETTER_JOB_ATTEMPTS },
+        now,
+      );
+    }
     if (existing) return "already";
     tx.set(COLLECTIONS.editionsPublic, record.slug, projectPublicEdition(record, now.toISOString()));
     return "published";
@@ -407,6 +412,7 @@ export async function publishApprovedEdition(store: Store, secret: string, draft
 export interface BroadcastBasis {
   revision: EditionRevisionRecord;
   state: EditionBroadcastRecord;
+  approvedAt: string | undefined; // the stored approval instant; the delivery job refuses to act on a stale approval
 }
 
 export const broadcastName = (draftId: string, revision: number) => `rt-newsletter ${draftId}.${revision}`;
@@ -423,11 +429,11 @@ export async function loadBroadcastBasis(store: Store, draftId: string, revision
     if (published?.draftId !== draftId || published.revision !== revision) throw new PublicationBlocked("not_found");
     const id = `${draftId}.${revision}`;
     const current = await tx.get<EditionBroadcastRecord>(COLLECTIONS.editionBroadcasts, id);
-    if (current) return { revision: record, state: current };
+    if (current) return { revision: record, state: current, approvedAt: draft.decidedAt };
     const at = now.toISOString();
     const state: EditionBroadcastRecord = { id, draftId, revision, slug: record.slug, name: broadcastName(draftId, revision), segmentId, createdAt: at, updatedAt: at };
     tx.set(COLLECTIONS.editionBroadcasts, id, state);
-    return { revision: record, state };
+    return { revision: record, state, approvedAt: draft.decidedAt };
   });
 }
 

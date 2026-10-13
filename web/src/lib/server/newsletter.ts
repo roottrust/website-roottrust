@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { DISCORD_PUBLIC_KEY } from "./discord-proof";
 import { PermanentFailure, RetryLater, type JobHandler } from "./jobs";
 import { buildCustomId, DRAFT_ID, SNOWFLAKE } from "./newsletter-protocol";
 import { bindEditionNotification } from "./repository";
@@ -19,20 +20,24 @@ export interface NewsletterConfig {
   applicationId: string;
   guildId: string;
   channelId: string;
+  // Ed25519 public key of the Discord application (64 hex): the server re-verifies the original interaction with it.
+  publicKey: string;
   fetch?: typeof fetch;
 }
 
 // Fail closed: the review channel is operational only with the bot token, the three Discord IDs and the operator's
-// statement that something triggers the job runner (same attestation as the diagnostic receipt). The bot token can post
-// to the private channel; it cannot approve or send anything by itself.
+// statement that something triggers the job runner (same attestation as the diagnostic receipt) and the application public
+// key. The bot token can post to the private channel; it cannot approve or send anything by itself.
 export function loadNewsletterConfig(env: Record<string, string | undefined>): NewsletterConfig | undefined {
   const botToken = env.DISCORD_NEWSLETTER_BOT_TOKEN?.trim() ?? "";
   const applicationId = env.DISCORD_APPLICATION_ID?.trim() ?? "";
   const guildId = env.DISCORD_GUILD_ID?.trim() ?? "";
   const channelId = env.DISCORD_NEWSLETTER_CHANNEL_ID?.trim() ?? "";
+  const publicKey = env.DISCORD_PUBLIC_KEY?.trim() ?? "";
   if (env.JOBS_TRIGGER_CONFIRMED !== "true" || !/^[\w.-]{20,200}$/.test(botToken)) return undefined;
   if (![applicationId, guildId, channelId].every((id) => SNOWFLAKE.test(id))) return undefined;
-  return { botToken, applicationId, guildId, channelId };
+  if (!DISCORD_PUBLIC_KEY.test(publicKey)) return undefined;
+  return { botToken, applicationId, guildId, channelId, publicKey: publicKey.toLowerCase() };
 }
 
 // The full body is for human reviewers in the private channel only: control characters, bidi overrides and zero-width
@@ -87,7 +92,7 @@ export function formatReviewText(record: EditionRevisionRecord): string {
 export function formatControlMessage(record: EditionRevisionRecord): string {
   return [
     `Revisão ${record.revision} da edição ${record.slug} (ID ${record.draftId}).`,
-    "Nada foi publicado nem enviado. Aprovação, publicação e envio ainda não estão habilitados nesta fase: use Recusar ou Gerar nova versão.",
+    "Nada foi publicado nem enviado. Aprovar publica a prévia pública (título, primeiro parágrafo e fontes) e agenda o envio ao segmento piloto, que só ocorre com o piloto configurado e em até 24 h da aprovação; Recusar ou Gerar nova versão não publicam nada.",
   ].join("\n");
 }
 
@@ -96,7 +101,7 @@ export function controlComponents(draftId: string, revision: number) {
     {
       type: 1,
       components: [
-        { type: 2, style: 3, label: "Aprovar (indisponível)", custom_id: buildCustomId("approve", draftId, revision), disabled: true },
+        { type: 2, style: 3, label: "Aprovar e publicar", custom_id: buildCustomId("approve", draftId, revision) },
         { type: 2, style: 4, label: "Recusar", custom_id: buildCustomId("reject", draftId, revision) },
         { type: 2, style: 2, label: "Gerar nova versão", custom_id: buildCustomId("regenerate", draftId, revision) },
       ],

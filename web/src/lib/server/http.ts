@@ -1,8 +1,12 @@
 import { clientIpKey, hasIdSecret, isTrustedOrigin, loadDefenseConfig, verifyTurnstile, type DefenseConfig } from "./defense";
 import { createDiagnosticHandler, loadDiagnosticConfig, type DiagnosticConfig } from "./diagnostic";
+import { verifyDiscordProof } from "./discord-proof";
+import { opaqueId } from "./ids";
 import { authenticateInternal, loadInternalKeys, type InternalKeys } from "./internal-auth";
 import { enqueueJob, processJobs, purgeExpired, type JobHandlers } from "./jobs";
 import { createNewsletterHandler, loadNewsletterConfig, type NewsletterConfig } from "./newsletter";
+import { createBroadcastHandler, createPublishHandler, loadBroadcastConfig, type BroadcastConfig } from "./newsletter-broadcast";
+import { MAX_PROOF_BODY_BYTES, PROOF_TOLERANCE_S } from "./newsletter-protocol";
 import {
   consumeLimits,
   diagnosticLimitSpecs,
@@ -40,6 +44,8 @@ export interface Deps {
   report?: ReportConfig;
   // The private newsletter review channel (bot token + Discord IDs); absent => the draft and decision endpoints answer 503.
   newsletter?: NewsletterConfig;
+  // Resend Broadcast delivery to the dedicated pilot segment; absent => approved editions are published but nothing is sent.
+  broadcast?: BroadcastConfig;
   // Monotonic milliseconds for the jobs request's time plan; tests inject it.
   clock?: () => number;
 }
@@ -52,9 +58,11 @@ export function defaultDeps(env: Record<string, string | undefined> = process.en
   const diagnostic = loadDiagnosticConfig(env);
   const report = loadReportConfig(env);
   const newsletter = loadNewsletterConfig(env);
+  const broadcast = loadBroadcastConfig(env);
+  const idSecret = env.DATA_ID_SECRET;
   return {
     mode: resolveBackendMode(env.BACKEND_MODE),
-    idSecret: env.DATA_ID_SECRET,
+    idSecret,
     getStore,
     now,
     defense: loadDefenseConfig(env).config,
@@ -62,8 +70,11 @@ export function defaultDeps(env: Record<string, string | undefined> = process.en
     diagnostic,
     report,
     newsletter,
+    broadcast,
     jobHandlers: {
       ...(newsletter ? { [JOB_KINDS.newsletterDiscord]: (job, context) => getStore().then((store) => createNewsletterHandler(store, newsletter, now)(job, context)) } : {}),
+      ...(newsletter && hasIdSecret(idSecret) ? { [JOB_KINDS.newsletterPublish]: (job, context) => getStore().then((store) => createPublishHandler(store, idSecret, now, broadcast !== undefined)(job, context)) } : {}),
+      ...(newsletter && broadcast ? { [JOB_KINDS.newsletterBroadcast]: (job, context) => getStore().then((store) => createBroadcastHandler(store, broadcast, now)(job, context)) } : {}),
       ...(diagnostic ? { [JOB_KINDS.diagnosticDiscord]: (job, context) => getStore().then((store) => createDiagnosticHandler(store, diagnostic, now)(job, context)) } : {}),
       ...(report ? { [JOB_KINDS.reportEmail]: (job, context) => getStore().then((store) => createReportHandler(store, report, now)(job, context)) } : {}),
     },
@@ -257,7 +268,7 @@ export async function handleJobsProcess(request: Request, deps: Deps = defaultDe
 }
 
 const DRAFT_MAX_BODY_BYTES = MAX_EDITION_BYTES + 4096; // the edition itself is capped at 64 KiB; the rest is JSON framing
-const DECISION_MAX_BODY_BYTES = 2048;
+const DECISION_MAX_BODY_BYTES = 2 * MAX_PROOF_BODY_BYTES + 2048; // the raw Discord interaction travels JSON-escaped inside `proof`
 const DRAFT_DAILY_LIMIT = 8;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -332,9 +343,10 @@ export async function handleNewsletterDraft(request: Request, deps: Deps = defau
   }
 }
 
-// Internal, scope "publish" (the Discord Worker, after it verified Discord's Ed25519 signature). The Worker forwards the
-// application, guild, channel and message IDs it saw; they are compared with the configured review channel and with the
-// binding stored for the revision. T4.2 only rejects or requests regeneration: approval answers "approval_unavailable".
+// Internal, scope "publish" (the Discord Worker). The HMAC only proves the Worker spoke: the server verifies again the
+// Ed25519 signature of the original Discord interaction (`proof`) and that it is this exact button on this exact message,
+// then compares the forwarded IDs with the configured review channel and with the binding stored for the revision. The proof
+// is single-use: its marker is consumed in the same transaction as the decision.
 export async function handleNewsletterDecision(request: Request, deps: Deps = defaultDeps()): Promise<Response> {
   try {
     const auth = await authenticateNewsletter(request, deps, "publish", DECISION_MAX_BODY_BYTES);
@@ -346,7 +358,16 @@ export async function handleNewsletterDecision(request: Request, deps: Deps = de
     const { config, store } = auth;
     const { applicationId, guildId, channelId, messageId, ...decision } = parsed.value;
     if (applicationId !== config.applicationId || guildId !== config.guildId || channelId !== config.channelId) return json(403, { code: "forbidden_binding" });
-    const result = await decideEditionRevision(store, { ...decision, channelId, messageId }, deps.now());
+    const { proof, ...target } = decision;
+    const now = deps.now();
+    const verified = verifyDiscordProof(proof, { ...target, publicKeyHex: config.publicKey, now, applicationId, guildId, channelId, messageId });
+    if (!verified.ok) {
+      logEvent("warn", "newsletter_proof_rejected", { reason: verified.reason });
+      return json(403, { code: "invalid_proof" });
+    }
+    const replay = { id: opaqueId(auth.secret, "dp", proof.signature.toLowerCase()), expiresAt: new Date(now.getTime() + 2 * PROOF_TOLERANCE_S * 1000).toISOString() };
+    const result = await decideEditionRevision(store, { ...target, channelId, messageId }, now, { secret: auth.secret, replay });
+    if (result === "proof_replay") return json(409, { code: "proof_replay" });
     // Every outcome of a well-formed decision is a 200 with `result`; any other status is an error and carries no decision.
     return json(200, { result });
   } catch (error) {

@@ -26,7 +26,7 @@ describe("Routine draft script", () => {
   it("builds a request the draft endpoint authenticates with the draft key, and only with it", async () => {
     const { buildDraftRequest, DRAFT_PATH } = await load();
     const base = setup();
-    const deps = { ...base.deps, newsletter: { botToken: "b".repeat(30), applicationId: "111111111111111111", guildId: "222222222222222222", channelId: "333333333333333333" } };
+    const deps = { ...base.deps, newsletter: { botToken: "b".repeat(30), applicationId: "111111111111111111", guildId: "222222222222222222", channelId: "333333333333333333", publicKey: "a".repeat(64) } };
     const built = buildDraftRequest({ origin: "https://site.example", key: KEY, body: draft, now: base.deps.now?.().getTime() });
     expect(built.url).toBe(`https://site.example${DRAFT_PATH}`);
     const asDraft = await handleNewsletterDraft(

@@ -164,13 +164,25 @@ describe("publication (library only, for T4.3)", () => {
     expect(results.filter((r) => r === "already")).toHaveLength(4);
   });
 
-  it("does not let another draft take a published slug", async () => {
+  it("reserves the slug on the first revision, so another draft cannot even be saved with it", async () => {
     const store = createMemoryStore();
     const a = await saveEditionRevision(store, parsed(), NOW);
-    const b = await saveEditionRevision(store, parsed(), NOW);
-    if (!a.ok || !b.ok) throw new Error("unexpected");
+    if (!a.ok) throw new Error("unexpected");
+    expect(await saveEditionRevision(store, parsed(), NOW)).toStrictEqual({ ok: false, reason: "slug_exists" });
     expect(await publishEditionRevision(store, a.draftId, 1, NOW)).toBe("published");
+    expect(await saveEditionRevision(store, parsed(), NOW)).toStrictEqual({ ok: false, reason: "slug_exists" });
+    expect(Object.keys(store.dump(COLLECTIONS.editionDrafts))).toHaveLength(1);
+  });
+
+  it("does not let a draft overwrite a slug that another draft already published", async () => {
+    const store = createMemoryStore();
+    const b = await saveEditionRevision(store, parsed(), NOW);
+    if (!b.ok) throw new Error("unexpected");
+    await store.transaction(async (tx) => {
+      tx.set(COLLECTIONS.editionsPublic, "backup-e-recuperacao", { draftId: "ed_other", revision: 1, slug: "backup-e-recuperacao" });
+    });
     expect(await publishEditionRevision(store, b.draftId, 1, NOW)).toBe("slug_taken");
+    expect((await read<EditionPublicRecord>(store, COLLECTIONS.editionsPublic, "backup-e-recuperacao"))?.draftId).toBe("ed_other");
   });
 
   it("projection copies only allowlisted fields", () => {

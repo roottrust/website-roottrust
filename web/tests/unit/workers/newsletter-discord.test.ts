@@ -121,7 +121,7 @@ describe("button validation before any call to the site", () => {
 describe("decision call", () => {
   it("sends a publish-scope HMAC the site accepts, with the exact ids the interaction carried", async () => {
     const base = setup();
-    const deps = { ...base.deps, now: () => new Date(), newsletter: { botToken: "b".repeat(30), ...IDS }, internalKeys: { jobs: ["j".repeat(32)], publish: [KEY_PUBLISH] } };
+    const deps = { ...base.deps, now: () => new Date(), newsletter: { botToken: "b".repeat(30), ...IDS, publicKey: publicHex }, internalKeys: { jobs: ["j".repeat(32)], publish: [KEY_PUBLISH] } };
     const seen: { url: string; body: unknown }[] = [];
     const bridge = vi.fn<typeof fetch>(async (input, init) => {
       seen.push({ url: String(input), body: JSON.parse(new TextDecoder().decode(init?.body as Uint8Array)) });
@@ -129,7 +129,12 @@ describe("decision call", () => {
     });
     const response = await handleInteraction(discordRequest(button(buildCustomId("reject", DRAFT_ID, 3))), env, undefined, bridge);
     expect(seen[0].url).toBe(`https://site.example${DECISION_PATH}`);
-    expect(seen[0].body).toEqual({ action: "reject", draftId: DRAFT_ID, revision: 3, ...IDS, messageId: MESSAGE_ID });
+    const { proof, ...target } = seen[0].body as { proof: { timestamp: string; signature: string; body: string } };
+    expect(target).toEqual({ action: "reject", draftId: DRAFT_ID, revision: 3, ...IDS, messageId: MESSAGE_ID });
+    // the original interaction travels verbatim so the site can re-verify the Ed25519 signature itself
+    expect(proof.body).toBe(JSON.stringify(button(buildCustomId("reject", DRAFT_ID, 3))));
+    expect(proof.timestamp).toMatch(/^[0-9]{10}$/);
+    expect(proof.signature).toMatch(/^[0-9a-f]{128}$/);
     // the site accepted the signature (the draft does not exist => not_found, mapped to a private message)
     expect(await response.json()).toMatchObject({ type: 4, data: { content: "Edição não encontrada." } });
   });
@@ -142,13 +147,13 @@ describe("decision call", () => {
   });
 
   it("closes the control message (type 7, no buttons) when the revision is finished", async () => {
-    for (const result of ["rejected", "already_rejected", "regeneration_requested", "stale"]) {
+    for (const result of ["rejected", "already_rejected", "regeneration_requested", "stale", "approved", "already_approved"]) {
       const response = await handleInteraction(discordRequest(button(buildCustomId("reject", DRAFT_ID, 1))), env, undefined, answer(result));
       const json = (await response.json()) as { type: number; data: { components: unknown[]; content: string; allowed_mentions: unknown } };
       expect(json.type).toBe(7);
       expect(json.data.components).toEqual([]);
       expect(json.data.allowed_mentions).toEqual({ parse: [] });
-      expect(json.data.content).toMatch(/Nada foi publicado nem enviado|botões não valem/);
+      expect(json.data.content).toMatch(/Nada foi publicado nem enviado|botões não valem|aprovad/);
     }
   });
 
@@ -168,13 +173,16 @@ Nada foi publicado nem enviado.`;
     expect(await closed({ id: MESSAGE_ID, content: { not: "text" } })).toContain(`Edição ID ${DRAFT_ID} · revisão 2`);
   });
 
-  it("keeps the buttons and answers privately for approval_unavailable, mismatch and conflict", async () => {
-    for (const result of ["approval_unavailable", "mismatch", "conflict", "regeneration_limit", "not_found"]) {
+  it("keeps the buttons and answers privately for slug_unavailable, mismatch and conflict", async () => {
+    for (const result of ["slug_unavailable", "mismatch", "conflict", "regeneration_limit", "not_found"]) {
       const response = await handleInteraction(discordRequest(button(buildCustomId("approve", DRAFT_ID, 1))), env, undefined, answer(result));
       expect(await response.json()).toMatchObject({ type: 4, data: { flags: 64 } });
     }
-    const approval = await handleInteraction(discordRequest(button(buildCustomId("approve", DRAFT_ID, 1))), env, undefined, answer("approval_unavailable"));
+    const approval = await handleInteraction(discordRequest(button(buildCustomId("approve", DRAFT_ID, 1))), env, undefined, answer("slug_unavailable"));
     expect(JSON.stringify(await approval.json())).toContain("Nada foi publicado nem enviado");
+    // a removed result is no longer understood: it becomes the honest uncertain message
+    const removed = await handleInteraction(discordRequest(button(buildCustomId("approve", DRAFT_ID, 1))), env, undefined, answer("approval_unavailable"));
+    expect(JSON.stringify(await removed.json())).toContain("Não foi possível confirmar");
   });
 
   it("answers within the 3 s ACK window with an honest 'uncertain' message when the site hangs, fails or answers nonsense", async () => {
