@@ -1,8 +1,8 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
-import { handleDiagnostic, handleReport, handleSubscription } from "../../../src/lib/server/http";
-import { opaqueId } from "../../../src/lib/server/ids";
+import { handleDiagnostic, handleNewsletterConfirmation, handleReport, handleSubscription } from "../../../src/lib/server/http";
+import { confirmationToken, newConfirmationId, opaqueId } from "../../../src/lib/server/ids";
 import { resolveBackendMode } from "../../../src/lib/server/mode";
 import { requestSubscription, transitionSubscription } from "../../../src/lib/server/repository";
 import { createMemoryStore } from "../../../src/lib/server/store";
@@ -166,12 +166,23 @@ describe("persistence", () => {
     const body = { email: "leitor@example.com", editionSlug: "backup-e-recuperacao" };
     const first = await handleSubscription(postSubscription(body), deps);
     const id = opaqueId(SECRET, "sb", "email:leitor@example.com");
-    expect(await transitionSubscription(store, id, "pending", "confirmed", NOW)).toBe("ok");
+    const pending = store.dump("subscriptions")[id] as { pendingConfirmationId: string };
+    const confirmation = await handleNewsletterConfirmation(postSubscription({ token: confirmationToken(SECRET, pending.pendingConfirmationId) }), deps);
+    expect(confirmation.status).toBe(200);
     const again = await handleSubscription(postSubscription({ email: "leitor@example.com", editionSlug: "outra-edicao" }), deps);
     expect(first.status).toBe(202);
     expect(await again.json()).toEqual(await first.json());
-    expect(store.dump("subscriptions")[id]).toMatchObject({ status: "confirmed", requestedEditionSlug: "backup-e-recuperacao" });
+    expect(store.dump("subscriptions")[id]).toMatchObject({ status: "confirmed" });
+    expect(store.dump("subscription_confirmations")[pending.pendingConfirmationId]).toMatchObject({ editionSlug: "backup-e-recuperacao", consumedAt: NOW.toISOString() });
     expect((await handleSubscription(postSubscription({ email: "a@example.com", editionSlug: "Bad Slug" }), deps)).status).toBe(400);
+  });
+
+  it("keeps subscription and confirmation unavailable without webhook reconciliation", async () => {
+    const { deps, store } = setup();
+    deps.resendWebhookReady = false;
+    expect((await handleSubscription(postSubscription({ email: "leitor@example.com" }), deps)).status).toBe(503);
+    expect((await handleNewsletterConfirmation(postSubscription({ token: confirmationToken(SECRET, newConfirmationId()) }), deps)).status).toBe(503);
+    expect(store.dump("subscriptions")).toEqual({});
   });
 
   it("pending subscription keeps the latest requested edition", async () => {

@@ -5,10 +5,13 @@ import styles from "./privacidade.module.css";
 
 export const metadata: Metadata = {
   title: { absolute: "Privacidade — Root Trust" },
-  description: "Informações sobre o uso de dados nas jornadas do website, disponíveis após revisão da política.",
+  description: "Informações provisórias sobre o uso de dados no piloto do website.",
+  robots: { index: false, follow: false },
 };
+export const dynamic = "force-dynamic";
 
 export default function Page() {
+  const pilot = process.env.BACKEND_MODE === "pilot" && process.env.FORM_MODE !== "demo";
   return (
     <main id="conteudo" data-graphics-root className={styles.root}>
       <FrameCanvas />
@@ -16,16 +19,23 @@ export default function Page() {
         <div className={styles.inner}>
           <div className={styles.eyebrowRow}><span className={styles.eyebrow}>Privacidade</span><span className={styles.rule} aria-hidden="true" /></div>
           <h1 className={styles.h1}>Privacidade e uso de dados.</h1>
-          <p className={styles.lead}>Este espaço apresentará como a Root Trust trata os dados nas jornadas do website.</p>
-          <p className={styles.status} role="note"><strong>Conteúdo de privacidade em preparação para revisão.</strong> Esta página é provisória e descreve apenas o que esta versão do website faz hoje. Não é uma política de privacidade válida para publicação.</p>
+          <p className={styles.lead}>Como os dados são tratados nesta versão de avaliação.</p>
+          <p className={styles.status} role="note"><strong>Informações provisórias para o piloto restrito.</strong> A política de privacidade completa ainda exige revisão antes de publicação aberta.</p>
 
           <section aria-labelledby="versao" className={styles.block}>
             <h2 id="versao">O que esta versão faz</h2>
             <ul>
-              <li>É uma versão local de avaliação do website, sem operação publicada.</li>
-              <li>Os formulários de diagnóstico, newsletter e relatório validam os campos no navegador. Nenhum dado é enviado, recebido, armazenado ou associado a você nesta versão.</li>
-              <li>Quando uma demonstração está ativa, o aviso informa que nenhum dado foi enviado. Um pedido aceito na demonstração não confirma inscrição, entrega ou recebimento.</li>
-              <li>Este website não usa analytics nem criou endpoint ou banco de dados para receber informações.</li>
+              <li>Esta versão é destinada a avaliação interna e piloto restrito.</li>
+              {pilot ? <>
+                <li>Quando habilitado, o diagnóstico envia Nome, Empresa e WhatsApp à Root Trust para retorno, registra o pedido em banco e notifica um canal privado da equipe.</li>
+                <li>Quando habilitada, a newsletter usa seu e-mail para confirmação, envio da edição escolhida e próximas edições aprovadas. O cancelamento interrompe próximos envios; não altera uma autorização comercial separada.</li>
+                <li>Quando habilitado, o pedido de relatório envia somente e-mail, ID da ferramenta e, se marcado, consentimento comercial. O PDF padrão é enviado por e-mail; respostas e resultados da ferramenta não acompanham o pedido.</li>
+                <li>Os dados operacionais são mantidos no Firestore; Resend processa e-mails e Discord recebe os avisos privados de diagnóstico e revisão editorial. Leads sem interação e registros locais de newsletter cancelada são apagados após seis meses. O prazo de exclusão de dados nos serviços externos ainda precisa ser definido antes da publicação aberta.</li>
+              </> : <>
+                <li>Os formulários estão indisponíveis ou em demonstração local; pedidos demonstrativos não enviam nem guardam dados.</li>
+                <li>A interface de demonstração não confirma inscrição, entrega ou recebimento real.</li>
+              </>}
+              <li>O website não usa analytics nesta fase.</li>
             </ul>
           </section>
 
@@ -36,7 +46,7 @@ export default function Page() {
 
           <section aria-labelledby="futuro" className={styles.block}>
             <h2 id="futuro">O que ainda não está definido</h2>
-            <p>Antes de uma publicação, esta política precisa ser revisada e completada com informações que ainda não existem nesta versão: identificação do responsável, finalidades e bases aplicáveis, operadores e terceiros, prazos de retenção, direitos e canal de atendimento, e o uso de cookies, se houver. Nenhuma dessas informações foi definida aqui.</p>
+            <p>Antes da publicação aberta, esta página precisa de revisão jurídica e operacional: identificação do responsável, bases legais, direitos e canal específico de atendimento, retenção de backups e mensagens em sistemas terceiros, e uso de cookies, se houver.</p>
           </section>
 
           <section aria-labelledby="contato" className={styles.block}>

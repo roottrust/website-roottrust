@@ -23,6 +23,7 @@ test.describe("SPA graphics lifecycle", () => {
     await expect(page).toHaveURL(/\/privacidade$/);
     expect(await page.evaluate(() => (window as unknown as { __spa?: number }).__spa)).toBe(1);
     await expect(resume(page)).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator('[data-graphic="frame"]')).toHaveAttribute("data-graphic-status", "ready");
     expect(await drawsDuring(page, 700)).toBe(0);
 
     await page.getByRole("link", { name: "Voltar à Home" }).click();

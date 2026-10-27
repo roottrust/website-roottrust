@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { opaqueId } from "../../../src/lib/server/ids";
 import { PermanentFailure, RetryLater, enqueueJob, processJobs, type JobHandler } from "../../../src/lib/server/jobs";
 import {
   buildBroadcastMessage,
@@ -215,6 +216,18 @@ describe("publish job", () => {
 });
 
 describe("broadcast delivery", () => {
+  it("blocks a segment containing a locally cancelled subscriber even when every address is allowlisted", async () => {
+    const { store, fake } = await harness();
+    await store.transaction(async (tx) => {
+      for (const [index, email] of ALLOW.entries()) {
+        const id = opaqueId(SECRET, "sb", `email:${email}`);
+        tx.set(COLLECTIONS.subscriptions, id, { id, email, status: index === 0 ? "confirmed" : "cancelled", confirmedAt: NOW.toISOString(), createdAt: NOW.toISOString(), updatedAt: NOW.toISOString() });
+      }
+    });
+    await expect(run(createBroadcastHandler(store, config(fake.provider), () => NOW, SECRET))).rejects.toMatchObject({ message: "segment_not_pilot_safe" });
+    expect(fake.calls.create).toBe(0);
+    expect(fake.calls.send).toBe(0);
+  });
   it("verifies the whole segment, persists the draft before sending, sends once and is idempotent afterwards", async () => {
     const { store, fake, handler } = await harness();
     let atSend: EditionBroadcastRecord | undefined;

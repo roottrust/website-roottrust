@@ -6,13 +6,13 @@ import { PillarArt } from "@/features/graphics/PillarArt";
 import { ContactForm } from "@/components/forms/ContactForm";
 import { NewsletterForm } from "@/components/forms/NewsletterForm";
 import { contactAvailability } from "@/app/api/diagnostico/availability";
-import type { FormMode } from "@/lib/forms";
+import { newsletterAvailability } from "@/app/api/newsletter/inscricao/availability";
 import { pillars as pilares, tools as ferramentas } from "./content";
 import { Services } from "./Services";
 import { Process } from "./Process";
 import styles from "./home.module.css";
 
-export function Home({ mode }: {mode: FormMode}) { return <main id="conteudo" data-graphics-root className={styles.root}><HomeCanvas /><div className={styles.content}><section data-sec="hero" data-screen-label="Hero" className={(styles.hero)}>
+export function Home() { return <main id="conteudo" data-graphics-root className={styles.root}><HomeCanvas /><div className={styles.content}><section data-sec="hero" data-screen-label="Hero" className={(styles.hero)}>
   <div aria-hidden="true" className={(styles.heroSpacer)}></div>
 
   <div data-hero-copy="1" className={(styles.heroCopy)}>
@@ -108,7 +108,7 @@ export function Home({ mode }: {mode: FormMode}) { return <main id="conteudo" da
     </div>
     <div className={(styles.newsletterText)}>
       <p className={(styles.paragraph)}>Insights práticos sobre segurança, nuvem, software e tecnologia para operações críticas.</p>
-      <NewsletterForm mode={mode} variant="home" />
+      <NewsletterForm config={newsletterAvailability()} variant="home" />
       
       <Link href="/newsletter/edicoes" prefetch={false} className={(styles.archiveLink)}>Ver edições anteriores<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></Link>
     </div>

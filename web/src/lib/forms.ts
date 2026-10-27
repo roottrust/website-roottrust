@@ -8,7 +8,7 @@ export type FormRequest =
   | { kind: "report"; email: string; toolId: string; commercialConsent?: boolean };
 export type SubmissionResult = "accepted" | "error" | "unavailable" | "invalid" | "rate_limited" | "challenge" | "forbidden";
 
-// "pilot" is the only mode that talks to the backend; it exists for the contact form alone.
+// "pilot" is the only mode that talks to the backend.
 export type ContactMode = FormMode | "pilot";
 export type ContactFormConfig = { mode: ContactMode; siteKey?: string };
 
@@ -124,3 +124,6 @@ export const submitDiagnostic = (values: ContactValues, token: string, signal: A
 // Only the e-mail, the tool ID and the optional commercial checkbox leave the browser: never answers or results.
 export const submitReport = (email: string, toolId: string, commercialConsent: boolean, token: string, signal: AbortSignal, fetchFn: typeof fetch = fetch) =>
   postPilot("/api/relatorios", { email, toolId, commercialConsent }, token, signal, fetchFn);
+
+export const submitNewsletter = (email: string, editionSlug: string | undefined, token: string, signal: AbortSignal, fetchFn: typeof fetch = fetch) =>
+  postPilot("/api/newsletter/inscricao", { email, ...(editionSlug ? { editionSlug } : {}) }, token, signal, fetchFn);

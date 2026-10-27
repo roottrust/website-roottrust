@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { NewsletterForm } from "@/components/forms/NewsletterForm";
 import { FrameCanvas } from "@/features/graphics/FrameCanvas";
-import type { FormMode } from "@/lib/forms";
+import type { ContactFormConfig } from "@/lib/forms";
 import type { EdicaoPublica } from "./catalog";
 import { Abertura, Arrow, DemoPill, EdicaoMeta } from "./NewsletterParts";
 import styles from "./newsletter.module.css";
@@ -12,7 +12,7 @@ function BackLink() {
   );
 }
 
-export function PreviewPage({ edicao, mode }: { edicao: EdicaoPublica; mode: FormMode }) {
+export function PreviewPage({ edicao, config }: { edicao: EdicaoPublica; config: ContactFormConfig }) {
   return (
     <main id="conteudo" data-graphics-root className={styles.root}>
       <FrameCanvas />
@@ -43,10 +43,10 @@ export function PreviewPage({ edicao, mode }: { edicao: EdicaoPublica; mode: For
           <div className={styles.reading}>
             <div className={styles.requestCard}>
               <h2 id="receba" className={styles.requestTitle}>Receba esta <span className={styles.accent}>edição completa.</span></h2>
-              <p className={styles.body}>Receba esta edição completa e as próximas análises em dias úteis. Confirme seu endereço pelo e-mail que enviaremos.</p>
+              <p className={styles.body}>Receba esta edição completa e as próximas análises em dias úteis. Se ainda não assina, confirme seu endereço pelo link enviado por e-mail.</p>
               <p className={styles.requested}>Edição solicitada: {edicao.titulo}</p>
               <NewsletterForm
-                mode={mode}
+                config={config}
                 variant="inline"
                 editionSlug={edicao.slug}
                 support="Você pode cancelar os próximos envios. Newsletter e relatório são escolhas independentes."

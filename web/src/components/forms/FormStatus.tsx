@@ -44,10 +44,23 @@ function pilotReportMessage(status: "submitting" | SubmissionResult): string {
   }
 }
 
+function pilotNewsletterMessage(status: "submitting" | SubmissionResult): string {
+  switch (status) {
+    case "submitting": return "Solicitando confirmação…";
+    case "accepted": return "Pedido registrado. Se necessário, enviaremos um link de confirmação; para endereços já confirmados, uma edição disponível pode seguir para a fila. Confira também a caixa de spam. A entrega não é garantida.";
+    case "invalid": return "Confira o endereço de e-mail e tente novamente.";
+    case "rate_limited": return "Muitas tentativas em pouco tempo. Aguarde e tente novamente.";
+    case "challenge": return "Conclua novamente a verificação de segurança.";
+    case "forbidden": return "Esta página não está autorizada a enviar o pedido. Recarregue e tente novamente.";
+    case "unavailable": return "A inscrição está indisponível no momento. Tente mais tarde.";
+    default: return "Não foi possível registrar o pedido. Tente novamente.";
+  }
+}
+
 export function FormStatus({ mode, status, kind, reference }: {
   mode: ContactMode; status: "idle" | "submitting" | SubmissionResult; kind: "contact" | "newsletter" | "report"; reference?: string;
 }) {
-  const message = mode === "pilot" && (kind === "contact" || kind === "report") ? (status === "idle" ? "" : kind === "contact" ? pilotMessage(status, reference) : pilotReportMessage(status)) : status === "submitting"
+  const message = mode === "pilot" ? (status === "idle" ? "" : kind === "contact" ? pilotMessage(status, reference) : kind === "report" ? pilotReportMessage(status) : pilotNewsletterMessage(status)) : status === "submitting"
     ? kind === "contact" ? "Enviando solicitação…" : "Solicitando confirmação…"
     : status === "accepted"
       ? kind === "contact"
@@ -63,7 +76,7 @@ export function FormStatus({ mode, status, kind, reference }: {
   return (
     <>
       {mode === "demo" ? <p className={styles.notice}>Demonstração local — nenhum dado é enviado ou guardado.</p> : null}
-      <noscript><p>{mode === "pilot" && kind !== "newsletter" ? "Ative JavaScript para enviar a solicitação, ou use os canais de contato." : "Ative JavaScript para validar este formulário local, ou use os canais de contato."}</p></noscript>
+      <noscript><p>{mode === "pilot" ? "Ative JavaScript para enviar a solicitação, ou use os canais de contato." : "Ative JavaScript para validar este formulário local, ou use os canais de contato."}</p></noscript>
       <p role="status" aria-live="polite" className={styles.status}>{message}</p>
     </>
   );

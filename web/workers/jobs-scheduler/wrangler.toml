@@ -1,0 +1,14 @@
+name = "roottrust-jobs-scheduler"
+account_id = "870a01477969e30a0c3fd311c9a305c6"
+main = "index.ts"
+compatibility_date = "2026-10-01"
+workers_dev = false
+preview_urls = false
+
+[vars]
+SITE_ORIGIN = "https://website-roottrust.vercel.app"
+JOBS_ENABLED = "true"
+# Set INTERNAL_KEY_JOBS as a secret; never put its value in this file.
+
+[triggers]
+crons = ["*/5 * * * *"]

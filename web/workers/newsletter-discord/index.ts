@@ -23,7 +23,8 @@ interface ExecutionContextLike {
 const ENCODER = new TextEncoder();
 const TIMESTAMP_TOLERANCE_S = 300;
 const MAX_BODY_BYTES = 16 * 1024;
-const DECISION_TIMEOUT_MS = 2200; // Discord requires an answer within 3 s
+const DECISION_TIMEOUT_MS = 20_000; // ACK is immediate; leave time for the Discord update inside waitUntil's 30 s.
+const REPLY_TIMEOUT_MS = 4000; // Decision (20 s) + Routine (5 s) + reply (4 s) leave 1 s inside waitUntil's 30 s.
 const EPHEMERAL = 64;
 
 const fromHex = (value: string): Uint8Array | undefined => {
@@ -72,7 +73,6 @@ export async function signPublishRequest(
 
 const reply = (data: Record<string, unknown>): Response => Response.json(data, { headers: { "Cache-Control": "no-store" } });
 const ephemeral = (content: string) => reply({ type: 4, data: { content, flags: EPHEMERAL, allowed_mentions: { parse: [] } } });
-const updateMessage = (content: string) => reply({ type: 7, data: { content, components: [], allowed_mentions: { parse: [] } } });
 
 // `closes`: the control message loses its buttons (the revision is finished). Otherwise the reply is private to the clicker.
 const MESSAGES: Record<DecisionResult, { text: string; closes: boolean }> = {
@@ -94,6 +94,7 @@ const UNCERTAIN = "Não foi possível confirmar a decisão agora. Ela pode ter s
 
 interface InteractionPayload {
   type?: unknown;
+  token?: unknown;
   application_id?: unknown;
   guild_id?: unknown;
   channel_id?: unknown;
@@ -102,16 +103,16 @@ interface InteractionPayload {
 }
 
 async function callDecision(env: Env, fetcher: typeof fetch, body: Record<string, unknown>): Promise<{ result?: unknown } | undefined> {
-  const encoded = ENCODER.encode(JSON.stringify(body));
-  const timestamp = Date.now();
-  const nonce = base64url(crypto.getRandomValues(new Uint8Array(18)));
-  const signature = await signPublishRequest(env.INTERNAL_KEY_PUBLISH, { method: "POST", pathname: DECISION_PATH, timestamp, nonce, body: encoded });
   try {
+    const encoded = ENCODER.encode(JSON.stringify(body));
+    const timestamp = Date.now();
+    const nonce = base64url(crypto.getRandomValues(new Uint8Array(18)));
+    const signature = await signPublishRequest(env.INTERNAL_KEY_PUBLISH, { method: "POST", pathname: DECISION_PATH, timestamp, nonce, body: encoded });
     const response = await fetcher(new URL(DECISION_PATH, env.SITE_ORIGIN).toString(), {
       method: "POST",
       headers: { "content-type": "application/json", "x-rt-timestamp": String(timestamp), "x-rt-nonce": nonce, "x-rt-signature": signature },
       body: encoded as BodyInit,
-      redirect: "error",
+      redirect: "manual", // Workers has no "error" mode; the non-2xx guard rejects redirects without forwarding credentials.
       signal: AbortSignal.timeout(DECISION_TIMEOUT_MS),
     });
     // Only a 2xx carries a decision; an error body must never be read as one.
@@ -163,45 +164,115 @@ export async function handleInteraction(request: Request, env: Env, context?: Ex
     return ephemeral("Estes botões não são válidos neste canal.");
   }
 
-  const outcome = await callDecision(env, fetcher, {
-    action: custom.action,
-    draftId: custom.draftId,
-    revision: custom.revision,
-    applicationId,
-    guildId,
-    channelId,
-    messageId,
-    proof: { timestamp, signature, body: bodyText },
-  });
-  const result = typeof outcome?.result === "string" && Object.hasOwn(MESSAGES, outcome.result) ? (outcome.result as DecisionResult) : undefined;
-  if (!result) return ephemeral(UNCERTAIN);
-  if (result === "regeneration_requested" && env.ROUTINE_FIRE_URL && env.ROUTINE_FIRE_TOKEN && context) {
-    // Best effort only: the request is already durable in storage; waitUntil is not a queue and may be dropped.
-    context.waitUntil(fireRoutine(env, fetcher, custom.draftId, custom.revision));
-  }
-  const message = MESSAGES[result];
-  // Replacing the control message must not drop the edition's identity: keep slug (when the original text is ours), ID and revision.
-  const identity = `Edição ${slugOf(payload.message?.content, custom.draftId)}ID ${custom.draftId} · revisão ${custom.revision}`;
-  return message.closes ? updateMessage(`${message.text}\n${identity}`) : ephemeral(message.text);
+  if (typeof context?.waitUntil !== "function") return new Response(null, { status: 503 });
+  const token = payload.token;
+  if (typeof token !== "string" || !token.length || token.length > 2048) return new Response(null, { status: 400 });
+
+  context.waitUntil((async () => {
+    const outcome = await callDecision(env, fetcher, {
+      action: custom.action,
+      draftId: custom.draftId,
+      revision: custom.revision,
+      applicationId,
+      guildId,
+      channelId,
+      messageId,
+      proof: { timestamp, signature, body: bodyText },
+    });
+    const result = typeof outcome?.result === "string" && Object.hasOwn(MESSAGES, outcome.result) ? (outcome.result as DecisionResult) : undefined;
+    const message = result ? MESSAGES[result] : { text: UNCERTAIN, closes: false };
+    const slug = slugOf(payload.message?.content, custom.draftId);
+    const routineFeedback = result === "regeneration_requested"
+      ? (await fireRoutine(env, fetcher, custom.draftId, custom.revision, slug)
+        ? " Routine iniciada; execução e revisão pendentes."
+        : " Disparo da Routine não confirmado. Confira o slug, a configuração e as sessões da Routine antes de acioná-la manualmente; não repita a decisão.")
+      : "";
+    const identity = `Edição ${slug ? `${slug} · ` : ""}ID ${custom.draftId} · revisão ${custom.revision}`;
+    const webhook = `https://discord.com/api/v10/webhooks/${env.DISCORD_APPLICATION_ID}/${encodeURIComponent(token)}`;
+    try {
+      const response = await fetcher(message.closes ? `${webhook}/messages/@original` : webhook, {
+        method: message.closes ? "PATCH" : "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          content: `${message.text}${routineFeedback}\n${identity}`,
+          allowed_mentions: { parse: [] },
+          ...(message.closes ? { components: [] } : { flags: EPHEMERAL }),
+        }),
+        redirect: "manual",
+        signal: AbortSignal.timeout(REPLY_TIMEOUT_MS),
+      });
+      await response.body?.cancel();
+      if (!response.ok) console.warn("newsletter_discord_reply_failed", { status: response.status });
+    } catch {
+      // URLs contain the interaction token. Never log exceptions or retry the decision after a reply failure.
+      console.warn("newsletter_discord_reply_failed");
+    }
+  })().catch(() => console.warn("newsletter_decision_background_failed")));
+  return reply({ type: 6 });
 }
 
 // The control message starts with "Revisão N da edição <slug> (ID <draftId>)."; read the slug back only if that exact shape and ID match.
-function slugOf(content: unknown, draftId: string): string {
+function slugOf(content: unknown, draftId: string): string | undefined {
   const match = typeof content === "string" ? /^Revisão \d{1,6} da edição ([a-z0-9]+(?:-[a-z0-9]+)*) \(ID (ed_[0-9a-f-]{36})\)\./.exec(content) : null;
-  return match && match[2] === draftId && match[1].length <= 80 ? `${match[1]} · ` : "";
+  return match && match[2] === draftId && match[1].length <= 80 ? match[1] : undefined;
 }
 
-async function fireRoutine(env: Env, fetcher: typeof fetch, draftId: string, revision: number): Promise<void> {
+async function fireRoutine(env: Env, fetcher: typeof fetch, draftId: string, revision: number, slug: string | undefined): Promise<boolean> {
+  if (!slug || !env.ROUTINE_FIRE_TOKEN?.trim() || !/^https:\/\/api\.anthropic\.com\/v1\/claude_code\/routines\/[A-Za-z0-9_-]+\/fire$/.test(env.ROUTINE_FIRE_URL ?? "")) {
+    console.warn("newsletter_routine_not_configured");
+    return false;
+  }
   try {
-    await fetcher(env.ROUTINE_FIRE_URL as string, {
+    const signal = AbortSignal.timeout(5000);
+    const response = await fetcher(env.ROUTINE_FIRE_URL as string, {
       method: "POST",
-      headers: { authorization: `Bearer ${env.ROUTINE_FIRE_TOKEN}`, "content-type": "application/json" },
-      body: JSON.stringify({ text: `Regenerar a edição ${draftId}: a revisão ${revision} foi devolvida pelo revisor.` }),
-      redirect: "error",
-      signal: AbortSignal.timeout(5000),
+      headers: {
+        authorization: `Bearer ${env.ROUTINE_FIRE_TOKEN}`,
+        "anthropic-beta": "experimental-cc-routine-2026-04-01",
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ text: `Regenerar a edição ${slug} (ID ${draftId}): a revisão ${revision} foi devolvida pelo revisor. Manter o mesmo ID e slug.` }),
+      redirect: "manual",
+      signal,
     });
+    if (!response.ok) {
+      void response.body?.cancel().catch(() => console.warn("newsletter_routine_cancel_failed"));
+      console.warn("newsletter_routine_fire_failed", { status: response.status });
+      return false;
+    }
+    const reader = response.body?.getReader();
+    if (!reader) throw new Error("missing_body");
+    const abort = () => { void reader.cancel().catch(() => console.warn("newsletter_routine_cancel_failed")); };
+    signal.addEventListener("abort", abort, { once: true });
+    let bytes: Uint8Array = new Uint8Array();
+    try {
+      while (true) {
+        signal.throwIfAborted();
+        const { done, value } = await reader.read();
+        signal.throwIfAborted();
+        if (done) break;
+        if (bytes.byteLength + value.byteLength > 8192) throw new Error("response_too_large");
+        bytes = concat(bytes, value);
+      }
+    } finally {
+      signal.removeEventListener("abort", abort);
+      void reader.cancel().catch(() => console.warn("newsletter_routine_cancel_failed"));
+      reader.releaseLock();
+    }
+    const parsed: unknown = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes));
+    if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) throw new Error("invalid_response");
+    const result = parsed as Record<string, unknown>;
+    if (result.type !== "routine_fire" || typeof result.claude_code_session_id !== "string"
+      || !result.claude_code_session_id || result.claude_code_session_id.trim() !== result.claude_code_session_id
+      || /\p{Cc}/u.test(result.claude_code_session_id) || typeof result.claude_code_session_url !== "string") throw new Error("invalid_response");
+    // Session IDs are opaque; the documented example does not constrain their prefix or the link's path.
+    const sessionUrl = new URL(result.claude_code_session_url);
+    if (sessionUrl.protocol !== "https:" || sessionUrl.hostname !== "claude.ai" || sessionUrl.username || sessionUrl.password || sessionUrl.port) throw new Error("invalid_response");
+    return true;
   } catch {
-    // Nothing is logged: the error text could carry the URL or token. The reviewer can fire the Routine by hand with the draft ID.
+    console.warn("newsletter_routine_fire_failed");
+    return false;
   }
 }
 

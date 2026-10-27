@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Home } from "@/features/home/Home";
-import { resolveFormMode } from "@/lib/forms";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -9,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function HomePage() {
-  return <Home mode={resolveFormMode(process.env.FORM_MODE)} />;
+  return <Home />;
 }

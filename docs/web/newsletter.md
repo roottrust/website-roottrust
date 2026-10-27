@@ -1,6 +1,13 @@
 # Newsletter Root Trust
 
-**Atualizado:** 11/10/2026. Os três exports aprovados seguem N01–N11 e foram auditados em 09/10. Preservar o visual/conteúdo exportado na portabilidade. Tema escuro aprovado; CMS e envio não estão integrados. Entrada: [README](README.md).
+## Aceite operacional — 19/10/2026
+
+**Piloto restrito concluído e aceito por Renato.** Diagnóstico, quatro relatórios, newsletter agendada com aprovação humana, publicação/envio, confirmação/cancelamento e backup/restauração foram validados. Renato é responsável pela conferência de cotas e pela guarda/descarte de backups, CSVs, mensagens e contatos nos provedores. Procedimento e limitações em [development.md](development.md#responsabilidade-operacional-e-limites-do-aceite). O [plano arquivado](../plans/integrations-pilot-completed.md#encerramento-e-aceite-final--19102026) preserva as evidências. Este estado prevalece sobre propostas e pendências históricas abaixo. Não há autorização de abertura pública nem alteração das allowlists.
+
+
+**Complemento cloud T6.2-R3, 18/10/2026:** [prompt diário da Routine](../../web/ops/newsletter-routine/prompt.md) e [guia operacional](../../web/ops/newsletter-routine/README.md) implementam os contratos abaixo. Criação cloud, regeneração com mesmo ID/slug, recusa e aprovação de outra edição seguida de prévia/Broadcast/recebimento pelo usuário foram comprovados. Confirmação do trigger corrigida e ensaiada (D2). Prompt diário e agenda seg–sex08h Brasília salvos conforme confirmação do operador; primeira ocorrência automática confirmada em19/10, com aprovação humana, prévia publicada e e-mail recebido. Claude só pesquisa/redige rascunho; uma pessoa decide cada revisão. Sem pauta verificável, não há edição fictícia nem alerta Discord adicional. Network secret fica no proxy, sem HMAC no Claude; LinkedIn separado. Operação/aceite restantes no PLAN; validação técnica não aprova fatos editoriais.
+
+**Histórico de ensaios manuais, 17/10/2026:** ensaio manual restrito validou rascunho e revisão no Discord, regeneração, recusa, aprovação, prévia pública, Broadcast e entrega individual completos, confirmação/reinscrição e cancelamento tanto pelo Resend quanto pelo site. Usuário conferiu os e-mails; webhook e sincronização de cancelamentos foram verificados no banco. ACK diferido atualiza o resultado sem depender de resposta API em 2,2 s; repetição de aprovação não criou novo envio. A rotina agendada ainda não foi configurada; cenários restantes e aceite completo continuam no [PLAN.md](../plans/integrations-pilot-completed.md). Não há CMS próprio ou abertura pública. Entrada: [README](README.md).
 
 **Estado dos exports:** apresentação, arquivo e prévia estão preservados entre os 12 exports em `references/claude-design/`. A auditoria de 09/10 registra a análise estática e suas limitações. O Markdown editorial completo permanece em `references/editorial/`, fora do conteúdo publicável.
 
@@ -45,7 +52,7 @@ N08 substitui a proposta de tópicos, implicação prática e fontes separadas n
 - Site: prévia aberta. E-mail: completa após confirmação. Sem login, desbloqueio no site, paywall, desfoque ou texto integral escondido.
 - Pedido geral: iniciar entrega da edição aprovada mais recente após confirmação. Pedido em prévia: daquela edição; depois, próximos envios em dias úteis. Confirmar não comprova recebimento.
 - Newsletter independente dos relatórios; não anexar respostas/resultados de ferramentas à inscrição.
-- CMS externo/envio/privacidade ainda serão definidos. Pub/sub e painel próprio não entram nesta rodada.
+- Histórico N01–N11: CMS externo e envio estavam pendentes. No piloto atual, Resend e Discord foram escolhidos no PLAN; pub/sub e painel próprio continuam fora do escopo.
 
 ### Uma edição, um recorte público
 
@@ -59,7 +66,7 @@ Arquivo e amostra da landing usam o mesmo parágrafo. Não exigir outra lista p�
 
 As três rotas estão implementadas em Next, com três amostras demonstrativas sem indexação, arquivo com dois itens por página e filtro que reinicia na página 1. Histórico: o formulário exibia o aviso inicial de nenhum envio; por D12 a frase inicial exata de FormStatus foi removida (sem ocultar por CSS nem substituir), mantendo o aviso do modo demo e o feedback pós-tentativa honestos. O formulário preserva edição escolhida, ou seleciona a mais recente na origem geral. Metadata individual deriva somente da abertura pública, com corte de até 160 caracteres sem quebrar palavras.
 
-Layout (D13): título, lista e card do arquivo usam 1200 px úteis em 1440, parágrafos de leitura em 65ch, grade a partir de 960 px e landing inalterada. O item Newsletter do header leva a `/newsletter` (D11). Aberturas e fontes são públicas; corpos completos permanecem fora da distribuição pública. Scan GPT atual (P9) de 430 arquivos e 11 âncoras privadas encontrou zero ocorrências, dentro desse recorte limitado (histórico: 230 arquivos). Slug inexistente bem formado retorna 404; UTF-8 malformado pode resultar em 500 antes da aplicação. [QA final](../../references/audits/final-qa.md). Confirmação, entrega, cancelamento e CMS seguem pendentes; nenhum estado demo comprova essas operações.
+Layout (D13): título, lista e card do arquivo usam 1200 px úteis em 1440, parágrafos de leitura em 65ch, grade a partir de 960 px e landing inalterada. O item Newsletter do header leva a `/newsletter` (D11). Aberturas e fontes são públicas; corpos completos permanecem fora da distribuição pública. Scan GPT atual (P9) de 430 arquivos e 11 âncoras privadas encontrou zero ocorrências, dentro desse recorte limitado (histórico: 230 arquivos). Slug inexistente bem formado retorna 404; UTF-8 malformado pode resultar em 500 antes da aplicação. [QA final](../../references/audits/final-qa.md). Confirmação, entrega e cancelamento foram ensaiados no piloto de17/10; CMS próprio não integra o escopo. Nenhum estado demo comprova essas operações.
 
 ## 4. Página A — apresentação/inscrição
 
@@ -133,9 +140,9 @@ Um padrão com intenção geral ou edição escolhida. Rótulo visível, teclado
 
 No modo `FORM_MODE=demo`, somente andamento, pedido aceito aguardando confirmação e erro/retry são simulados. Os estados Confirmado, Entregue e Cancelado abaixo são requisitos de operação futura, não opções locais de demonstração. Não enviar ou persistir e-mails nem usar dados pessoais reais.
 
-Na operação futura: novos leitores confirmam antes de assinatura/envio; assinantes pedem a edição pelo mesmo formulário. Não revelar situação cadastral publicamente nem enviar edições arbitrariamente só porque um endereço foi digitado. Validar pedido pelo e-mail; tokens, reenvios, duplicidade e limites aguardam serviço futuro. Não reativar cancelados por visita/pedido; reinscrição exige escolha explícita e confirmação. Cancelar newsletter não cancela relatório ou promete apagar outros dados.
+No piloto implementado: novos leitores confirmam por token único de 24 h antes de receber; assinantes já confirmados podem pedir a edição pelo mesmo formulário, com resposta pública idêntica. Ações repetidas têm limite e idempotência; jobs mortos exigem reconciliação. Cancelados só voltam após novo pedido e confirmação explícita. Cancelar newsletter não cancela relatório, autorização comercial separada ou outros dados. A operação real e os prazos de provedores ainda dependem de T6.2.
 
-A copy de sucesso da Home **Inscrição confirmada. A próxima edição chega no próximo dia útil.** é registro aprovado do export. Não usar essa mensagem como sucesso do formulário demo: ela requer confirmação e envio operacionais, ainda inexistentes.
+A copy de sucesso da Home **Inscrição confirmada. A próxima edição chega no próximo dia útil.** é registro aprovado do export. Não usar essa mensagem como sucesso do formulário demo: ela requer confirmação e envio operacionais, validados somente no piloto restrito; o pedido de inscrição isolado não os comprova.
 
 ## 8. Visual e acessibilidade
 
@@ -188,3 +195,8 @@ Fornecedor, endpoint/API e integrações não foram escolhidos. Esta documentaç
 ### Rechecagem documental final — 11/10/2026
 
 **Histórico, superado pelos gates P8.3 (ver [development.md](development.md)):** rechecagem após documentação: lint/tipos/101 unit/build passaram; E2E completo teve 227 passes, quatro skips e uma falha ao observar o estado transitório “Enviando…” do contato. O mesmo teste passou 3/3 na repetição isolada, sem alteração de código/teste. Instabilidade de observação registrada, causa não comprovada; não equivale a uma nova rodada completa verde. Logs na auditoria final.
+
+
+### Execução agendada comprovada — 19/10/2026
+
+O operador confirmou início automático da Routine pela agenda, envio ao Discord, aprovação humana, publicação da prévia no website e recebimento do e-mail da edição `newsletter-2026-10-19`. A geração foi registrada às08h11 de Brasília; estados de notificação, publicação e Broadcast foram conferidos separadamente. R3.6 concluída, sem aprovação ou publicação autônoma pela Routine. Métricas, retenção, cópias externas e aceite global do piloto permanecem no PLAN; este ensaio não comprova disponibilidade contínua.

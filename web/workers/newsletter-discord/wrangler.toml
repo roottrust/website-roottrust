@@ -1,14 +1,15 @@
 # Secrets are NEVER written here. Set them with `wrangler secret put`:
 #   INTERNAL_KEY_PUBLISH, ROUTINE_FIRE_TOKEN (optional)
 name = "roottrust-newsletter-discord"
+account_id = "870a01477969e30a0c3fd311c9a305c6"
 main = "index.ts"
 compatibility_date = "2026-10-01"
 
 [vars]
-# Public identifiers only (no tokens). Fill in at deploy time.
-DISCORD_PUBLIC_KEY = ""
-DISCORD_APPLICATION_ID = ""
-DISCORD_GUILD_ID = ""
-DISCORD_NEWSLETTER_CHANNEL_ID = ""
-SITE_ORIGIN = ""
+# Public identifiers only (no tokens). Secret configured separately at deploy time.
+DISCORD_PUBLIC_KEY = "bcc9355ad7603238973f682e0f80466e05baa74eb9c55a77a532113345ef2615"
+DISCORD_APPLICATION_ID = "1560368655261376682"
+DISCORD_GUILD_ID = "1435003451762278541"
+DISCORD_NEWSLETTER_CHANNEL_ID = "1559944408261201990"
+SITE_ORIGIN = "https://website-roottrust.vercel.app"
 # ROUTINE_FIRE_URL = ""  # optional, best-effort wake-up of the Routine

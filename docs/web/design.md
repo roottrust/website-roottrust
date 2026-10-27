@@ -1,5 +1,10 @@
 # Design do website
 
+## Aceite operacional — 19/10/2026
+
+**Piloto restrito concluído e aceito por Renato.** Diagnóstico, quatro relatórios, newsletter agendada com aprovação humana, publicação/envio, confirmação/cancelamento e backup/restauração foram validados. Renato é responsável pela conferência de cotas e pela guarda/descarte de backups, CSVs, mensagens e contatos nos provedores. Procedimento e limitações em [development.md](development.md#responsabilidade-operacional-e-limites-do-aceite). O [plano arquivado](../plans/integrations-pilot-completed.md#encerramento-e-aceite-final--19102026) preserva as evidências. Este estado prevalece sobre propostas e pendências históricas abaixo. Não há autorização de abertura pública nem alteração das allowlists.
+
+
 **Atualizado:** 11/10/2026. Os 12 exports aprovados foram movidos intactos para `references/claude-design/` e auditados em 09/10. Eles continuam como referência de visual e conteúdo durante a portabilidade; corrigir as lacunas técnicas sem redesenho. Fonte da Home: [Home.dc.html](../../references/claude-design/Home.dc.html), com moldura/laterais. [Auditoria](../../references/audits/home-export-audit.md) registra execução e lacunas. Produto e decisões estão em [product.md](product.md).
 
 ## 1. Autoridade e adaptações aprovadas

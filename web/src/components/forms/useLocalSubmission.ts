@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { submitDiagnostic, submitLocalForm, submitReport, type ContactMode, type DemoOutcome, type FormMode, type FormRequest, type SubmissionResult } from "@/lib/forms";
+import { submitDiagnostic, submitLocalForm, submitNewsletter, submitReport, type ContactMode, type DemoOutcome, type FormMode, type FormRequest, type SubmissionResult } from "@/lib/forms";
 
 const subscribe = () => () => {};
 const clientSnapshot = () => true;
@@ -26,10 +26,12 @@ export function useLocalSubmission(mode: ContactMode) {
     setReference(undefined);
     try {
       if (mode === "pilot") {
-        if (!token || (request.kind !== "contact" && request.kind !== "report")) throw new Error("Missing challenge token");
+        if (!token) throw new Error("Missing challenge token");
         const result = request.kind === "contact"
           ? await submitDiagnostic(request.values, token, controller.signal)
-          : await submitReport(request.email, request.toolId, request.commercialConsent === true, token, controller.signal);
+          : request.kind === "report"
+            ? await submitReport(request.email, request.toolId, request.commercialConsent === true, token, controller.signal)
+            : await submitNewsletter(request.email, request.editionSlug, token, controller.signal);
         if (!controller.signal.aborted) {
           setReference(result.reference);
           setStatus(result.result);

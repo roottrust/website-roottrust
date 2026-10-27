@@ -1,10 +1,15 @@
 # Produto, conteúdo e jornadas
 
+## Aceite operacional — 19/10/2026
+
+**Piloto restrito concluído e aceito por Renato.** Diagnóstico, quatro relatórios, newsletter agendada com aprovação humana, publicação/envio, confirmação/cancelamento e backup/restauração foram validados. Renato é responsável pela conferência de cotas e pela guarda/descarte de backups, CSVs, mensagens e contatos nos provedores. Procedimento e limitações em [development.md](development.md#responsabilidade-operacional-e-limites-do-aceite). O [plano arquivado](../plans/integrations-pilot-completed.md#encerramento-e-aceite-final--19102026) preserva as evidências. Este estado prevalece sobre propostas e pendências históricas abaixo. Não há autorização de abertura pública nem alteração das allowlists.
+
+
 **Atualizado:** 11/10/2026. A Home (export) foi aprovada em 04/10. Os 12 exports aprovados (Home, três serviços, quatro ferramentas, três páginas de newsletter e 404) estão preservados em `references/claude-design/`; a auditoria de 09/10 está em `references/audits/`. F01–F29, S01–S16 e N01–N11 regem suas jornadas. A aprovação dos exports define a referência visual/conteúdo; não comprova cálculo auditado, integração ou operação. Marca oficial: [docs/design](../design/README.md).
 
 ## Estado da entrega
 
-Frontend local implementado e validado em 11/10/2026. A Home nativa recebeu aprovação humana em 10/10; o aceite final do conjunto permanece pendente. Gates finais atuais (P8.3, retries 0): lint, typecheck, 107 testes unitários, build de produção e 284 E2E aprovados, com 6 skips explicitados na [auditoria final](../../references/audits/final-qa.md); 101 unit/228 E2E/quatro skips são histórico. Não há integração operacional nem autorização de publicação. Slugs bem formados inexistentes retornam HTTP 404 antes de streaming. Encoding UTF-8 malformado pode retornar 500 no decodificador do Next antes da aplicação; limitação registrada para revisão antes da publicação.
+O frontend local recebeu aceite humano. Seus resultados de QA de 11/10/2026 são históricos. O piloto restrito tem APIs implementadas em `web/`, contas configuradas e ensaios reais aceitos, registrados no [PLAN.md](../plans/integrations-pilot-completed.md); a abertura pública não foi autorizada. Slugs bem formados inexistentes retornam HTTP 404 antes de streaming. Encoding UTF-8 malformado pode retornar 500 no decodificador do Next antes da aplicação; limitação registrada para revisão antes da publicação.
 
 ## Público e posicionamento
 
@@ -33,7 +38,7 @@ A decisão aprovada S01–S16 estabelece seis seções por serviço: abertura/CT
 | Privacidade provisória | `/privacidade` |
 | 404 | Página não encontrada, com resposta HTTP 404 na aplicação |
 
-O hub de ferramentas e a página dedicada de diagnóstico estão adiados e não fazem parte destas rotas. A Home e cada página de serviço oferecem o formulário de contato local `#contato`. A navegação global mantém os destinos aprovados da Home; a portabilidade Next e a revisão técnica local estão concluídas; o aceite humano final segue pendente.
+O hub de ferramentas e a página dedicada de diagnóstico estão adiados e não fazem parte destas rotas. A Home e cada página de serviço oferecem o formulário de contato `#contato`. A navegação global mantém os destinos aprovados da Home; a portabilidade Next recebeu aceite humano. O piloto restrito recebeu aceite final em19/10/2026.
 
 ## Home — textos e composição aprovados
 

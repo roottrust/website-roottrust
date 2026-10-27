@@ -1,5 +1,6 @@
 import { validateContact, validateEmail } from "../forms";
 import { PILARES } from "../../features/newsletter/catalog";
+import { CONFIRMATION_TOKEN } from "./ids";
 import { DECISION_ACTIONS, DRAFT_ID, MAX_PROOF_BODY_BYTES, PROOF_SIGNATURE, PROOF_TIMESTAMP, SNOWFLAKE, type DecisionAction } from "./newsletter-protocol";
 import { TOOL_IDS, type EditionOpeningSegment, type EditionSource, type ToolId } from "./types";
 
@@ -55,6 +56,17 @@ export function parseSubscription(body: unknown): Parsed<{ email: string; editio
   const fields = [...extra, ...(email ? [] : ["email"]), ...(slugOk ? [] : ["editionSlug"])];
   if (fields.length || !email) return { ok: false, fields };
   return { ok: true, value: typeof slug === "string" ? { email, editionSlug: slug } : { email } };
+}
+
+// Shape only (authenticity is checked against the secret in verifyConfirmationToken); unknown keys are rejected.
+export function parseConfirmation(body: unknown): Parsed<{ token: string }> {
+  const record = asRecord(body);
+  if (!record) return { ok: false, fields: ["body"] };
+  const extra = unknownKeys(record, ["token"]);
+  const token = record.token;
+  const fields = [...extra, ...(typeof token === "string" && token.length <= 128 && CONFIRMATION_TOKEN.test(token) ? [] : ["token"])];
+  if (fields.length || typeof token !== "string") return { ok: false, fields };
+  return { ok: true, value: { token } };
 }
 
 export function parseReport(body: unknown): Parsed<{ email: string; toolId: ToolId; commercialConsent: boolean }> {

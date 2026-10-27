@@ -2,7 +2,7 @@ import Link from "next/link";
 import { NewsletterForm } from "@/components/forms/NewsletterForm";
 import { FrameCanvas } from "@/features/graphics/FrameCanvas";
 import { SymbolAscii } from "@/features/graphics/SymbolAscii";
-import type { FormMode } from "@/lib/forms";
+import type { ContactFormConfig } from "@/lib/forms";
 import type { EdicaoPublica } from "./catalog";
 import { Arrow, EdicaoCard, Eyebrow } from "./NewsletterParts";
 import styles from "./newsletter.module.css";
@@ -27,7 +27,7 @@ const FAQ = [
   ["Como cancelo?", "Pelo caminho de cancelamento indicado nos e-mails."],
 ] as const;
 
-export function LandingPage({ mode, recente, indisponivel = false }: { mode: FormMode; recente: EdicaoPublica | undefined; indisponivel?: boolean }) {
+export function LandingPage({ config, recente, indisponivel = false }: { config: ContactFormConfig; recente: EdicaoPublica | undefined; indisponivel?: boolean }) {
   return (
     <main id="conteudo" data-graphics-root className={styles.root}>
       <FrameCanvas />
@@ -40,10 +40,10 @@ export function LandingPage({ mode, recente, indisponivel = false }: { mode: For
               <p className={styles.lead}>Cibersegurança, infraestrutura em nuvem e software para decisões sobre operações críticas. Um tema central por edição, análise própria, implicações práticas e links para as fontes.</p>
               <div className={styles.formBox}>
                 <NewsletterForm
-                  mode={mode}
+                  config={config}
                   variant="inline"
                   cta="Receber edições completas"
-                  support="Confirme seu endereço para receber a edição mais recente e os próximos envios em dias úteis. Você pode cancelar os próximos envios."
+                  support="Se ainda não assina, confirme seu endereço pelo link enviado por e-mail. Depois você recebe a edição mais recente e os próximos envios em dias úteis. Você pode cancelar os próximos envios."
                 />
               </div>
             </div>

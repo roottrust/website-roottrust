@@ -1,11 +1,12 @@
 import { clientIpKey, hasIdSecret, isTrustedOrigin, loadDefenseConfig, verifyTurnstile, type DefenseConfig } from "./defense";
 import { createDiagnosticHandler, loadDiagnosticConfig, type DiagnosticConfig } from "./diagnostic";
 import { verifyDiscordProof } from "./discord-proof";
-import { opaqueId } from "./ids";
+import { opaqueId, verifyCancellationToken, verifyConfirmationToken } from "./ids";
 import { authenticateInternal, loadInternalKeys, type InternalKeys } from "./internal-auth";
 import { enqueueJob, processJobs, purgeExpired, type JobHandlers } from "./jobs";
 import { createNewsletterHandler, loadNewsletterConfig, type NewsletterConfig } from "./newsletter";
 import { createBroadcastHandler, createPublishHandler, loadBroadcastConfig, type BroadcastConfig } from "./newsletter-broadcast";
+import { createConfirmationHandler, createContactSyncHandler, createEditionDeliveryHandler, loadNewsletterEmailConfig, type NewsletterEmailConfig } from "./newsletter-email";
 import { MAX_PROOF_BODY_BYTES, PROOF_TOLERANCE_S } from "./newsletter-protocol";
 import {
   consumeLimits,
@@ -21,11 +22,11 @@ import {
 import { resolveBackendMode, type BackendMode } from "./mode";
 import { createReportHandler, loadReportConfig, type ReportConfig } from "./report";
 import { purgeInactiveLeads } from "./retention";
-import { decideEditionRevision, recordDiagnostic, recordReportRequest, requestSubscription, saveEditionRevision } from "./repository";
+import { cancelSubscription, confirmSubscription, decideEditionRevision, recordDiagnostic, recordReportRequest, requestSubscriptionConfirmation, saveEditionRevision } from "./repository";
 import { logEvent, safeErrorCode } from "./safe";
 import { loadFirestoreStore, type Store } from "./store";
 import { COLLECTIONS, JOB_KINDS } from "./types";
-import { MAX_BODY_BYTES, MAX_EDITION_BYTES, parseDecision, parseDiagnostic, parseDraftRequest, parseReport, parseSubscription, type Parsed } from "./validation";
+import { MAX_BODY_BYTES, MAX_EDITION_BYTES, parseConfirmation, parseDecision, parseDiagnostic, parseDraftRequest, parseReport, parseSubscription, type Parsed } from "./validation";
 
 if (typeof window !== "undefined") throw new Error("lib/server must not be imported in the browser");
 
@@ -46,6 +47,8 @@ export interface Deps {
   newsletter?: NewsletterConfig;
   // Resend Broadcast delivery to the dedicated pilot segment; absent => approved editions are published but nothing is sent.
   broadcast?: BroadcastConfig;
+  newsletterEmail?: NewsletterEmailConfig;
+  resendWebhookReady?: boolean;
   // Monotonic milliseconds for the jobs request's time plan; tests inject it.
   clock?: () => number;
 }
@@ -59,6 +62,8 @@ export function defaultDeps(env: Record<string, string | undefined> = process.en
   const report = loadReportConfig(env);
   const newsletter = loadNewsletterConfig(env);
   const broadcast = loadBroadcastConfig(env);
+  const newsletterEmail = loadNewsletterEmailConfig(env);
+  const resendWebhookReady = Boolean(env.RESEND_WEBHOOK_SECRET?.trim());
   const idSecret = env.DATA_ID_SECRET;
   return {
     mode: resolveBackendMode(env.BACKEND_MODE),
@@ -71,10 +76,17 @@ export function defaultDeps(env: Record<string, string | undefined> = process.en
     report,
     newsletter,
     broadcast,
+    newsletterEmail,
+    resendWebhookReady,
     jobHandlers: {
       ...(newsletter ? { [JOB_KINDS.newsletterDiscord]: (job, context) => getStore().then((store) => createNewsletterHandler(store, newsletter, now)(job, context)) } : {}),
       ...(newsletter && hasIdSecret(idSecret) ? { [JOB_KINDS.newsletterPublish]: (job, context) => getStore().then((store) => createPublishHandler(store, idSecret, now, broadcast !== undefined)(job, context)) } : {}),
-      ...(newsletter && broadcast ? { [JOB_KINDS.newsletterBroadcast]: (job, context) => getStore().then((store) => createBroadcastHandler(store, broadcast, now)(job, context)) } : {}),
+      ...(newsletter && broadcast && hasIdSecret(idSecret) ? { [JOB_KINDS.newsletterBroadcast]: (job, context) => getStore().then((store) => createBroadcastHandler(store, broadcast, now, idSecret)(job, context)) } : {}),
+      ...(newsletterEmail && resendWebhookReady && hasIdSecret(idSecret) ? {
+        [JOB_KINDS.newsletterConfirmation]: (job, context) => getStore().then((store) => createConfirmationHandler(store, idSecret, newsletterEmail, now)(job, context)),
+        [JOB_KINDS.newsletterDelivery]: (job, context) => getStore().then((store) => createEditionDeliveryHandler(store, idSecret, newsletterEmail, now)(job, context)),
+      } : {}),
+      ...(broadcast ? { [JOB_KINDS.newsletterContactSync]: (job, context) => getStore().then((store) => createContactSyncHandler(store, broadcast)(job, context)) } : {}),
       ...(diagnostic ? { [JOB_KINDS.diagnosticDiscord]: (job, context) => getStore().then((store) => createDiagnosticHandler(store, diagnostic, now)(job, context)) } : {}),
       ...(report ? { [JOB_KINDS.reportEmail]: (job, context) => getStore().then((store) => createReportHandler(store, report, now)(job, context)) } : {}),
     },
@@ -133,6 +145,7 @@ interface Operation<T> {
   requires?: (deps: Deps) => boolean; // pilot only: false => 503 "not_operational" before anything is read
   action: string; // Turnstile action the widget must have been rendered with
   parse: (body: unknown) => Parsed<T>;
+  allowed?: (value: T) => boolean;
   limits: (value: T, limits: Limits) => ReturnType<typeof diagnosticLimitSpecs>;
   persist: (store: Store, secret: string, value: T, now: Date, gate: Gate) => Promise<({ ok: true } & Record<string, unknown>) | Denied>;
 }
@@ -141,7 +154,7 @@ interface Operation<T> {
 // Turnstile (or by a storage/provider failure) still count against the IP ceilings; identity limits count only
 // requests that passed Turnstile and are not consumed when the identity gate denies.
 // off: 503, body never read. demo: validates only, then 503 (never a fictitious success).
-// pilot, in order: config (503) → origin (403) → body/validation (400) → trusted IP (503) → IP limits (429) →
+// pilot, in order: config (503) → origin (403) → body/validation (400) → pilot identity (403) → trusted IP (503) → IP limits (429) →
 // Turnstile (403/503) → identity limits + persistence in one transaction (429/202). 202 only after commit.
 async function handle<T>(request: Request, deps: Deps, operation: Operation<T>): Promise<Response> {
   if (deps.mode === "off") return unavailable("unavailable");
@@ -158,6 +171,7 @@ async function handle<T>(request: Request, deps: Deps, operation: Operation<T>):
   const parsed = operation.parse(read.body);
   if (!parsed.ok) return json(400, { code: "invalid_request", fields: parsed.fields });
   if (deps.mode === "demo") return unavailable("demo_mode");
+  if (operation.allowed && !operation.allowed(parsed.value)) return json(403, { code: "forbidden" });
 
   const defense = deps.defense as DefenseConfig;
   const secret = deps.idSecret as string;
@@ -201,6 +215,7 @@ export const handleDiagnostic = (request: Request, deps: Deps = defaultDeps()) =
     requires: (current) => current.diagnostic !== undefined && Boolean(current.internalKeys?.jobs?.length),
     action: "diagnostico",
     parse: parseDiagnostic,
+    allowed: (value) => deps.diagnostic?.allowlist.includes(value.whatsapp) === true,
     limits: (value, limits) => diagnosticLimitSpecs(value.whatsapp, limits),
     persist: recordDiagnostic,
   });
@@ -208,17 +223,65 @@ export const handleDiagnostic = (request: Request, deps: Deps = defaultDeps()) =
 // Same body for new, pending, confirmed and cancelled addresses (anti-enumeration).
 export const handleSubscription = (request: Request, deps: Deps = defaultDeps()) =>
   handle(request, deps, {
+    requires: (current) => current.newsletterEmail !== undefined && current.broadcast !== undefined && current.resendWebhookReady === true && Boolean(current.internalKeys?.jobs?.length),
     action: "newsletter-inscricao",
     parse: parseSubscription,
     limits: subscriptionLimitSpecs,
-    persist: requestSubscription,
+    persist: async (store, secret, value, now, gate) => {
+      // The pilot never stores or sends to addresses outside its private recipient list.
+      if (!deps.newsletterEmail?.allowlist.includes(value.email)) return { ok: true };
+      const result = await requestSubscriptionConfirmation(store, secret, value, now, gate);
+      return result.ok ? { ok: true } : result;
+    },
   });
+
+// A confirmation link opens a page first; only an explicit POST consumes its token. Mail scanners may follow GET links.
+export async function handleNewsletterConfirmation(request: Request, deps: Deps = defaultDeps()): Promise<Response> {
+  if (deps.mode !== "pilot") return unavailable("unavailable");
+  if (!deps.defense || !hasIdSecret(deps.idSecret) || !deps.newsletterEmail || !deps.broadcast || !deps.resendWebhookReady || !deps.internalKeys?.jobs?.length) return unavailable("not_operational");
+  if (!isTrustedOrigin(request, deps.defense.trustedOrigins)) return json(403, { code: "forbidden_origin" });
+  const read = await readJson(request);
+  if (!read.ok) return json(400, { code: "invalid_request" });
+  const parsed = parseConfirmation(read.body);
+  if (!parsed.ok || !verifyConfirmationToken(deps.idSecret, parsed.value.token)) return json(400, { code: "invalid_link" });
+  try {
+    const result = await confirmSubscription(await deps.getStore(), deps.idSecret, parsed.value.token, deps.now(), deps.broadcast !== undefined);
+    if (result.status === "confirmed") return json(200, { status: "confirmed", editionQueued: Boolean(result.editionSlug), selectedEditionUnavailable: result.selectedEditionUnavailable === true });
+    if (result.status === "expired") return json(410, { code: "expired_link" });
+    if (result.status === "superseded") return json(409, { code: "superseded_link" });
+    if (result.status === "already_used") return json(409, { code: "already_used" });
+    return json(400, { code: "invalid_link" });
+  } catch (error) {
+    logEvent("error", "confirmation_failed", { error: safeErrorCode(error) });
+    return unavailable("storage_unavailable");
+  }
+}
+
+export async function handleNewsletterCancellation(request: Request, deps: Deps = defaultDeps()): Promise<Response> {
+  if (deps.mode !== "pilot") return unavailable("unavailable");
+  if (!deps.defense || !hasIdSecret(deps.idSecret) || !deps.newsletterEmail) return unavailable("not_operational");
+  if (!isTrustedOrigin(request, deps.defense.trustedOrigins)) return json(403, { code: "forbidden_origin" });
+  const read = await readJson(request);
+  if (!read.ok || !read.body || typeof read.body !== "object" || Array.isArray(read.body)) return json(400, { code: "invalid_link" });
+  const body = read.body as Record<string, unknown>;
+  if (Object.keys(body).length !== 1) return json(400, { code: "invalid_link" });
+  const proof = verifyCancellationToken(deps.idSecret, body.token);
+  if (!proof) return json(400, { code: "invalid_link" });
+  try {
+    const result = await cancelSubscription(await deps.getStore(), deps.idSecret, proof, deps.now(), deps.broadcast !== undefined);
+    return result === "invalid" ? json(409, { code: "invalid_link" }) : json(200, { status: "cancelled" });
+  } catch (error) {
+    logEvent("error", "cancellation_failed", { error: safeErrorCode(error) });
+    return unavailable("storage_unavailable");
+  }
+}
 
 export const handleReport = (request: Request, deps: Deps = defaultDeps()) =>
   handle(request, deps, {
     requires: (current) => current.report !== undefined && Boolean(current.internalKeys?.jobs?.length),
     action: "relatorio",
     parse: parseReport,
+    allowed: (value) => deps.report?.allowlist.includes(value.email) === true,
     limits: reportLimitSpecs,
     persist: recordReportRequest,
   });

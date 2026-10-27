@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { defaultDeps, handleReport } from "../../../src/lib/server/http";
 import { processJobs } from "../../../src/lib/server/jobs";
 import {
@@ -67,13 +67,27 @@ describe("report request", () => {
   });
 
   it("the default dependencies register the e-mail handler only when the report is configured", () => {
-    const ready = { RESEND_API_KEY: "re_x", REPORT_EMAIL_FROM: "a@roottrust.test", REPORT_EMAIL_REPLY_TO: "b@roottrust.test", RESEND_DOMAIN_CONFIRMED: "true", JOBS_TRIGGER_CONFIRMED: "true" };
+    const ready = { RESEND_API_KEY: "re_x", REPORT_EMAIL_FROM: "a@roottrust.test", REPORT_EMAIL_REPLY_TO: "b@roottrust.test", RESEND_DOMAIN_CONFIRMED: "true", JOBS_TRIGGER_CONFIRMED: "true", NEWSLETTER_PILOT_ALLOWLIST: EMAIL };
     expect(Object.keys(defaultDeps(ready).jobHandlers ?? {})).toEqual([JOB_KINDS.reportEmail]);
     expect(Object.keys(defaultDeps({}).jobHandlers ?? {})).toEqual([]);
   });
 });
 
 describe("report e-mail job", () => {
+  it("permanently blocks a queued recipient removed from the allowlist before PDF access or quota reservation", async () => {
+    const env = setup();
+    await request(env.deps);
+    const readPdf = vi.fn(env.report.readPdf!);
+    const report = { ...env.report, allowlist: [], readPdf };
+    const handler = createReportHandler(env.store, report, fixed);
+    await expect(handler(jobs(env.store)[0], { signal: new AbortController().signal })).rejects.toThrow("pilot_recipient_not_allowed");
+    expect(await runner(env, fixed, report)()).toMatchObject({ dead: 1 });
+    expect(readPdf).not.toHaveBeenCalled();
+    expect(env.mailer).not.toHaveBeenCalled();
+    expect(quota(env.store)).toEqual({});
+    expect(deliveries(env.store)[0].sentAt).toBeUndefined();
+  });
+
   it("sends the right PDF per tool with sender, reply-to and a generic body, then never again", async () => {
     const env = setup();
     for (const toolId of TOOL_IDS) await request(env.deps, { email: `${toolId}@example.com`, toolId });
@@ -343,6 +357,7 @@ describe("report availability and retention", () => {
     REPORT_EMAIL_REPLY_TO: "contato@roottrust.test",
     RESEND_DOMAIN_CONFIRMED: "true",
     JOBS_TRIGGER_CONFIRMED: "true",
+    NEWSLETTER_PILOT_ALLOWLIST: EMAIL,
   };
 
   it("opens only with the full pilot, exposing just mode and site key; each missing piece closes it", () => {
@@ -359,6 +374,16 @@ describe("report availability and retention", () => {
   it("the environment can only lower the free-plan ceilings", () => {
     expect(loadReportConfig({ ...READY_ENV, REPORT_EMAIL_DAILY_LIMIT: "10", REPORT_EMAIL_MONTHLY_LIMIT: "99999" })).toMatchObject({ dailyLimit: 10, monthlyLimit: 3000 });
     expect(loadReportConfig({ ...READY_ENV, REPORT_EMAIL_DAILY_LIMIT: "0" })?.dailyLimit).toBe(100);
+  });
+
+  it("requires a valid nonempty newsletter pilot allowlist, normalizes casing and caps it at 100 identities", () => {
+    for (const value of [undefined, "", " , ", "nope", `${EMAIL},nope`]) {
+      expect(loadReportConfig({ ...READY_ENV, NEWSLETTER_PILOT_ALLOWLIST: value }), String(value)).toBeUndefined();
+    }
+    expect(loadReportConfig({ ...READY_ENV, NEWSLETTER_PILOT_ALLOWLIST: " Leitor@Example.COM , Outra@Example.com " })?.allowlist).toEqual([EMAIL, "outra@example.com"]);
+    const identities = Array.from({ length: 101 }, (_, i) => `pilot${i}@example.com`);
+    expect(loadReportConfig({ ...READY_ENV, NEWSLETTER_PILOT_ALLOWLIST: identities.slice(0, 100).join(",") })?.allowlist).toHaveLength(100);
+    expect(loadReportConfig({ ...READY_ENV, NEWSLETTER_PILOT_ALLOWLIST: identities.join(",") })).toBeUndefined();
   });
 
   it("purging an inactive lead removes its deliveries and their jobs", async () => {

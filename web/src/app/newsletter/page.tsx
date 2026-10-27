@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getLatestEdicao } from "@/features/newsletter/current";
 import { LandingPage } from "@/features/newsletter/LandingPage";
 import { latestOrUnavailable } from "@/features/newsletter/source";
-import { resolveFormMode } from "@/lib/forms";
+import { newsletterAvailability } from "@/app/api/newsletter/inscricao/availability";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -13,5 +13,5 @@ export const metadata: Metadata = {
 
 export default async function Page() {
   const { recente, indisponivel } = await latestOrUnavailable(getLatestEdicao);
-  return <LandingPage mode={resolveFormMode(process.env.FORM_MODE)} recente={recente} indisponivel={indisponivel} />;
+  return <LandingPage config={newsletterAvailability()} recente={recente} indisponivel={indisponivel} />;
 }

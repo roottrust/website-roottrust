@@ -11,6 +11,7 @@ const SEND_TIMEOUT_MS = 10_000;
 
 export interface DiagnosticConfig {
   webhookUrl: string;
+  allowlist: readonly string[];
   fetch?: typeof fetch;
 }
 
@@ -30,8 +31,10 @@ export function isDiscordWebhookUrl(value: string | undefined): value is string 
 // (JOBS_TRIGGER_CONFIRMED). This flag is an operator attestation; the scheduler itself is not provisioned by this code.
 export function loadDiagnosticConfig(env: Record<string, string | undefined>): DiagnosticConfig | undefined {
   const url = env.DISCORD_DIAGNOSTIC_WEBHOOK_URL?.trim();
+  const phones = (env.DIAGNOSTIC_PILOT_ALLOWLIST ?? "").split(",").map((item) => item.trim()).filter(Boolean);
+  if (!phones.length || phones.length > 100 || phones.some((phone) => !/^[1-9]{2}9\d{8}$/.test(phone))) return undefined;
   if (env.DIAGNOSTIC_FOLLOWUP_CONFIRMED !== "true" || env.JOBS_TRIGGER_CONFIRMED !== "true" || !isDiscordWebhookUrl(url)) return undefined;
-  return { webhookUrl: url };
+  return { webhookUrl: url, allowlist: [...new Set(phones)] };
 }
 
 // What the page may offer. Only { mode, siteKey } (public) leaves this function; every other check stays server-side.
@@ -83,6 +86,7 @@ export function createDiagnosticHandler(store: Store, config: DiagnosticConfig, 
     const record = await store.transaction((tx) => tx.get<DiagnosticRecord>(COLLECTIONS.diagnostics, requestId));
     if (!record) throw new PermanentFailure("request_not_found");
     if (record.notifiedAt) return;
+    if (!config.allowlist.includes(record.whatsapp)) throw new PermanentFailure("pilot_recipient_not_allowed");
 
     let response: Response;
     try {

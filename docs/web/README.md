@@ -1,6 +1,13 @@
 # Website Root Trust — documentação canônica
 
-Documentação consolidada do produto e do frontend. O plano aprovado e o estado das tarefas estão em [PLAN.md](../../PLAN.md); arquitetura e contratos técnicos estão em [development.md](development.md).
+## Aceite operacional — 19/10/2026
+
+**Piloto restrito concluído e aceito por Renato.** Diagnóstico, quatro relatórios, newsletter agendada com aprovação humana, publicação/envio, confirmação/cancelamento e backup/restauração foram validados. Renato é responsável pela conferência de cotas e pela guarda/descarte de backups, CSVs, mensagens e contatos nos provedores. Procedimento e limitações em [development.md](development.md#responsabilidade-operacional-e-limites-do-aceite). O [plano arquivado](../plans/integrations-pilot-completed.md#encerramento-e-aceite-final--19102026) preserva as evidências. Este estado prevalece sobre propostas e pendências históricas abaixo. Não há autorização de abertura pública nem alteração das allowlists.
+
+
+Documentação consolidada do produto e do frontend. O plano concluído e suas evidências estão no [arquivo de integrações](../plans/integrations-pilot-completed.md); arquitetura e contratos técnicos estão em [development.md](development.md).
+
+**Automação editorial T6.2-R3, 18/10/2026:** Workers/ambiente/Routine configurados; criação, regeneração, recusa e fluxo integral de aprovação → prévia pública → Broadcast → recebimento pelo usuário foram ensaiados. Confirmação do trigger corrigida e validada (D2). [Prompt diário](../../web/ops/newsletter-routine/prompt.md) restaurado e agenda seg–sex08h Brasília confirmados pelo operador; primeira ocorrência automática confirmada em19/10, com aprovação humana, prévia publicada e e-mail recebido. [Guia](../../web/ops/newsletter-routine/README.md) e evidências no PLAN. R3.6/T6.2/T6.3 concluídas para o piloto restrito, com aceite de Renato em19/10/2026.
 
 ## Ordem de leitura
 
@@ -8,7 +15,7 @@ Documentação consolidada do produto e do frontend. O plano aprovado e o estado
 2. [design.md](design.md) — Home aprovada, linguagem visual, movimento e requisitos de acessibilidade.
 3. [tools.md](tools.md) — contrato completo F01–F29, modelos, fórmulas, exemplos e limites.
 4. [newsletter.md](newsletter.md) — decisões N01–N11, páginas, estados e operação pendente.
-5. [development.md](development.md) — stack, arquitetura, formulários demo, fases e critérios de aceite.
+5. [development.md](development.md) — stack, arquitetura, formulários, operação do piloto e critérios de aceite.
 
 O pacote oficial da identidade permanece em [`docs/design`](../design/README.md). Exports do Claude Design ficam em [`references/claude-design`](../../references/claude-design/); auditorias e amostras editoriais completas ficam em [`references/audits`](../../references/audits/) e [`references/editorial`](../../references/editorial/).
 
@@ -20,9 +27,9 @@ Use os rótulos **aprovado**, **proposta**, **demonstração**, **histórico** e
 
 ## Estado técnico
 
-Frontend local implementado e validado em 11/10/2026. A Home nativa recebeu aprovação humana em 10/10; o conjunto recebeu aceite humano final na conversa e o plano foi arquivado em `docs/plans/frontend-corrections-completed.md`. Gates finais atuais (P8.3, retries 0): lint, typecheck, 107 testes unitários em 13 arquivos, build de produção e 284 E2E aprovados, com 6 skips explicitados na [auditoria final](../../references/audits/final-qa.md). LCP mediano de laboratório 2,73–2,87 s (melhoria de 41–43%), CLS 0; a meta orientativa de 2,5 s não foi atingida e o ganho foi mantido como exceção local aprovada (D16), sem ser publicação nem aceite final visual. Não há integração operacional nem autorização de publicação. Os números 101 unit/228 E2E/quatro skips/LCP 4,8 s são histórico.
+O frontend recebeu aceite humano; seus resultados de 11/10/2026 (107 unitários, 284 E2E e 6 skips) são histórico da fase local, assim como o LCP mediano de 2,73–2,87 s. A integração local passou lint, tipos, 495 unitários, build e 290 E2E/6 skips em 13/10/2026. O [plano arquivado](../plans/integrations-pilot-completed.md) registra a integração concluída. Há implementação de piloto em `web/` para Firestore, Resend, Discord, newsletter e relatórios. As contas estão configuradas e os fluxos principais foram ensaiados com identidades de teste; a geração editorial agendada com aprovação humana foi validada em19/10/2026; o piloto restrito recebeu aceite final de Renato em19/10/2026. Em 17/10/2026, o isolamento por identidade passou lint, tipos, 517 unitários, build e 290 E2E/6 skips. Deploy autorizado em `https://website-roottrust.vercel.app` agora usa piloto real restrito: diagnóstico aceita somente o WhatsApp oficial de teste, relatórios/newsletter somente os três e-mails permitidos e Turnstile continua obrigatório. Agendador ativo e duas chamadas HMAC/Firestore200 comprovadas; diagnóstico, quatro PDFs, revisão/publicação/envios da newsletter e confirmação/cancelamentos receberam verificação humana e de estados dos provedores. A correção do ACK diferido passou lint, tipos, 522 unitários, build e 290 E2E/6 skips. Backup/restauração reais de72documentos/16coleções verificados em19/10; Renato assumiu conferência de cotas e cópias externas; medição ampliada de retenção adiada por decisão expressa. Detalhes no plano arquivado. Não há autorização de publicação aberta.
 
-As seis páginas desta documentação são o contexto canônico. Resultados detalhados, capturas e limites estão na auditoria final; tarefas e decisões continuam exclusivamente no PLAN.
+As seis páginas desta documentação são o contexto canônico. Resultados detalhados, capturas e limites estão na auditoria final; decisões e evidências desta entrega permanecem no plano arquivado.
 
 ### Rechecagem documental final — 11/10/2026
 

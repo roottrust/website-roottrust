@@ -33,7 +33,7 @@ test("landing: SSR content, single email field and shared opening with links", a
   await expect(form.locator("input")).toHaveCount(1);
   await expect(form.getByLabel("Seu e-mail", { exact: true })).toBeVisible();
   await expect(form.getByRole("button", { name: "Receber edições completas" })).toBeEnabled();
-  await expect(form).toContainText("Confirme seu endereço para receber a edição mais recente e os próximos envios em dias úteis. Você pode cancelar os próximos envios.");
+  await expect(form).toContainText("Se ainda não assina, confirme seu endereço pelo link enviado por e-mail. Depois você recebe a edição mais recente e os próximos envios em dias úteis. Você pode cancelar os próximos envios.");
 
   const card = page.locator("article").first();
   await expect(card).toContainText(recente.titulo);
@@ -145,7 +145,7 @@ for (const edicao of EDICOES_PUBLICAS) {
     await expect(page.getByText(`Edição solicitada: ${edicao.titulo}`)).toBeVisible();
     await expect(page.getByRole("heading", { level: 2, name: "Receba esta edição completa." })).toBeVisible();
     await expect(page.getByText("Já assina? Você também pode solicitar esta edição aqui.")).toBeVisible();
-    await expect(page.getByText("O envio ainda não está disponível nesta versão.")).toBeVisible();
+    await expect(page.getByText("Demonstração local — nenhum dado é enviado ou guardado.")).toBeVisible();
 
     const form = page.getByRole("form", { name: "Assinar newsletter" });
     const email = form.getByLabel("Seu e-mail", { exact: true });

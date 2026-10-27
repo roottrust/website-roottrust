@@ -4,6 +4,8 @@ import { DEFAULT_LIMITS, type Limits } from "../../../src/lib/server/limits";
 import type { DiagnosticConfig } from "../../../src/lib/server/diagnostic";
 import type { DefenseConfig } from "../../../src/lib/server/defense";
 import type { Mailer, ReportConfig } from "../../../src/lib/server/report";
+import type { NewsletterEmailConfig, NewsletterMailer } from "../../../src/lib/server/newsletter-email";
+import type { BroadcastConfig } from "../../../src/lib/server/newsletter-broadcast";
 import { createMemoryStore } from "../../../src/lib/server/store";
 
 export const SECRET = "s".repeat(32);
@@ -56,7 +58,7 @@ export function setup(options: { mode?: Deps["mode"]; idSecret?: string | undefi
     turnstileTimeoutMs: 50,
   };
   const discord = vi.fn<typeof fetch>(async () => new Response(null, { status: 204 }));
-  const diagnostic: DiagnosticConfig = { webhookUrl: WEBHOOK_URL, fetch: discord };
+  const diagnostic: DiagnosticConfig = { webhookUrl: WEBHOOK_URL, allowlist: ["11940084692"], fetch: discord };
   const mailer = vi.fn<Mailer>(async () => ({ ok: true, id: "re_test" }));
   const report: ReportConfig = {
     apiKey: "re_test_key",
@@ -64,11 +66,24 @@ export function setup(options: { mode?: Deps["mode"]; idSecret?: string | undefi
     replyTo: "contato@roottrust.test",
     dailyLimit: 100,
     monthlyLimit: 3000,
+    allowlist: [
+      "leitor@example.com", "pessoa@example.com", "outra@example.com", "a@example.com", "b@example.com",
+      "rosi@example.com", "shadow-ai@example.com", "divida-tecnica@example.com", "migracao-para-nuvem@example.com",
+      "p0@example.com", "p1@example.com", "p2@example.com",
+      "c0@example.com", "c1@example.com", "c2@example.com", "c3@example.com", "c4@example.com", "c5@example.com",
+    ],
     mailer,
     readPdf: async (toolId) => Buffer.from(`%PDF-1.4 ${toolId} `.padEnd(2048, "x")),
   };
-  const deps: Deps = { mode, idSecret, getStore, now: () => clock.now, diagnostic, report, internalKeys: { jobs: ["j".repeat(32)] }, ...(withDefense ? { defense } : {}) };
-  return { store, getStore, deps, clock, siteverify, defense, discord, mailer, report };
+  const newsletterMailer = vi.fn<NewsletterMailer>(async () => ({ ok: true as const, id: "re_newsletter_test" }));
+  const newsletterEmail: NewsletterEmailConfig = {
+    apiKey: "re_test_key", from: "Root Trust <newsletter@roottrust.test>", replyTo: "contato@roottrust.test",
+    siteOrigin: ORIGIN, allowlist: ["leitor@example.com", "pessoa@example.com", "a@example.com", "outra@example.com"],
+    dailyLimit: 100, monthlyLimit: 3000, mailer: newsletterMailer,
+  };
+  const broadcast: BroadcastConfig = { apiKey: "re_test_key", from: newsletterEmail.from, replyTo: newsletterEmail.replyTo, segmentId: "seg_pilot_test", allowlist: newsletterEmail.allowlist };
+  const deps: Deps = { mode, idSecret, getStore, now: () => clock.now, diagnostic, report, newsletterEmail, broadcast, resendWebhookReady: true, internalKeys: { jobs: ["j".repeat(32)] }, ...(withDefense ? { defense } : {}) };
+  return { store, getStore, deps, clock, siteverify, defense, discord, mailer, report, newsletterMailer, newsletterEmail };
 }
 
 let counter = 0;

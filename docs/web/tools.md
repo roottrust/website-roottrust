@@ -1,6 +1,13 @@
 # Contrato das ferramentas Root Trust
 
+## Aceite operacional — 19/10/2026
+
+**Piloto restrito concluído e aceito por Renato.** Diagnóstico, quatro relatórios, newsletter agendada com aprovação humana, publicação/envio, confirmação/cancelamento e backup/restauração foram validados. Renato é responsável pela conferência de cotas e pela guarda/descarte de backups, CSVs, mensagens e contatos nos provedores. Procedimento e limitações em [development.md](development.md#responsabilidade-operacional-e-limites-do-aceite). O [plano arquivado](../plans/integrations-pilot-completed.md#encerramento-e-aceite-final--19102026) preserva as evidências. Este estado prevalece sobre propostas e pendências históricas abaixo. Não há autorização de abertura pública nem alteração das allowlists.
+
+
 **Atualizado:** 11/10/2026. F01–F29 definem o escopo aprovado das quatro ferramentas. Seus exports aprovados estão em `references/claude-design/` e foram avaliados na auditoria de 09/10; os modelos locais foram implementados, testados e revisados; a publicação futura exige nova revisão de fontes, patches e operação. Propostas neste contrato devem ser comparadas com o export aprovado. Entrada: [README](README.md); newsletter: [newsletter.md](newsletter.md).
+
+**Estado do relatório, 17/10/2026:** os quatro PDFs padrão foram recebidos e validados pelo usuário no piloto restrito; os quatro jobs concluíram na primeira tentativa. O formulário envia apenas e-mail, ID da ferramenta e consentimento comercial opcional; respostas/resultados continuam no navegador. Isso não inscreve na newsletter. Notificação de relatórios no Discord foi solicitada como alteração futura no PLAN, sem implementação. As referências abaixo ao “protótipo sem envio” descrevem a fase original; aceite geral continua em T6.2/T6.3.
 
 ## Resumo para começar
 
@@ -10,7 +17,7 @@ Este documento é o contrato de escopo, modelos, limites, estados e exemplos rep
 
 ## Implementação e limites verificados
 
-Modelos TS puros cobertos por 69 testes de modelos, dentro dos 107 unitários totais atuais (101 anteriores + 6 de cobertura de fontes). Cálculo somente no navegador; edição invalida resultado e respostas não são associadas ao relatório. A aritmética usa IEEE 754, com tratamento de cancelamento limitado a quatro EPSILON; não é contabilidade decimal exata nem garantia de precisão universal. Fixtures incluem valores subcentavo e diferenças de 1 em 10¹⁵.
+Modelos TS puros cobertos por 69 testes de modelos na fase original do frontend (107 unitários totais então; números históricos). Cálculo somente no navegador; edição invalida resultado e respostas não são associadas ao relatório. A aritmética usa IEEE 754, com tratamento de cancelamento limitado a quatro EPSILON; não é contabilidade decimal exata nem garantia de precisão universal. Fixtures incluem valores subcentavo e diferenças de 1 em 10¹⁵.
 
 Adaptações funcionais preservadas: seletor de cenário, campos desconhecidos/personalizados e ajudas explícitas; rótulos com “—” antes do cálculo, sem valores fictícios; Shadow AI sem score. Método em acordeão, resultado sem fixação e exemplo fictício abaixo do resultado podem alterar altura/posição em relação ao export. Objetos 3D são decorativos. [QA e limitações](../../references/audits/final-qa.md).
 

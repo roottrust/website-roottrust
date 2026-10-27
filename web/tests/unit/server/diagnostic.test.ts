@@ -20,7 +20,7 @@ const respond = (status: number, init: ResponseInit = {}, body?: unknown) =>
   vi.fn<typeof fetch>(async () => new Response(body === undefined ? null : JSON.stringify(body), { status, ...init }));
 
 function runner(store: Env["store"], send: typeof fetch, now = NOW) {
-  const handler = createDiagnosticHandler(store, { webhookUrl: WEBHOOK_URL, fetch: send }, () => now);
+  const handler = createDiagnosticHandler(store, { webhookUrl: WEBHOOK_URL, allowlist: ["11940084692"], fetch: send }, () => now);
   return () => processJobs(store, { [JOB_KINDS.diagnosticDiscord]: handler }, { now: () => now, limit: 5, leaseMs: 60_000, handlerTimeoutMs: 5_000 });
 }
 
@@ -84,8 +84,8 @@ describe("fail closed", () => {
   });
 
   it("loadDiagnosticConfig needs both a real Discord webhook URL and the explicit confirmation", () => {
-    const env = { DISCORD_DIAGNOSTIC_WEBHOOK_URL: WEBHOOK_URL, DIAGNOSTIC_FOLLOWUP_CONFIRMED: "true", JOBS_TRIGGER_CONFIRMED: "true" };
-    expect(loadDiagnosticConfig(env)).toEqual({ webhookUrl: WEBHOOK_URL });
+    const env = { DISCORD_DIAGNOSTIC_WEBHOOK_URL: WEBHOOK_URL, DIAGNOSTIC_FOLLOWUP_CONFIRMED: "true", JOBS_TRIGGER_CONFIRMED: "true", DIAGNOSTIC_PILOT_ALLOWLIST: "11940084692" };
+    expect(loadDiagnosticConfig(env)).toEqual({ webhookUrl: WEBHOOK_URL, allowlist: ["11940084692"] });
     expect(loadDiagnosticConfig({ ...env, DIAGNOSTIC_FOLLOWUP_CONFIRMED: "yes" })).toBeUndefined();
     expect(loadDiagnosticConfig({ ...env, JOBS_TRIGGER_CONFIRMED: undefined })).toBeUndefined();
     expect(loadDiagnosticConfig({ ...env, JOBS_TRIGGER_CONFIRMED: "1" })).toBeUndefined();
@@ -98,8 +98,19 @@ describe("fail closed", () => {
   it("defaultDeps registers the job handler only when the destination is configured", () => {
     expect(defaultDeps({}).jobHandlers).toEqual({});
     expect(defaultDeps({}).mode).toBe("off");
-    const configured = defaultDeps({ DISCORD_DIAGNOSTIC_WEBHOOK_URL: WEBHOOK_URL, DIAGNOSTIC_FOLLOWUP_CONFIRMED: "true", JOBS_TRIGGER_CONFIRMED: "true" });
+    const configured = defaultDeps({ DISCORD_DIAGNOSTIC_WEBHOOK_URL: WEBHOOK_URL, DIAGNOSTIC_FOLLOWUP_CONFIRMED: "true", JOBS_TRIGGER_CONFIRMED: "true", DIAGNOSTIC_PILOT_ALLOWLIST: "11940084692" });
     expect(Object.keys(configured.jobHandlers ?? {})).toEqual([JOB_KINDS.diagnosticDiscord]);
+  });
+
+  it("requires a nonempty canonical mobile allowlist of at most 100 identities", () => {
+    const env = { DISCORD_DIAGNOSTIC_WEBHOOK_URL: WEBHOOK_URL, DIAGNOSTIC_FOLLOWUP_CONFIRMED: "true", JOBS_TRIGGER_CONFIRMED: "true" };
+    for (const value of [undefined, "", " , ", "(11) 94008-4692", "+5511940084692", "01940084692", "11840084692", "11940084692,nope"]) {
+      expect(loadDiagnosticConfig({ ...env, DIAGNOSTIC_PILOT_ALLOWLIST: value }), String(value)).toBeUndefined();
+    }
+    expect(loadDiagnosticConfig({ ...env, DIAGNOSTIC_PILOT_ALLOWLIST: " 11940084692 , 21940084692 " })?.allowlist).toEqual(["11940084692", "21940084692"]);
+    const identities = Array.from({ length: 101 }, (_, i) => `119${String(i).padStart(8, "0")}`);
+    expect(loadDiagnosticConfig({ ...env, DIAGNOSTIC_PILOT_ALLOWLIST: identities.slice(0, 100).join(",") })?.allowlist).toHaveLength(100);
+    expect(loadDiagnosticConfig({ ...env, DIAGNOSTIC_PILOT_ALLOWLIST: identities.join(",") })).toBeUndefined();
   });
 });
 
@@ -114,6 +125,7 @@ const READY_ENV = {
   INTERNAL_KEY_JOBS: "j".repeat(32),
   DISCORD_DIAGNOSTIC_WEBHOOK_URL: WEBHOOK_URL,
   DIAGNOSTIC_FOLLOWUP_CONFIRMED: "true",
+  DIAGNOSTIC_PILOT_ALLOWLIST: "11940084692",
   JOBS_TRIGGER_CONFIRMED: "true",
 };
 
@@ -145,6 +157,17 @@ describe("contact availability (page gate)", () => {
 });
 
 describe("discord job", () => {
+  it("permanently blocks a queued recipient removed from the allowlist before dispatch", async () => {
+    const { deps, store } = setup();
+    const id = await accept(deps);
+    const send = respond(204);
+    const handler = createDiagnosticHandler(store, { webhookUrl: WEBHOOK_URL, allowlist: [], fetch: send }, () => NOW);
+    await expect(handler(jobs(store)[0], { signal: new AbortController().signal })).rejects.toThrow("pilot_recipient_not_allowed");
+    expect(await processJobs(store, { [JOB_KINDS.diagnosticDiscord]: handler }, { now: () => NOW, limit: 1, leaseMs: 60_000, handlerTimeoutMs: 5_000 })).toMatchObject({ dead: 1 });
+    expect(send).not.toHaveBeenCalled();
+    expect((store.dump("diagnostics")[id] as DiagnosticRecord).notifiedAt).toBeUndefined();
+  });
+
   it("sends a private message with the visible ID, empty allowed_mentions and marks the request notified", async () => {
     const { deps, store } = setup();
     const id = await accept(deps);
@@ -216,7 +239,7 @@ describe("discord job", () => {
       (_url, init) =>
         new Promise<Response>((_, reject) => init?.signal?.addEventListener("abort", () => reject(new DOMException("aborted", "AbortError")))),
     );
-    const handler = createDiagnosticHandler(store, { webhookUrl: WEBHOOK_URL, fetch: hung }, () => NOW);
+    const handler = createDiagnosticHandler(store, { webhookUrl: WEBHOOK_URL, allowlist: ["11940084692"], fetch: hung }, () => NOW);
     const summary = await processJobs(store, { [JOB_KINDS.diagnosticDiscord]: handler }, { now: () => NOW, limit: 1, leaseMs: 5_000, handlerTimeoutMs: 20 });
     expect(summary).toMatchObject({ claimed: 1, retried: 1 });
   });

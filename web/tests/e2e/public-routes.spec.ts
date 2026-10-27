@@ -102,13 +102,13 @@ test("404 keeps essential content without JavaScript", async ({ browser }) => {
 test("privacy: provisional and truthful, no JS needed, no overflow at 320px", async ({ page, browser, request }) => {
   const problems = watch(page);
   const html = await (await request.get("/privacidade")).text();
-  for (const text of ["Privacidade e uso de dados.", "Conteúdo de privacidade em preparação para revisão.", "Nenhum dado é enviado, recebido, armazenado", "memória do navegador", "contato@roottrust.com.br"]) expect(html).toContain(text);
+  for (const text of ["Privacidade e uso de dados.", "Informações provisórias para o piloto restrito.", "pedidos demonstrativos não enviam nem guardam dados", "memória do navegador", "contato@roottrust.com.br"]) expect(html).toContain(text);
 
   await page.setViewportSize({ width: 320, height: 700 });
   await page.goto("/privacidade");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Privacidade e uso de dados.");
   expect(await page.locator("main").innerText()).not.toMatch(/CNPJ|encarregado|DPO|LGPD|banner de cookies/i);
-  await expect(page.getByRole("note")).toContainText("Esta página é provisória");
+  await expect(page.getByRole("note")).toContainText("Informações provisórias para o piloto restrito.");
   await expect(page.getByRole("link", { name: "contato@roottrust.com.br" })).toHaveAttribute("href", "mailto:contato@roottrust.com.br");
   await expect(page.getByRole("link", { name: "11 94008-4692" })).toHaveAttribute("href", "tel:+5511940084692");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

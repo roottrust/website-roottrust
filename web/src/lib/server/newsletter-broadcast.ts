@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { opaqueId } from "./ids";
 import { DRAFT_ID } from "./newsletter-protocol";
 import { PermanentFailure, RetryLater, type JobHandler } from "./jobs";
 import { logEvent, safeErrorCode } from "./safe";
@@ -10,7 +11,7 @@ import {
   type BroadcastBasis,
 } from "./repository";
 import type { Store } from "./store";
-import { type EditionBroadcastRecord, type EditionRevisionRecord } from "./types";
+import { COLLECTIONS, type EditionBroadcastRecord, type EditionRevisionRecord, type SubscriptionRecord } from "./types";
 import { checkEmail, checkHttpsUrl } from "./validation";
 
 // Resend marketing Broadcasts to a dedicated PILOT segment. Broadcasts have no idempotency key, so nothing here may repeat a
@@ -121,7 +122,7 @@ const paragraphs = (corpo: string): string[] =>
 // Everything editorial is escaped and its braces defused; only `[text](https://...)` becomes a link; the Resend unsubscribe
 // placeholder is the only template syntax, and it is a constant of this file, never taken from the edition. The reply-to is
 // set on the Broadcast.
-export function buildBroadcastMessage(config: Pick<BroadcastConfig, "from" | "replyTo" | "segmentId">, revision: EditionRevisionRecord, name: string): BroadcastMessage {
+export function buildBroadcastMessage(config: Pick<BroadcastConfig, "from" | "replyTo" | "segmentId">, revision: EditionRevisionRecord, name: string, unsubscribeHref = UNSUBSCRIBE_PLACEHOLDER): BroadcastMessage {
   const blocks = paragraphs(revision.corpo);
   const htmlBlocks = blocks.map(
     (block) =>
@@ -140,11 +141,11 @@ export function buildBroadcastMessage(config: Pick<BroadcastConfig, "from" | "re
     `<h1>${escapeHtml(revision.titulo)}</h1>${htmlBlocks.join("")}` +
     (sources.length ? `<h2>Fontes</h2><ul>${sources.map((source) => `<li><a href="${escapeHtml(source.href)}">${escapeHtml(source.titulo)}</a></li>`).join("")}</ul>` : "") +
     `<hr><p>Root Trust. Responda a este e-mail para falar com a equipe.</p>` +
-    `<p><a href="${UNSUBSCRIBE_PLACEHOLDER}">Cancelar o recebimento desta newsletter</a></p></body></html>`;
+    `<p><a href="${unsubscribeHref === UNSUBSCRIBE_PLACEHOLDER ? unsubscribeHref : escapeHtml(unsubscribeHref)}">Cancelar o recebimento desta newsletter</a></p></body></html>`;
   const text =
     [subject, ...textBlocks].join("\n\n") +
     (sources.length ? `\n\nFontes:\n${sources.map((source) => `- ${defuseText(source.titulo)}: ${source.href}`).join("\n")}` : "") +
-    `\n\n--\nRoot Trust. Responda a este e-mail para falar com a equipe.\nCancelar o recebimento desta newsletter: ${UNSUBSCRIBE_PLACEHOLDER}`;
+    `\n\n--\nRoot Trust. Responda a este e-mail para falar com a equipe.\nCancelar o recebimento desta newsletter: ${unsubscribeHref}`;
   return { name, from: config.from, replyTo: config.replyTo, subject, html, text, segmentId: config.segmentId };
 }
 
@@ -254,7 +255,7 @@ export function createPublishHandler(store: Store, idSecret: string, now: () => 
 
 type Safety = "ok" | "unavailable" | "unsafe";
 
-export function createBroadcastHandler(store: Store, config: BroadcastConfig, now: () => Date): JobHandler {
+export function createBroadcastHandler(store: Store, config: BroadcastConfig, now: () => Date, idSecret?: string): JobHandler {
   const provider = config.provider ?? resendProvider(config.apiKey);
   const allowed = new Set(config.allowlist);
 
@@ -270,6 +271,16 @@ export function createBroadcastHandler(store: Store, config: BroadcastConfig, no
     if (!complete || !emails.length || emails.some((email) => !allowed.has(email))) {
       logEvent("error", "newsletter_segment_unsafe", { complete, empty: emails.length === 0 });
       return "unsafe";
+    }
+    if (idSecret) {
+      const active = await store.transaction(async (tx) => Promise.all(emails.map(async (email) => {
+        const record = await tx.get<SubscriptionRecord>(COLLECTIONS.subscriptions, opaqueId(idSecret, "sb", `email:${email}`));
+        return record?.status === "confirmed";
+      })));
+      if (active.some((value) => !value)) {
+        logEvent("error", "newsletter_segment_has_inactive_contact", {});
+        return "unsafe";
+      }
     }
     return "ok";
   };

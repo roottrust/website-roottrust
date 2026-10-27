@@ -4,6 +4,8 @@ export const COLLECTIONS = {
   leadEvents: "lead_events",
   diagnostics: "diagnostics",
   subscriptions: "subscriptions",
+  subscriptionConfirmations: "subscription_confirmations",
+  newsletterDeliveries: "newsletter_deliveries",
   rateLimits: "rate_limits",
   replays: "replays",
   jobs: "jobs",
@@ -55,8 +57,47 @@ export interface SubscriptionRecord {
   email: string;
   status: SubscriptionStatus;
   requestedEditionSlug?: string;
+  // The only confirmation token that may still confirm this subscription: a new request replaces it and a cancellation
+  // (T5.2) must clear it, so an older e-mailed link can never reactivate the address.
+  pendingConfirmationId?: string;
+  confirmedAt?: string;
+  canceledAt?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+// One record per confirmation e-mail. The token itself is never stored: it is `${id}.${HMAC(id)}` (see ids.ts), derivable
+// only with the server secret, so the e-mail job carries just this ID. `editionSlug` is the preview the reader chose (absent:
+// general request, resolved to the latest public edition at confirmation time). `consumedAt` stays until `expiresAt` so a
+// replay is recognized instead of looking like an unknown token. Holds no e-mail address.
+export interface SubscriptionConfirmationRecord {
+  id: string;
+  subscriptionId: string;
+  editionSlug?: string;
+  createdAt: string;
+  expiresAt: string;
+  consumedAt?: string;
+  attemptStartedAt?: string;
+  reservation?: { day: string; month: string };
+  sentAt?: string;
+  resendId?: string;
+  deliveryState?: "delivered" | "failed";
+  deliveryStateAt?: string;
+  reconcile?: boolean;
+}
+
+// Keyed by the opaque delivery job ID; no address or editorial body is stored here.
+export interface NewsletterDeliveryRecord {
+  id: string;
+  subscriptionId: string;
+  editionSlug: string;
+  attemptStartedAt?: string;
+  reservation?: { day: string; month: string };
+  sentAt?: string;
+  resendId?: string;
+  deliveryState?: "delivered" | "failed";
+  deliveryStateAt?: string;
+  reconcile?: boolean;
 }
 
 // Counter documents carry only an HMAC'd identity in the ID; `expiresAt` (ISO) lets the purge job find them.
@@ -85,6 +126,7 @@ export interface JobRecord {
   attempts: number;
   maxAttempts: number;
   dueAt?: string;
+  priorityDueAt?: string;
   leaseToken?: string;
   lastError?: string;
   createdAt: string;
@@ -97,6 +139,9 @@ export const JOB_KINDS = {
   newsletterDiscord: "newsletter.discord",
   newsletterPublish: "newsletter.publish",
   newsletterBroadcast: "newsletter.broadcast",
+  newsletterConfirmation: "newsletter.confirmation",
+  newsletterDelivery: "newsletter.delivery",
+  newsletterContactSync: "newsletter.contact-sync",
 } as const;
 
 // One record per diagnostic request, keyed by its team-visible ID, so repeated requests from the same WhatsApp keep

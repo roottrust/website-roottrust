@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getEdicao } from "@/features/newsletter/current";
 import { PreviewPage } from "@/features/newsletter/PreviewPage";
-import { resolveFormMode } from "@/lib/forms";
+import { newsletterAvailability } from "@/app/api/newsletter/inscricao/availability";
 
 export const dynamic = "force-dynamic";
 
@@ -28,5 +28,5 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function Page({ params }: Props) {
   const edicao = await getEdicao((await params).slug);
   if (!edicao) notFound();
-  return <PreviewPage edicao={edicao} mode={resolveFormMode(process.env.FORM_MODE)} />;
+  return <PreviewPage edicao={edicao} config={newsletterAvailability()} />;
 }

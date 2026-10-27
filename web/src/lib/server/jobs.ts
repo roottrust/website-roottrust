@@ -1,8 +1,9 @@
 import { randomUUID } from "node:crypto";
 import { opaqueId } from "./ids";
+import { leadRetentionCutoff } from "./retention";
 import { logEvent, safeErrorCode } from "./safe";
 import type { Store, Tx } from "./store";
-import { COLLECTIONS, type EmailQuotaRecord, type JobRecord, type RateLimitRecord, type ReplayRecord } from "./types";
+import { COLLECTIONS, JOB_KINDS, type EmailQuotaRecord, type JobRecord, type NewsletterDeliveryRecord, type RateLimitRecord, type ReplayRecord, type SubscriptionConfirmationRecord, type SubscriptionRecord } from "./types";
 
 const BACKOFF_BASE_MS = 30_000;
 const BACKOFF_CAP_MS = 60 * 60_000;
@@ -35,6 +36,7 @@ export type JobHandlers = Record<string, JobHandler>;
 function omitLease(job: JobRecord): Omit<JobRecord, "dueAt" | "leaseToken"> {
   const rest: Partial<JobRecord> = { ...job };
   delete rest.dueAt;
+  delete rest.priorityDueAt;
   delete rest.leaseToken;
   return rest as Omit<JobRecord, "dueAt" | "leaseToken">;
 }
@@ -59,6 +61,7 @@ export async function enqueueJob(
     attempts: 0,
     maxAttempts: job.maxAttempts ?? DEFAULT_MAX_ATTEMPTS,
     dueAt: (job.runAt ?? now).toISOString(),
+    ...(job.kind === JOB_KINDS.newsletterConfirmation ? { priorityDueAt: (job.runAt ?? now).toISOString() } : {}),
     createdAt: at,
     updatedAt: at,
   };
@@ -77,7 +80,9 @@ export async function claimJobs(
   if (!kinds.length || limit < 1) return [];
   const at = now.toISOString();
   const claimed: JobRecord[] = [];
-  for (const id of await store.query(COLLECTIONS.jobs, "dueAt", at, limit * 3)) {
+  const prioritized = await store.query(COLLECTIONS.jobs, "priorityDueAt", at, limit * 3);
+  const ordinary = await store.query(COLLECTIONS.jobs, "dueAt", at, limit * 3);
+  for (const id of new Set([...prioritized, ...ordinary])) {
     if (claimed.length >= limit) break;
     const job = await store.transaction(async (tx) => {
       const current = await tx.get<JobRecord>(COLLECTIONS.jobs, id);
@@ -93,6 +98,7 @@ export async function claimJobs(
         attempts: current.attempts + 1,
         leaseToken: randomUUID(),
         dueAt: new Date(now.getTime() + leaseMs).toISOString(),
+        ...(current.priorityDueAt ? { priorityDueAt: new Date(now.getTime() + leaseMs).toISOString() } : {}),
         updatedAt: at,
       };
       tx.set(COLLECTIONS.jobs, id, leased);
@@ -131,7 +137,8 @@ export const failJob = (store: Store, job: JobRecord, code: string, now: Date, o
       if (options.deferral && !options.permanent) {
         // The handler did nothing (e.g. quota exhausted): give the attempt back and wait the exact time.
         const wait = Math.max(options.retryAfterMs ?? 0, BACKOFF_BASE_MS);
-        return { ...omitLease(current), status: "pending", attempts: Math.max(current.attempts - 1, 0), lastError: code, dueAt: new Date(now.getTime() + wait).toISOString() };
+        const dueAt = new Date(now.getTime() + wait).toISOString();
+        return { ...omitLease(current), status: "pending", attempts: Math.max(current.attempts - 1, 0), lastError: code, dueAt, ...(current.priorityDueAt ? { priorityDueAt: dueAt } : {}) };
       }
       if (options.permanent || current.attempts >= current.maxAttempts) {
         return { ...omitLease(current), status: "dead", lastError: code };
@@ -139,7 +146,8 @@ export const failJob = (store: Store, job: JobRecord, code: string, now: Date, o
       const backoff = Math.min(BACKOFF_BASE_MS * 2 ** (current.attempts - 1), BACKOFF_CAP_MS);
       const requested = options.retryAfterMs;
       const wait = Math.max(backoff, Number.isFinite(requested) && requested !== undefined && requested > 0 ? Math.min(requested, BACKOFF_CAP_MS) : 0);
-      return { ...omitLease(current), status: "pending", lastError: code, dueAt: new Date(now.getTime() + wait).toISOString() };
+      const dueAt = new Date(now.getTime() + wait).toISOString();
+      return { ...omitLease(current), status: "pending", lastError: code, dueAt, ...(current.priorityDueAt ? { priorityDueAt: dueAt } : {}) };
     },
     now,
   );
@@ -251,6 +259,37 @@ export async function purgeExpired(store: Store, now: Date, limit: number, shoul
         return 1;
       });
     }
+  }
+  for (const id of await store.query(COLLECTIONS.subscriptionConfirmations, "expiresAt", at, limit)) {
+    if (shouldStop()) return purged;
+    purged += await store.transaction(async (tx) => {
+      const confirmation = await tx.get<SubscriptionConfirmationRecord>(COLLECTIONS.subscriptionConfirmations, id);
+      if (!confirmation || confirmation.expiresAt > at) return 0;
+      const subscription = await tx.get<SubscriptionRecord>(COLLECTIONS.subscriptions, confirmation.subscriptionId);
+      if (subscription?.pendingConfirmationId === id) {
+        if (subscription.status === "pending") tx.delete(COLLECTIONS.subscriptions, subscription.id);
+        else {
+          const updated = { ...subscription };
+          delete updated.pendingConfirmationId;
+          tx.set(COLLECTIONS.subscriptions, updated.id, updated);
+        }
+      }
+      tx.delete(COLLECTIONS.subscriptionConfirmations, id);
+      return 1;
+    });
+  }
+  const cutoff = leadRetentionCutoff(now).toISOString();
+  for (const id of await store.query(COLLECTIONS.subscriptions, "canceledAt", cutoff, limit)) {
+    if (shouldStop()) return purged;
+    const children = await store.queryEquals(COLLECTIONS.newsletterDeliveries, "subscriptionId", id, limit);
+    purged += await store.transaction(async (tx) => {
+      const subscription = await tx.get<SubscriptionRecord>(COLLECTIONS.subscriptions, id);
+      if (!subscription || subscription.status !== "cancelled" || !subscription.canceledAt || subscription.canceledAt > cutoff || subscription.pendingConfirmationId) return 0;
+      const records = await Promise.all(children.map((child) => tx.get<NewsletterDeliveryRecord>(COLLECTIONS.newsletterDeliveries, child)));
+      records.forEach((record, index) => { if (record?.subscriptionId === id) tx.delete(COLLECTIONS.newsletterDeliveries, children[index]); });
+      if (children.length < limit) tx.delete(COLLECTIONS.subscriptions, id);
+      return records.filter((record) => record?.subscriptionId === id).length + (children.length < limit ? 1 : 0);
+    });
   }
   return purged;
 }

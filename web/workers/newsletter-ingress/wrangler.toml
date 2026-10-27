@@ -1,0 +1,11 @@
+name = "roottrust-newsletter-ingress"
+account_id = "870a01477969e30a0c3fd311c9a305c6"
+main = "index.ts"
+compatibility_date = "2026-10-01"
+workers_dev = true
+preview_urls = false
+
+# Secrets belong in the provider vault, never here:
+# NEWSLETTER_INGRESS_TOKEN (new, exclusive), INTERNAL_KEY_DRAFT (current API key only).
+[vars]
+SITE_ORIGIN = "https://website-roottrust.vercel.app"

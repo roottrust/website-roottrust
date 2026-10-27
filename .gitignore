@@ -14,3 +14,6 @@ web/ops-data/
 
 # Referências locais, preservadas fora do versionamento
 /references/
+
+# Cache local dos Workers Cloudflare
+**/.wrangler/

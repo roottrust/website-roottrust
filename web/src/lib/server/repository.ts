@@ -1,11 +1,11 @@
 import { randomInt, randomUUID } from "node:crypto";
-import { opaqueId } from "./ids";
+import { newConfirmationId, opaqueId, verifyConfirmationToken } from "./ids";
 import { MAX_REGENERATIONS_PER_DAY, type DecisionAction, type DecisionResult } from "./newsletter-protocol";
 import { checkEmail, extractOpening, type EditionInput } from "./validation";
 import { enqueueJob } from "./jobs";
 import type { Denied, Gate } from "./limits";
 import type { Store, Tx } from "./store";
-import { COLLECTIONS, JOB_KINDS, type DiagnosticRecord, type EditionBroadcastRecord, type EditionDraftRecord, type EditionPublicRecord, type EditionRevisionRecord, type JobRecord, type LeadEventRecord, type LeadRecord, type ReplayRecord, type ReportDeliveryRecord, type SlugReservationRecord, type SubscriptionRecord, type SubscriptionStatus, type ToolId } from "./types";
+import { COLLECTIONS, JOB_KINDS, type DiagnosticRecord, type EditionBroadcastRecord, type EditionDraftRecord, type EditionPublicRecord, type EditionRevisionRecord, type JobRecord, type LeadEventRecord, type LeadRecord, type ReplayRecord, type ReportDeliveryRecord, type SlugReservationRecord, type SubscriptionConfirmationRecord, type SubscriptionRecord, type SubscriptionStatus, type ToolId } from "./types";
 
 const REPORT_MAX_ATTEMPTS = 8;
 
@@ -156,6 +156,146 @@ export async function transitionSubscription(
     if (current.status !== from) return "conflict";
     tx.set(COLLECTIONS.subscriptions, id, { ...current, status: to, updatedAt: now.toISOString() });
     return "ok";
+  });
+}
+
+export const CONFIRMATION_TTL_MS = 24 * 60 * 60 * 1000;
+
+export type SubscriptionRequestOutcome =
+  | { ok: true; action: "confirmation_requested"; confirmationId: string }
+  | { ok: true; action: "delivery_queued"; editionSlug: string }
+  | { ok: true; action: "none" };
+
+// Same ordering as the site (`data` DESC). Not transactional: callers re-read the slug inside their transaction.
+async function latestPublicSlug(store: Store): Promise<string | undefined> {
+  const [latest] = await store.latest<EditionPublicRecord>(COLLECTIONS.editionsPublic, "data", 1);
+  return latest?.id;
+}
+
+// One delivery job per subscription + edition + UTC day (same idempotency window as report e-mails).
+function enqueueDelivery(tx: Tx, secret: string, subscriptionId: string, editionSlug: string, now: Date): Promise<string> {
+  return enqueueJob(
+    tx,
+    secret,
+    { kind: JOB_KINDS.newsletterDelivery, key: `${subscriptionId}:${editionSlug}:${now.toISOString().slice(0, 10)}`, payload: { subscriptionId, editionSlug }, maxAttempts: NEWSLETTER_JOB_ATTEMPTS },
+    now,
+  );
+}
+
+// Subscription request (replaces the token-less requestSubscription for the route). Never sends anything: it stores the
+// confirmation and enqueues its e-mail job in the same transaction as the rate-limit `gate`.
+// - confirmed address: direct flow, one delivery job of the chosen (or latest public) edition, within the existing limits;
+// - new/pending/cancelled: a new single-use confirmation replaces any older one; a cancelled record stays "cancelled" until
+//   the reader confirms, so requesting (or visiting) never reactivates it.
+// The caller must answer every `ok` outcome with the same external body (anti-enumeration).
+export async function requestSubscriptionConfirmation(
+  store: Store,
+  secret: string,
+  value: { email: string; editionSlug?: string },
+  now: Date,
+  gate?: Gate,
+): Promise<SubscriptionRequestOutcome | Denied> {
+  const id = opaqueId(secret, "sb", `email:${value.email}`);
+  const at = now.toISOString();
+  const generalSlug = value.editionSlug ? undefined : await latestPublicSlug(store);
+  return store.transaction(async (tx) => {
+    const denied = await gate?.(tx);
+    if (denied) return denied;
+    const current = await tx.get<SubscriptionRecord>(COLLECTIONS.subscriptions, id);
+    if (current?.status === "confirmed") {
+      const slug = value.editionSlug ?? generalSlug;
+      if (!slug || !(await tx.get(COLLECTIONS.editionsPublic, slug))) return { ok: true as const, action: "none" as const };
+      const jobId = await enqueueDelivery(tx, secret, id, slug, now);
+      // shortcut: a dead send needs provider reconciliation before any retry; never create a second same-day send blindly.
+      if ((await tx.get<JobRecord>(COLLECTIONS.jobs, jobId))?.status === "dead") return { ok: true as const, action: "none" as const };
+      return { ok: true as const, action: "delivery_queued" as const, editionSlug: slug };
+    }
+    const confirmationId = newConfirmationId();
+    const confirmation: SubscriptionConfirmationRecord = {
+      id: confirmationId,
+      subscriptionId: id,
+      ...(value.editionSlug ? { editionSlug: value.editionSlug } : {}),
+      createdAt: at,
+      expiresAt: new Date(now.getTime() + CONFIRMATION_TTL_MS).toISOString(),
+    };
+    const record: SubscriptionRecord = {
+      ...current,
+      id,
+      email: value.email,
+      status: current?.status ?? "pending",
+      pendingConfirmationId: confirmationId,
+      createdAt: current?.createdAt ?? at,
+      updatedAt: at,
+    };
+    tx.set(COLLECTIONS.subscriptionConfirmations, confirmationId, confirmation);
+    tx.set(COLLECTIONS.subscriptions, id, record);
+    await enqueueJob(tx, secret, { kind: JOB_KINDS.newsletterConfirmation, key: confirmationId, payload: { confirmationId }, maxAttempts: NEWSLETTER_JOB_ATTEMPTS }, now);
+    return { ok: true as const, action: "confirmation_requested" as const, confirmationId };
+  });
+}
+
+export type ConfirmationOutcome =
+  | { status: "confirmed"; editionSlug?: string; selectedEditionUnavailable?: true }
+  | { status: "invalid" | "expired" | "already_used" | "superseded" };
+
+// Consumes a token in ONE transaction: of N concurrent callers exactly one gets "confirmed"; the rest (and any later replay)
+// get "already_used" and change nothing. Invalid covers forged, unknown, superseded and cancelled-since links alike.
+// A general request resolves to the latest public edition NOW (confirmation time); a preview request keeps its slug. If
+// that edition is not public the address is still confirmed, with no delivery job and no `editionSlug`.
+export async function confirmSubscription(store: Store, secret: string, token: unknown, now: Date, syncContacts = false): Promise<ConfirmationOutcome> {
+  const confirmationId = verifyConfirmationToken(secret, token);
+  if (!confirmationId) return { status: "invalid" };
+  const at = now.toISOString();
+  const generalSlug = await latestPublicSlug(store);
+  return store.transaction(async (tx) => {
+    const confirmation = await tx.get<SubscriptionConfirmationRecord>(COLLECTIONS.subscriptionConfirmations, confirmationId);
+    if (!confirmation) return { status: "invalid" as const };
+    if (confirmation.consumedAt) return { status: "already_used" as const };
+    if (at >= confirmation.expiresAt) return { status: "expired" as const };
+    const subscription = await tx.get<SubscriptionRecord>(COLLECTIONS.subscriptions, confirmation.subscriptionId);
+    if (!subscription) return { status: "invalid" as const };
+    if (subscription.pendingConfirmationId !== confirmation.id) return { status: subscription.status === "cancelled" ? "invalid" as const : "superseded" as const };
+    const slug = confirmation.editionSlug ?? generalSlug;
+    const edition = slug ? await tx.get<EditionPublicRecord>(COLLECTIONS.editionsPublic, slug) : undefined;
+    const confirmed: SubscriptionRecord = { ...subscription, status: "confirmed", confirmedAt: at, updatedAt: at };
+    delete confirmed.pendingConfirmationId;
+    delete confirmed.canceledAt;
+    tx.set(COLLECTIONS.subscriptionConfirmations, confirmation.id, { ...confirmation, consumedAt: at });
+    tx.set(COLLECTIONS.subscriptions, subscription.id, confirmed);
+    if (syncContacts) await enqueueJob(tx, secret, { kind: JOB_KINDS.newsletterContactSync, key: `${subscription.id}:${at}`, payload: { subscriptionId: subscription.id }, maxAttempts: NEWSLETTER_JOB_ATTEMPTS }, now);
+    if (!slug || !edition) return confirmation.editionSlug ? { status: "confirmed" as const, selectedEditionUnavailable: true as const } : { status: "confirmed" as const };
+    await enqueueDelivery(tx, secret, subscription.id, slug, now);
+    return { status: "confirmed" as const, editionSlug: slug };
+  });
+}
+
+export type CancelOutcome = "cancelled" | "already_cancelled" | "invalid";
+
+async function cancelSubscriptionTx(tx: Tx, secret: string, subscription: SubscriptionRecord | undefined, now: Date, syncContacts: boolean): Promise<CancelOutcome> {
+  if (!subscription) return "invalid";
+  if (subscription.status === "cancelled") return "already_cancelled";
+  if (subscription.status !== "confirmed") return "invalid";
+  const canceled: SubscriptionRecord = { ...subscription, status: "cancelled", canceledAt: now.toISOString(), updatedAt: now.toISOString() };
+  delete canceled.pendingConfirmationId;
+  tx.set(COLLECTIONS.subscriptions, subscription.id, canceled);
+  if (syncContacts) await enqueueJob(tx, secret, { kind: JOB_KINDS.newsletterContactSync, key: `${subscription.id}:${canceled.canceledAt}`, payload: { subscriptionId: subscription.id }, maxAttempts: NEWSLETTER_JOB_ATTEMPTS }, now);
+  return "cancelled";
+}
+
+export async function cancelSubscription(store: Store, secret: string, proof: { id: string; confirmedAt: string }, now: Date, syncContacts = false): Promise<CancelOutcome> {
+  return store.transaction(async (tx) => {
+    const subscription = await tx.get<SubscriptionRecord>(COLLECTIONS.subscriptions, proof.id);
+    if (!subscription || subscription.confirmedAt !== proof.confirmedAt) return "invalid";
+    return cancelSubscriptionTx(tx, secret, subscription, now, syncContacts);
+  });
+}
+
+export async function cancelSubscriptionFromProvider(store: Store, secret: string, email: string, occurredAt: Date, syncContacts = false): Promise<CancelOutcome> {
+  const id = opaqueId(secret, "sb", `email:${email}`);
+  return store.transaction(async (tx) => {
+    const subscription = await tx.get<SubscriptionRecord>(COLLECTIONS.subscriptions, id);
+    if (!subscription || !subscription.confirmedAt || subscription.confirmedAt > occurredAt.toISOString()) return "invalid";
+    return cancelSubscriptionTx(tx, secret, subscription, occurredAt, syncContacts);
   });
 }
 

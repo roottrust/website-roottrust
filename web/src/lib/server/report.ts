@@ -46,6 +46,7 @@ export interface ReportConfig {
   replyTo: string;
   dailyLimit: number;
   monthlyLimit: number;
+  allowlist: readonly string[];
   // Test seams; production uses the Resend SDK and the PDFs under private/reports.
   mailer?: Mailer;
   readPdf?: (toolId: ToolId) => Promise<Buffer>;
@@ -66,6 +67,9 @@ export function loadReportConfig(env: Record<string, string | undefined>): Repor
   const apiKey = env.RESEND_API_KEY?.trim();
   const from = env.REPORT_EMAIL_FROM?.trim();
   const replyTo = checkEmail(env.REPORT_EMAIL_REPLY_TO?.trim());
+  const items = (env.NEWSLETTER_PILOT_ALLOWLIST ?? "").split(",").map((item) => item.trim()).filter(Boolean);
+  const emails = items.map(checkEmail);
+  if (!items.length || items.length > 100 || emails.some((email) => !email)) return undefined;
   if (!apiKey || !from || !senderAddress(from) || !replyTo) return undefined;
   if (env.RESEND_DOMAIN_CONFIRMED !== "true" || env.JOBS_TRIGGER_CONFIRMED !== "true") return undefined;
   return {
@@ -74,6 +78,7 @@ export function loadReportConfig(env: Record<string, string | undefined>): Repor
     replyTo,
     dailyLimit: clampLimit(env.REPORT_EMAIL_DAILY_LIMIT, RESEND_DAILY_LIMIT),
     monthlyLimit: clampLimit(env.REPORT_EMAIL_MONTHLY_LIMIT, RESEND_MONTHLY_LIMIT),
+    allowlist: [...new Set(emails as string[])],
   };
 }
 
@@ -222,6 +227,7 @@ export function createReportHandler(store: Store, config: ReportConfig, now: () 
     if (delivery.sentAt) return;
     if (delivery.reconcile) throw new PermanentFailure("reconciliation_required");
     if (!delivery.email) throw new PermanentFailure("missing_email");
+    if (!config.allowlist.includes(delivery.email)) throw new PermanentFailure("pilot_recipient_not_allowed");
     const pdf = await readPdf(delivery.toolId);
 
     const prepared = await prepare(id);
