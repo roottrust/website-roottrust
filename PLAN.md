@@ -440,6 +440,12 @@ Material local de revisão em `references/audits/website-revision/gate-a/index.h
 
 **Depende:** gate A/T1.2. **Arquivos:** serviços/ferramentas/newsletter/privacidade/404 e estilos.
 
+Início T3.1 em30/10 após aceite explícito gate A. Dry-run16 arquivos, inspeção de segredos/gerados e diff-check sem achados; checkpoint WIP LOCAL autorizado `c8d3d93b1bd65a97c1aabe3f916ac3eb3b7cc123` (`wip: pre-claude T3.1`), sem push, hash registrado antes da chamada. Sonnet limitado a componentes/content/estilos das internas e testes associados, sem Home/shell/gráficos/modelos/catálogo editorial/APIs/emails/PDFs/configs. Privacidade será preparada para gate B com estado provisório verdadeiro, sem inventar identificação/base legal/prazo de cópias externas. Sem efeitos externos ou publicação. Gates completos e revisões independentes após entrega.
+
+**Bloqueio de cota T3.1:** sessão de escrita `ba8b44c4-5b9a-4f72-bc8c-71edcca2ae7a`, inicialização observou `claude-sonnet-5-5`; terminou `failed` em30/10/2026 18h02m55s Brasília (80s), sem entrega e sem alteração de código. Resultado terminal sintético informa limite de sessão com reset indicado às18h10 America/Sao_Paulo; stderr inclui avisos unrecognized_model do título auxiliar/sdk, não prova modelo alternativo executando a tarefa. `claude-cancel` chamado e confirmou estado terminal `failed`, sem sessão de escrita ativa. `git status/diff c8d3d93`: somente registro PLAN alterado, fonte intacta. Renato será consultado conforme protocolo antes de retomar; sem fallback Codex/CLI/API paga ou alteração de defaults. T3.1 não concluída; nenhum novo gate alegado sem entrega.
+
+Renato respondeu “Aguardar a renovação e retomar com Sonnet (recomendado)” e informou “Sessão do Claude renovada”. Retomada autorizada às18h31 Brasília: raiz/main/HEAD `c8d3d93` e árvore revalidados, somente PLAN alterado; dry-run/diff-check sem gerados ou segredos. Mesmo assunto T3.1, mesmos limites; novo checkpoint local do registro antes de continuar a sessão da ponte. Nenhum fallback ou mudança global.
+
 - [ ] Todas as superfícies da matriz 4.3 com tema/feedback/copy corretos, incluindo tabelas/selects/foco.
 - [ ] Etapas estruturadas por serviço, sem stages[index] global nas internas; Home mantém cinco etapas.
 - [ ] Hero literal e Pentest sem badge/hierarquia superior; catálogo e escopos verdadeiros.
@@ -603,7 +609,7 @@ Rollback de interface usa versão compatível/conferida, não snapshot antigo pr
 | Aprovação do plano | Aprovada em 30/10/2026 | Renato escolheu “Aprovar o plano; implementar na nova conversa”. Não iniciar nesta sessão. |
 | Fase1 | Local concluída; comparação remota pendente | T1.2/T1.3 concluídas; preflight Sonnet5.5 passou. Lacuna Vercel403 em T1.1 deve ser resolvida em T4.3 antes do rollout. |
 | Fase2/gate A | Concluída e aceita em30/10/2026 | Renato aprovou o gate A e o avanço às internas;629 unitários e344 E2E/6 skips. |
-| Fase3/gate B | Não iniciada | Internas e Privacidade revisada. |
+| Fase3/gate B | T3.1 iniciada e interrompida por cota | Sonnet sem entrega/código; reset indicado18h10, retomada depende da consulta a Renato. Gate B pendente. |
 | Fase4 | Não iniciada | Public, capacidade e elegibilidade testados. |
 | Fase5 | Não iniciada | Gates, deployment, ensaio, aceite e arquivo. |
 
