@@ -1,4 +1,4 @@
-// Conteúdo editorial preservado de Home.baseline.dc.html; rotas e descrição ROSI auditadas.
+// Estrutura da Home aprovada; copy revisada conforme PLAN e matriz editorial de 30/10/2026.
 export const services = [
   {
     "kind": "chave",
@@ -6,11 +6,11 @@ export const services = [
     "code": "Cibersegurança",
     "title": "Cibersegurança",
     "resumo": "A base que sustenta todo o resto",
-    "desc": "Cuidamos da proteção do que mantém sua operação em funcionamento, com monitoramento próximo e resposta rápida.",
+    "desc": "Avaliamos riscos, organizamos acessos e preparamos a operação para detectar e responder a incidentes, conforme o escopo contratado.",
     "entregas": [
-      "Diagnóstico de riscos",
+      "Riscos e testes de segurança (Pentest)",
       "Identidade e acesso",
-      "Monitoramento contínuo",
+      "Monitoramento",
       "Resposta a incidentes"
     ]
   },
@@ -20,12 +20,12 @@ export const services = [
     "code": "Infraestrutura em nuvem",
     "title": "Infraestrutura em nuvem",
     "resumo": "Ambientes estáveis, escaláveis e sob controle",
-    "desc": "Planejamos, migramos e operamos ambientes em nuvem preparados para crescer sem surpresas de custo.",
+    "desc": "Planejamos, migramos e acompanhamos ambientes locais, em nuvem e híbridos, com atenção à capacidade, à recuperação e aos custos.",
     "entregas": [
       "Arquitetura e migração",
-      "Ambientes escaláveis",
+      "Capacidade e escala",
       "Backup e continuidade",
-      "Custos sob controle"
+      "Visibilidade de custos"
     ]
   },
   {
@@ -39,7 +39,7 @@ export const services = [
       "Sistemas sob medida",
       "Integrações entre ferramentas",
       "Automação de processos",
-      "Evolução contínua do código"
+      "Evolução do sistema"
     ]
   }
 ] as const;
@@ -53,7 +53,7 @@ export const steps = [
       "> iniciando diagnóstico",
       "  escuta com liderança e equipe técnica",
       "  levantamento do ambiente atual",
-      "  entregável: mapa de riscos e prioridades",
+      "  entregável: resumo do contexto e das prioridades",
       "  [OK] contexto entendido"
     ]
   },
@@ -78,8 +78,8 @@ export const steps = [
     "lines": [
       "> executando plano",
       "  entregas em ciclos curtos",
-      "  acompanhamento semanal com seu time",
-      "  entregável: soluções em produção",
+      "  acompanhamento combinado com seu time",
+      "  entregável: mudanças validadas antes de entrar em uso",
       "  [OK] plano em prática"
     ]
   },
@@ -87,13 +87,13 @@ export const steps = [
     "n": "04",
     "title": "Operação",
     "slug": "operacao",
-    "desc": "Acompanhamos e garantimos estabilidade.",
+    "desc": "Acompanhamos o que estiver no escopo contratado.",
     "lines": [
       "> operação assistida",
-      "  monitoramento e suporte próximo",
+      "  monitoramento e suporte conforme contrato",
       "  relatórios claros para quem decide",
-      "  entregável: ambiente estável e documentado",
-      "  [OK] estabilidade garantida"
+      "  entregável: registro do que foi feito e decidido",
+      "  [OK] operação acompanhada"
     ]
   },
   {
@@ -106,7 +106,7 @@ export const steps = [
       "  novos desafios, novas prioridades",
       "  ajustes contínuos na solução",
       "  entregável: próximos passos recomendados",
-      "  [OK] base pronta para crescer"
+      "  [OK] próximos passos definidos"
     ]
   }
 ] as const;
@@ -114,14 +114,14 @@ export const pillars = [
   {
     "title": "Clareza que traduz",
     "desc": "Explicamos tecnologia em termos de negócio. Se não ficou claro para quem decide, a gente reescreve.",
-    "acao": "Relatórios em linguagem de negócio",
+    "acao": "Explicações em linguagem de negócio",
     "aria": "Falar sobre clareza que traduz",
     "kind": "diamante"
   },
   {
     "title": "Presença que ampara",
-    "desc": "Ficamos por perto antes, durante e depois da entrega. Com firmeza e segurança, sem alarmismo.",
-    "acao": "Suporte próximo e contínuo",
+    "desc": "Mantemos a conversa aberta antes, durante e depois da entrega, com firmeza e sem alarmismo.",
+    "acao": "Acompanhamento conforme o contrato",
     "aria": "Falar sobre presença que ampara",
     "kind": "cadeado"
   },
@@ -138,28 +138,28 @@ export const tools = [
     "title": "ROSI",
     "href": "/ferramentas/rosi",
     "aria": "Abrir a ferramenta ROSI",
-    "desc": "Estime o retorno financeiro de um investimento em segurança.",
+    "desc": "Simule o retorno de uma proteção adicional com suas próprias estimativas.",
     "kind": "balanca"
   },
   {
     "title": "Shadow AI",
     "href": "/ferramentas/shadow-ai",
     "aria": "Abrir a ferramenta Shadow AI",
-    "desc": "Identifique e gerencie riscos de uso.",
+    "desc": "Organize o que sua equipe declara sobre o uso de IA e o que falta confirmar.",
     "kind": "olho"
   },
   {
     "title": "Dívida técnica",
     "href": "/ferramentas/divida-tecnica",
     "aria": "Abrir a ferramenta Dívida técnica",
-    "desc": "Entenda os riscos no seu código e infraestrutura.",
+    "desc": "Estime o custo do tempo de manutenção atribuído à dívida técnica.",
     "kind": "engrenagem"
   },
   {
     "title": "Migração para nuvem",
     "href": "/ferramentas/migracao-para-nuvem",
     "aria": "Abrir a ferramenta Migração para nuvem",
-    "desc": "Analise cenários e oportunidades.",
+    "desc": "Compare o custo de manter ou migrar um ambiente.",
     "kind": "nuvem"
   }
 ] as const;

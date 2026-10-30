@@ -10,7 +10,7 @@ import styles from "./graphics.module.css";
 export function HomeCanvas() {
   const canvas = useRef<HTMLCanvasElement>(null), frame = useRef<HTMLCanvasElement>(null);
   const controllers = useRef<{ art: Animation; frame: Animation; engine: HomeAscii } | null>(null);
-  const { animated, pageVisible } = useGraphicsMotion();
+  const { animated, pageVisible, theme } = useGraphicsMotion();
   const latest = useRef({ animated, pageVisible });
   const [failed, setFailed] = useState(false);
   const [ready, setReady] = useState(false);
@@ -18,9 +18,10 @@ export function HomeCanvas() {
     latest.current = { animated, pageVisible };
     const current = controllers.current;
     if (!current) return;
+    current.engine.setTheme(theme);
     current.engine.animated = animated; current.engine.invalidate();
     current.art.setGate({ animated, pageVisible }); current.frame.setGate({ animated: false, pageVisible });
-  }, [animated, pageVisible]);
+  }, [animated, pageVisible, theme]);
   useEffect(() => {
     const cv = canvas.current, fv = frame.current, root = cv?.closest<HTMLElement>("[data-graphics-root]");
     if (!cv || !fv || !root) throw new Error("HomeCanvas requires a data-graphics-root ancestor.");

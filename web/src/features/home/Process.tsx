@@ -8,8 +8,8 @@ import styles from "./home.module.css";
 export function Process() {
 const { active, fraction, pick, trackRef, innerRef, enabled, trackHeight, position, top, padding } = useHomeSequence(steps.length);
 const current = steps[active];
-const etapas = steps.map((e, index) => ({ ...e, cur: active === index ? "step" as const : undefined, onClick: () => pick(index), nColor: active === index ? "var(--rt-folha)" : "#9DB3A8", tColor: active === index ? "var(--rt-superficie)" : "#9DB3A8", arrow: active === index ? "var(--rt-folha)" : "transparent", bar: active === index ? (enabled ? Math.max(.04, fraction) : 1) : 0 }));
-const line = (t: string, index: number) => ({ t, c: index === 0 ? "var(--rt-superficie)" : t.includes("[OK]") ? "var(--rt-folha)" : "var(--rt-menta)" });
+const etapas = steps.map((e, index) => ({ ...e, cur: active === index ? "step" as const : undefined, onClick: () => pick(index), nColor: active === index ? "var(--accent)" : "var(--text-subtle)", tColor: active === index ? "var(--text)" : "var(--text-subtle)", arrow: active === index ? "var(--accent)" : "transparent", bar: active === index ? (enabled ? Math.max(.04, fraction) : 1) : 0 }));
+const line = (t: string, index: number) => ({ t, c: index === 0 ? "var(--text)" : t.includes("[OK]") ? "var(--accent)" : "var(--text-muted)" });
 const etapasStack = steps.map(e => ({ ...e, lines: e.lines.map(line) }));
 const etapaSlug = current.slug, etapaPos = current.n + " / 05";
 return (<><p className="srOnly" aria-live="polite" aria-atomic="true">Etapa {current.n} de 5: {current.title}. {current.desc}</p><section data-sec="como" data-screen-label="Como trabalhamos" className={(styles.sequenceSection)}>
@@ -64,7 +64,7 @@ return (<><p className="srOnly" aria-live="polite" aria-atomic="true">Etapa {cur
       </Fragment>)}
     </ol>
     </div>
-    <p className={(styles.processNote)}>As etapas podem variar conforme o escopo do projeto.</p>
+    <p className={(styles.processNote)}>As etapas podem variar conforme o escopo do projeto. Cada serviço detalha o seu método na própria página.</p>
   </div>
   </div>
 </section></>);

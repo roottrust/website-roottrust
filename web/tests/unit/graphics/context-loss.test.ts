@@ -28,5 +28,6 @@ it("never rebuilds a failed instance when motion changes after context loss duri
   contexts[0].dispatchEvent(new Event("webglcontextlost", { cancelable: true }));
   expect(failed).toHaveBeenCalledTimes(1);
   instance.setGate({ animated: false, pageVisible: false }); instance.swap("camadas"); instance.dispose();
+  instance.setPalette("#175b4b", "#003428", "#175b4b", "light");
   expect(build).not.toHaveBeenCalled();
 });

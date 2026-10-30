@@ -366,18 +366,40 @@ Broadcast exige confirmado/consentimento real no segmento exclusivo e reconcilia
 
 Execução iniciada em 30/10/2026, conforme contrato fechado em T1.3. Escopo inclui testes focados de preferência/hidratação/storage/reflow e cópia pública necessária da assinatura positiva oficial. Originais intactos; Codex confere proveniência, diff e gates. Home/gráficos ficam em T2.2, feedback/formulários em T2.3 e internas bloqueadas pelo gate A.
 
-- [ ] SO inicial, claro/escuro/Sistema preservados; storage bloqueado, reload e SPA sem quebra/flash recorrente/hidratação inválida.
-- [ ] Header/footer/assinaturas por tema; marca maior proporcional, sem clipping a 320 px ou disputa com menu/seletor/CTA.
-- [ ] Teclado, Escape, foco, âncoras/offset real, fontes locais e pausa gráfica independentes da preferência.
+Checkpoint WIP LOCAL T2.1: `66dc1afa2141238b1a5da46f51a1ab40d1920fb6` (`wip: pre-claude T2.1`). Raiz/dry-run, inspeção dos dois documentos candidatos, varredura saneada de segredos e diff staged/check passaram; nenhum gerado incluído. Sem push/commit final.
+
+Entrega Sonnet T2.1: sessão `6dc5bcf7-b914-48cc-ab43-4c3aa0e7ca76`, `succeeded`, modelo observado `claude-sonnet-5-5`, sem esforço explícito. Módulo de seleção/boot em `components/theme`, tokens semânticos separados dos oficiais, globals/layout, header/footer por CSS com uma assinatura cada e E2E dirigido. Assinatura positiva copiada byte a byte; SHA256 `3592e374932e1f9b9170ef72903ccf00bb1b06d026680cff96bfdc2241e4e615`, conforme original/catálogo. Assinatura negativa pública preservada: hash `c13e7a9d…`, origem no export aprovado com geometria oficial, já registrada em `references/audits/public-assets.json`; não é divergência nova. Barra76/offset96 preservados; logo desktop43px de altura (+26% sobre34), mobile34, proporção1156.5/344.5 sem recorte. Assinaturas como background SVG pronto com nome acessível, sem reconstrução ou DOM escondido duplicado.
+
+Revisão independente Codex + consulta obrigatória da ponte `943fedb8-2c6d-4b95-bc74-129ea9703f54` (`sonnet` observado5.5, leitura, `succeeded`). Ponte apontou P2 de primeira interação pré-hidratação mascarada por retry do teste e risco estimado de largura entre breakpoints (não medido). Codex já corrigiu prontidão do seletor via snapshot determinístico e teste de uma única escolha com JS atrasado; removeu replay de `selectOption` e combinou seed/instrumentação de storage num único initScript para evitar ordem indefinida. Seletor mantém seta12×8/right16/padding-right44 e hit target44px; gap ajustado em≤380. Novo teste mede controles em560/600/768/959/960/1099/1100. Risco estimado só será fechado após execução, não tratado como falha comprovada. Transições de cor da Home e assinatura/paleta dos gráficos ficam em T2.2; legendas/campos de formulários em T2.3; internas seguem gate A. Contraste/forced-colors visual não certificados.
+
+Gates T2.1 em execução: lint/typecheck e614 unitários passaram; build e E2E ainda aguardam conclusão. Nenhum efeito externo/configuração/deploy. Preferência system usa CSS no SO; observação do tema resolvido para Canvas/Three será integrada por Codex em T2.2, sem acoplar seleção ao estado de pausa nem remontar gráficos.
+
+Atualização de validação: build passou; lint/typecheck reexecutados após reforçar os testes e passaram. E2E focado `theme.spec.ts --workers=1`:40 passes/zero retries (20,2s). E2E completo em execução. Follow-up somente leitura da revisão `943fedb8-2c6d-4b95-bc74-129ea9703f54` confirmou os dois P2 tratados no código/testes; não alegou executar testes. P3 a incorporar no lote seguinte: aguardar seletor habilitado no teste de Tab e verificar margem interna do header a320 (estimativa não substitui medição). Nenhum novo bloqueante; transições de cor da Home ainda são parte de T2.2.
+
+- [x] SO inicial, claro/escuro/Sistema preservados; storage bloqueado, reload e SPA sem quebra/flash recorrente/hidratação inválida.
+- [x] Header/footer/assinaturas por tema; marca maior proporcional, sem clipping a 320 px ou disputa com menu/seletor/CTA.
+- [x] Teclado, Escape, foco, âncoras/offset real, fontes locais e pausa gráfica independentes da preferência.
+
+**T2.1 concluída tecnicamente:** lint, typecheck,614 unitários, build e E2E completo330 passes/6 skips/zero retries (6,6min) passaram. Logs `references/audits/website-revision/t21-{lint,typecheck,unit,build,e2e}.log`, mais40 testes focados no log `t21-theme-focused.log`. Gerado `next-env.d.ts` inspecionado e restaurado, sem alteração intencional. Revisões e limitações acima; aceite visual permanece exclusivamente no gate A após T2.2/T2.3.
 
 #### T2.2 [codex] Adaptar Home e gráficos
 
 **Depende:** T2.1. **Arquivos:** features/home, features/graphics e cópias públicas necessárias.
 
-- [ ] Mesma composição/conteúdo, processo geral e efeitos nos dois temas.
-- [ ] ASCII/moldura/3D/grafismos e fallbacks legíveis em superfícies claras/escuras/verdes.
-- [ ] Troca de tema preserva pausa/reduced-motion, suspensão e descarte, sem duplicar loops/canvases/GPU.
-- [ ] Assets rastreáveis, originais intactos e contraste/foco medidos na amostra.
+Execução Codex iniciada em30/10/2026. Integrar paletas e setters de gráficos, sem novos loops/contextos e sem nova animação de tema. Integrar também as propostas da Home consolidadas pelo Sonnet emT1.2, preservando hero, hierarquia, cinco etapas e conteúdo idêntico entre temas; é a Home apresentada no gate A. Nenhuma interna será portada nesta tarefa. Revisão da abordagem T1.3 continua válida; implementação receberá revisão independente e consulta de diff da ponte.
+
+Implementação T2.2: tokens de Home e faixas por superfície; observação única do tema resolvido em GraphicsProvider (MutationObserver/MQL com descarte), setters de uniforms e atlas sem nova cena/contexto/canvas/loop. ASCII mantém rampa aprovada nas faixas verdes e adapta a página; repaint só no scheduler, suspenso quando hidden/offscreen. Fallbacks usam cópia positiva oficial do símbolo (`04fded626cb110ae4efaeb182b6c895a187819d1fb9c87b350c16d4f3e4c6715`) e negativa preservada por token. Símbolos/logotipos não foram reconstruídos. CopyHome integrada da matriz T1.2, hero e5etapas preservados. Transições de cor/hover foram tornadas instantâneas para a mudança de tema; transições aprovadas de opacity/transform nos painéis continuam, assim como movimento/arrasto/scroll. Sem animação nova (gate animate: ação de preferência/teclado, indicação de estado instantânea).
+
+Revisões T2.2: GPT `/root/review_t13_contracts` examinou diff/callers somente leitura, sem P1/P2 encontrado. Consulta obrigatória Sonnet5.5 somente leitura `ccd3ba0b-22f7-4cff-a371-0a31d29fd541` terminou `succeeded`, apontando P2 visual de dupla conversão de cores no ramo claro, P2 de estado intermediário das internas e P3 de transições/cobertura. Codex corrigiu só o ramo claro do shader cru com `setStyle(..., LinearSRGBColorSpace)`, mantendo conversão do escuro aprovado; conforme [Color Three.js](https://threejs.org/docs/pages/Color.html). Internas continuam incompletas em claro por gate A/T3.1, limitação intencional registrada, sem publicação. Paleta ASCII inválida agora falha no callback protegido e mostra fallback em vez de ignorar NaN. P3 de Tab/margem320 incorporados aos testes. Limite: simulação de hidden não prova aba real/hardware.
+
+Evidências parciais: lint/typecheck/614 unitários/build passaram. Quatro E2E novos de troca manual/SO com pausa, identidade de canvas/contexto e hidden simulado passaram (10,6s). Regressão focada Home/gráficos/SPA/serviços/navegação/tema:142 passes,4 skips,zero retries (4,2min) antes da correção de cor. Após correção: lint/typecheck/unit/build passaram; E2E dirigido de paleta/fallback em execução e captura visual ainda pendente. Logs `references/audits/website-revision/t22-*`; diff saneado para revisão em `t22-review.diff`. Não atribuir testes aos revisores nem declarar gate A cumprido.
+
+**T2.2 concluída tecnicamente:** E2E pós-correção12 passes/zero skips/zero retries (23,8s), incluindo tema/fallback e paleta inválida; follow-up da consulta `ccd3ba0b-22f7-4cff-a371-0a31d29fd541` terminou `succeeded`, sem P1/P2 novo, confirmou ramo claro e paridade do escuro. P3 de validação de hi/ring incluído no guard; typecheck e lint focado após esse ajuste. Últimos build/614 unitários precedem apenas esse reforço defensivo e serão renovados nos gates obrigatórios de T2.3. Capturas locais sem pageerrors em `references/audits/website-revision/t22-visual/`: hero claro e princípios claro/escuro, com fontes prontas, pausa/reduced-motion. Codex inspecionou hero/princípios claros, sem clipping de conteúdo ou perda de legibilidade. Contraste calculado das cores aplicadas: texto claro12,63:1, apoio5,41:1, foco7,30:1; texto escuro16,41:1, apoio no painel13,05:1, foco6,91:1; apoio/faixa verde10,68:1 e foco5,32:1. Não certifica WCAG, hardware ou aceite visual; apresentação completa dos dois temas fica no gate A.
+
+- [x] Mesma composição/conteúdo, processo geral e efeitos nos dois temas.
+- [x] ASCII/moldura/3D/grafismos e fallbacks legíveis em superfícies claras/escuras/verdes.
+- [x] Troca de tema preserva pausa/reduced-motion, suspensão e descarte, sem duplicar loops/canvases/GPU.
+- [x] Assets rastreáveis, originais intactos e contraste/foco medidos na amostra.
 
 #### T2.3 [claude:escreve] Implementar feedback compartilhado — Sonnet
 
@@ -564,7 +586,7 @@ Rollback de interface usa versão compatível/conferida, não snapshot antigo pr
 | Revisão independente do plano | Concluída, com correção | GPT /root/review_website_revision_plan apontou P1 de elegibilidade Vercel: removida suposição de exceção por demonstração e incluído gate antes do rollout. Rechecagem concluiu que o P1 foi resolvido, sem outras contradições grandes. |
 | Aprovação do plano | Aprovada em 30/10/2026 | Renato escolheu “Aprovar o plano; implementar na nova conversa”. Não iniciar nesta sessão. |
 | Fase1 | Local concluída; comparação remota pendente | T1.2/T1.3 concluídas; preflight Sonnet5.5 passou. Lacuna Vercel403 em T1.1 deve ser resolvida em T4.3 antes do rollout. |
-| Fase2/gate A | T2.1 iniciada; aceite pendente | Temas/shell; demais lotes e gate visual ainda não concluídos. |
+| Fase2/gate A | T2.1/T2.2 técnicas concluídas; aceite pendente | Feedback T2.3 e apresentação completa do gate A ainda pendentes. |
 | Fase3/gate B | Não iniciada | Internas e Privacidade revisada. |
 | Fase4 | Não iniciada | Public, capacidade e elegibilidade testados. |
 | Fase5 | Não iniciada | Gates, deployment, ensaio, aceite e arquivo. |

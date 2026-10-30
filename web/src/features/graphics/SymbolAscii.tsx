@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { useGraphicsMotion } from "./GraphicsProvider";
 import { createAnimation, type Animation } from "./animation";
@@ -10,14 +9,15 @@ import styles from "./graphics.module.css";
 export function SymbolAscii({ className = "" }: { className?: string }) {
   const host = useRef<HTMLDivElement>(null), canvas = useRef<HTMLCanvasElement>(null);
   const controller = useRef<{ animation: Animation; engine: HomeAscii } | null>(null);
-  const { animated, pageVisible } = useGraphicsMotion();
+  const { animated, pageVisible, theme } = useGraphicsMotion();
   const latest = useRef({ animated, pageVisible });
   const [failed, setFailed] = useState(false);
   const [ready, setReady] = useState(false);
   useEffect(() => {
     latest.current = { animated, pageVisible };
+    controller.current?.engine.setTheme(theme);
     controller.current?.engine.invalidate(); controller.current?.animation.setGate(latest.current);
-  }, [animated, pageVisible]);
+  }, [animated, pageVisible, theme]);
   useEffect(() => {
     const root = host.current, cv = canvas.current;
     if (!root || !cv) return;
@@ -45,6 +45,6 @@ export function SymbolAscii({ className = "" }: { className?: string }) {
   return <div ref={host} className={`${styles.art} ${className}`} aria-hidden="true" data-graphic="symbol" data-graphic-status={failed ? "failed" : ready ? "ready" : "loading"}>
     <div data-sec="ctasym" style={{ position: "absolute", inset: 0 }} />
     <canvas ref={canvas} className={styles.home} style={{ visibility: failed ? "hidden" : "visible" }} />
-    {(!ready || failed) && <Image data-graphic-fallback="true" src="/assets/simbolo-negativo.svg" alt="" width={566} height={506} className={styles.fallback} unoptimized />}
+    {(!ready || failed) && <span data-graphic-fallback="true" className={styles.fallback} />}
   </div>;
 }

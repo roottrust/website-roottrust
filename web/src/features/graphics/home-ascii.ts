@@ -2,7 +2,7 @@
 type Point = [number, number];
 type Section = { top: number; bottom: number; h: number; left?: number; w?: number };
 type Clip = { x0: number; y0: number; x1: number; y1: number };
-type Grid = { full: boolean; W: number; H: number; VH: number; dpr: number; cw: number; ch: number; rows: number; ci: Uint16Array; cj: Uint16Array; cd: Float32Array; ck: Uint8Array; cdi: Float32Array; cs: Float32Array; rowOff: Int32Array; ctx: CanvasRenderingContext2D; A: HTMLCanvasElement; sw: number; sh: number };
+type Grid = { full: boolean; W: number; H: number; VH: number; dpr: number; cw: number; ch: number; rows: number; greenRows: Uint8Array; ci: Uint16Array; cj: Uint16Array; cd: Float32Array; ck: Uint8Array; cdi: Float32Array; cs: Float32Array; rowOff: Int32Array; ctx: CanvasRenderingContext2D; A: HTMLCanvasElement; sw: number; sh: number };
 const mix = (a: number[], b: number[], f: number) => a.map((v, i) => Math.round(v + (b[i] - v) * f));
 const ramp = (stops: [number, number[]][], f: number): number[] => { for (let i = 1; i < stops.length; i++) if (f <= stops[i][0]) return mix(stops[i - 1][1], stops[i][1], (f - stops[i - 1][0]) / (stops[i][0] - stops[i - 1][0])); return stops[stops.length - 1][1]; };
 export class HomeAscii {
@@ -10,11 +10,28 @@ export class HomeAscii {
   COLORS: string[] = []; RI: number[][] = [];
   g: Grid | null = null; fsp: { dpr: number; S: number; L: number; out: HTMLCanvasElement[][][] } | null = null;
   mx = -1e5; my = -1e5; lastKey: string | null = null; last = 0; t0 = 0; cvTop = -1; fKey = ''; fT = 0; animated = false;
+  private theme: "light" | "dark" | null = null;
+  private paletteDirty = false;
+  private paletteValid = true;
+  private framePage = '#171717'; private frameLine = '#2E2E2E'; private frameBorder = '#3C3C3C';
+  private frameColors = [{ base: '#262626', hi: '#4C6B58', ring: '#62AF96' }, { base: '#0E4A3A', hi: '#62AF96', ring: '#CCE9DC' }];
   constructor(public rootEl: HTMLElement, public cv: HTMLCanvasElement, public fcv: HTMLCanvasElement, private symbolsOnly = false) {
+    this.setTheme(getComputedStyle(rootEl).colorScheme === 'light' ? 'light' : 'dark');
+  }
+  setTheme(theme: "light" | "dark") {
+    if (theme === this.theme) return;
+    this.theme = theme;
+    const style = getComputedStyle(this.rootEl), color = (name: string) => style.getPropertyValue(name).trim();
+    const rgb = (name: string) => [1, 3, 5].map(start => parseInt(color(name).slice(start, start + 2), 16));
     const GS: [number, number[]][] = [[0,[20,38,32]],[.2,[0,52,40]],[.42,[23,91,75]],[.6,[76,107,88]],[.82,[98,175,150]],[1,[204,233,220]]];
     const SG: [number, number[]][] = [[0,[0,52,40]],[.5,[0,150,45]],[.8,[0,214,61]],[1,[150,250,180]]];
-    for (let l = 0; l < 24; l++) this.COLORS.push('rgb('+ramp(GS,l/23).join(',')+')');
-    for (let l = 0; l < 24; l++) this.COLORS.push('rgb('+ramp(SG,l/23).join(',')+')');
+    const pageGS: [number, number[]][] = theme === 'light' ? [[0,[220,232,224]],[.2,[182,202,189]],[.42,[132,168,148]],[.6,rgb('--rt-musgo')],[.82,rgb('--graphic-ink')],[1,rgb('--graphic-soft')]] : GS;
+    const pageSG: [number, number[]][] = theme === 'light' ? [[0,rgb('--rt-menta')],[.5,rgb('--rt-folha')],[.8,rgb('--graphic-ink')],[1,rgb('--graphic-soft')]] : SG;
+    this.COLORS = [pageGS, pageSG, GS, SG].flatMap(stops => Array.from({ length: 24 }, (_, level) => 'rgb('+ramp(stops,level/23).join(',')+')'));
+    this.framePage = color('--page'); this.frameLine = color(theme === 'light' ? '--border' : '--rt-rocha'); this.frameBorder = color('--border');
+    this.frameColors[0] = theme === 'light' ? { base: '#d6e1d9', hi: color('--rt-musgo'), ring: color('--graphic-ink') } : { base: '#262626', hi: '#4C6B58', ring: '#62AF96' };
+    this.paletteValid = this.COLORS.every(value => !value.includes('NaN')) && [this.framePage, this.frameLine, this.frameBorder, ...Object.values(this.frameColors[0])].every(value => /^#[\da-f]{6}$/i.test(value));
+    this.paletteDirty = true; this.fsp = null; this.invalidate();
   }
   invalidate() { this.lastKey = null; this.last = 0; this.fKey = ''; }
   render(elapsed: number, animated: boolean) { this.animated = animated; this.draw(elapsed*1000); this.drawFrame(elapsed*1000); }
@@ -23,7 +40,7 @@ export class HomeAscii {
     const S = 12, L = 8, k = 8 / 1630, px = S * dpr;
     const P = [[85, 780], [250, 690], [548, 1360], [905, 85], [1545, 85]];
     const mix = (a: string, b: string, f: number) => '#' + [0, 2, 4].map(i => Math.round(parseInt(a.substr(1 + i, 2), 16) * (1 - f) + parseInt(b.substr(1 + i, 2), 16) * f).toString(16).padStart(2, '0')).join('');
-    const TH = [{ base: '#262626', hi: '#4C6B58', ring: '#62AF96' }, { base: '#0E4A3A', hi: '#62AF96', ring: '#CCE9DC' }];
+    const TH = this.frameColors;
     const out = TH.map(t => Array.from({ length: L }, (_, l) => [0, 1].map(ringOn => {
       const c = document.createElement('canvas'); c.width = c.height = px; const x = c.getContext('2d'); if (!x) throw new Error('Canvas 2D unavailable.');
       x.setTransform(dpr, 0, 0, dpr, (S - 1630 * k) / 2 * dpr, (S - 1450 * k) / 2 * dpr);
@@ -37,6 +54,7 @@ export class HomeAscii {
     return this.fsp;
   }
   drawFrame(now: number) {
+    if (!this.paletteValid) throw new Error('Graphic palette unavailable.');
     const c = this.fcv, root = this.rootEl; if (!c || !root) return;
     const vw = document.documentElement.clientWidth, vh = innerHeight, sy = scrollY, on = vw >= 960;
     const mx = this.mx | 0, my = this.my | 0, key = [vw, vh, sy, on ? mx : 0, on ? my : 0].join(':');
@@ -71,7 +89,7 @@ export class HomeAscii {
       }
     }
     // linhas verticais da coluna
-    const LC = ['#2E2E2E', '#175B4B'], BG = ['#171717', '#003428'];
+    const LC = [this.frameLine, '#175B4B'], BG = [this.framePage, '#003428'];
     x.lineWidth = 1;
     x.save(); x.beginPath(); x.rect(0, 0, vw, vh); bands.forEach(([a, b]) => x.rect(0, a - top, vw, b - a)); x.clip('evenodd');
     const vseg = (X: number) => { x.strokeStyle = LC[0]; x.beginPath(); x.moveTo(X, 0); x.lineTo(X, vh); x.stroke(); };
@@ -81,7 +99,7 @@ export class HomeAscii {
       const vy = y - top; if (vy < -8 || vy > vh + 8) return;
       const th = theme(y + 1), Y = Math.round(vy) + 0.5; if (th) return;
       x.strokeStyle = LC[th]; x.beginPath(); x.moveTo(ol, Y); x.lineTo(orr, Y); x.stroke();
-      (nC ? [ol, fl, fr, orr] : [fl, fr]).forEach(X => { x.fillStyle = BG[th]; x.fillRect(X - 3.5, Y - 3.5, 7, 7); x.strokeStyle = th ? '#4C6B58' : '#3C3C3C'; x.strokeRect(X - 3.5, Y - 3.5, 7, 7); });
+      (nC ? [ol, fl, fr, orr] : [fl, fr]).forEach(X => { x.fillStyle = BG[th]; x.fillRect(X - 3.5, Y - 3.5, 7, 7); x.strokeStyle = th ? '#4C6B58' : this.frameBorder; x.strokeRect(X - 3.5, Y - 3.5, 7, 7); });
     });
     x.restore();
   }
@@ -90,9 +108,15 @@ export class HomeAscii {
     if (!root || !cv) return;
     const W = root.clientWidth, H = root.offsetHeight;
     if (!W || !H) return;
-    const [cw, ch, fs] = [7, 10, 10];
+    const [cw, ch] = [7, 10];
     const cols = Math.ceil(W / cw), rows = Math.ceil(H / ch), N = cols * rows;
     const rr = root.getBoundingClientRect();
+    const greenRows = new Uint8Array(rows);
+    if (root.closest('[data-band]')) greenRows.fill(1);
+    root.querySelectorAll('[data-band]').forEach(band => {
+      const rect = band.getBoundingClientRect();
+      greenRows.fill(1, Math.max(0, Math.floor((rect.top - rr.top) / ch)), Math.min(rows, Math.ceil((rect.bottom - rr.top) / ch)));
+    });
     const S: Record<string, Section> = {};
     root.querySelectorAll<HTMLElement>('[data-sec]').forEach(el => { const r = el.getBoundingClientRect(); S[el.dataset.sec!] = { top: r.top - rr.top, bottom: r.bottom - rr.top, h: r.height, left: r.left - rr.left, w: r.width }; });
     let seed = 2026;
@@ -222,13 +246,26 @@ export class HomeAscii {
     const CHS = [...new Set(this.STROKE + this.THREAD + '√')];
     this.RI = [this.STROKE, this.THREAD, '√'].map(s => [...s].map(c => CHS.indexOf(c)));
     const sw = Math.ceil(cw * dpr), shh = Math.ceil(ch * dpr), Aa = document.createElement('canvas');
-    Aa.width = sw * CHS.length; Aa.height = shh * this.COLORS.length;
-    const ax = Aa.getContext('2d'); if (!ax) throw new Error("Canvas 2D unavailable.");
-    ax.textAlign = 'center'; ax.textBaseline = 'middle';
-    this.COLORS.forEach((c, r) => { ax.fillStyle = c; CHS.forEach((chr, k) => { ax.font = ((chr === '√' ? fs * 1.45 : fs) * dpr) + 'px ui-monospace, "SF Mono", Menlo, Consolas, monospace'; ax.fillText(chr, k * sw + sw / 2, r * shh + shh / 2); }); });
-    this.g = { full, W, H, VH, dpr, cw, ch, rows, ci, cj, cd, ck, cdi, cs, rowOff, ctx, A: Aa, sw, sh: shh };
+    this.g = { full, W, H, VH, dpr, cw, ch, rows, greenRows, ci, cj, cd, ck, cdi, cs, rowOff, ctx, A: Aa, sw, sh: shh };
+    this.paintAtlas(this.g);
     this.lastKey = null; this.last = 0;
 
+  }
+
+  private paintAtlas(grid: Grid) {
+    if (!this.paletteValid) throw new Error('Graphic palette unavailable.');
+    const chars = [...new Set(this.STROKE + this.THREAD + '√')], { A, sw, sh, dpr } = grid;
+    A.width = sw * chars.length; A.height = sh * this.COLORS.length;
+    const context = A.getContext('2d'); if (!context) throw new Error("Canvas 2D unavailable.");
+    context.textAlign = 'center'; context.textBaseline = 'middle';
+    this.COLORS.forEach((color, row) => {
+      context.fillStyle = color;
+      chars.forEach((char, column) => {
+        context.font = ((char === '√' ? 14.5 : 10) * dpr) + 'px ui-monospace, "SF Mono", Menlo, Consolas, monospace';
+        context.fillText(char, column * sw + sw / 2, row * sh + sh / 2);
+      });
+    });
+    this.paletteDirty = false;
   }
 
   hash(a: number, b: number) { const v = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453; return v - Math.floor(v); }
@@ -236,6 +273,7 @@ export class HomeAscii {
   draw(now: number) {
     const g = this.g;
     if (!g || !this.rootEl) return;
+    if (this.paletteDirty) this.paintAtlas(g);
     const anim = this.animated;
     if (g.full && this.lastKey === 'full') return;
     if (g.full) this.lastKey = 'full';
@@ -259,13 +297,14 @@ export class HomeAscii {
       let rv = 1;
       if (anim) { rv = (t - d / 1100) / 0.6; if (rv <= 0) continue; if (rv > 1) rv = 1; }
       const k = g.ck[p], s = g.cs[p], x = (g.ci[p] + 0.5) * g.cw, y = (g.cj[p] + 0.5) * g.ch;
+      const paletteOffset = g.greenRows[g.cj[p]] ? 48 : 0;
       const dn = g.cd[p] * rv;
       let b = dn;
       if (k === 3) {
         b = anim ? (0.3 + 0.7 * Math.pow(Math.max(0, Math.sin(t * 1.1 + s * 37)), 6)) * rv : 0.85;
         if (cur) { const dx = x - mx, dy = y - my; if (dx * dx + dy * dy < R2) b = 1; }
         const lv = Math.min(23, Math.max(0, Math.floor(b * 24)));
-        ctx.drawImage(A, this.RI[2][0] * sw, (24 + lv) * sh, sw, sh, x - hw, y - hh, g.cw, g.ch);
+        ctx.drawImage(A, this.RI[2][0] * sw, (paletteOffset + 24 + lv) * sh, sw, sh, x - hw, y - hh, g.cw, g.ch);
         continue;
       }
       if (anim && seiva) { const w = Math.sin(d * 0.006 - t * 1.8); if (w > 0.6) b += Math.pow((w - 0.6) / 0.4, 3) * 0.3 * (0.4 + dn); }
@@ -277,7 +316,7 @@ export class HomeAscii {
       else { const tick = anim ? Math.floor(t * (0.3 + s * 1.2)) : 0; gi = Math.floor(Math.pow(dn, 1.15) * (L - 1) + (this.hash(s * 97.1, tick) - 0.5) * 1.1 + 0.5); }
       if (gi < 0) gi = 0; else if (gi >= L) gi = L - 1;
       const lv = Math.min(23, Math.max(0, Math.floor(b * 24)));
-      ctx.drawImage(A, ramp[gi] * sw, lv * sh, sw, sh, x - hw, y - hh, g.cw, g.ch);
+      ctx.drawImage(A, ramp[gi] * sw, (paletteOffset + lv) * sh, sw, sh, x - hw, y - hh, g.cw, g.ch);
     }
   }
 

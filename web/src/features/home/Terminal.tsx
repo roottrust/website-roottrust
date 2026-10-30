@@ -31,6 +31,6 @@ export function Terminal({ lines }: { lines: readonly string[] }) {
   return <div ref={host} className={styles.terminalBody} aria-hidden="true">{lines.map((text, index) => {
     const preceding = lines.slice(0, index).reduce((sum, line) => sum + line.length, 0);
     const visible = text.slice(0, Math.max(0, count - preceding));
-    return <span key={index} className={styles.terminalLine} style={{ color: index === 0 ? "var(--rt-superficie)" : text.includes("[OK]") ? "var(--rt-folha)" : "var(--rt-menta)" }}>{visible || "\u00a0"}</span>;
+    return <span key={index} className={styles.terminalLine} style={{ color: index === 0 ? "var(--text)" : text.includes("[OK]") ? "var(--accent)" : "var(--text-muted)" }}>{visible || "\u00a0"}</span>;
   })}</div>;
 }

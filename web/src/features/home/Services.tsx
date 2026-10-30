@@ -8,7 +8,7 @@ import styles from "./home.module.css";
 export function Services() {
 const { active, fraction, pick, trackRef, innerRef, enabled, trackHeight, position, top, padding, artHeight } = useHomeSequence(services.length);
 const selected = services[active];
-const servicos = services.map((s, index) => ({ ...s, n: "0" + (index + 1), sel: active === index, aria: "Abrir a página de " + s.title, onClick: () => pick(index), onHover: undefined, nColor: active === index ? "var(--rt-folha)" : "#9DB3A8", tColor: active === index ? "var(--rt-superficie)" : "#9DB3A8", arrow: active === index ? "var(--rt-folha)" : "transparent", bar: active === index ? (enabled ? Math.max(.04, fraction) : 1) : 0 }));
+const servicos = services.map((s, index) => ({ ...s, n: "0" + (index + 1), sel: active === index, aria: "Abrir a página de " + s.title, onClick: () => pick(index), onHover: undefined, nColor: active === index ? "var(--accent)" : "var(--text-subtle)", tColor: active === index ? "var(--text)" : "var(--text-subtle)", arrow: active === index ? "var(--accent)" : "transparent", bar: active === index ? (enabled ? Math.max(.04, fraction) : 1) : 0 }));
 const svc = { ...selected, pos: "0" + (active + 1) + " / 03" };
 const svcStack = services.map((s, index) => ({ ...s, n: "0" + (index + 1) }));
 function onTabKey(event: KeyboardEvent<HTMLDivElement>) {
@@ -26,7 +26,7 @@ return (<section id="servicos" data-sec="servicos" data-screen-label="Serviços"
     </div>
     <div className={(styles.sectionHeading)}>
       <h2 className={(styles.sectionTitle)}>Três frentes. <span className={(styles.accentLine)}>Uma base.</span></h2>
-      <p className={(styles.servicesIntroduction)}>Segurança, infraestrutura e software integrados para ambientes complexos, com foco em resiliência, continuidade e controle.</p>
+      <p className={(styles.servicesIntroduction)}>Segurança, infraestrutura em nuvem e software que se conectam, para operações com ambientes complexos. O escopo de cada trabalho é definido em conversa.</p>
     </div>
     <div className={styles.desktop}>
     <div className={(styles.servicesColumns)}>

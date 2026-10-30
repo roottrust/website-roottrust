@@ -1,10 +1,9 @@
-import Image from "next/image";
 import Link from "next/link";
 import styles from "./shell.module.css";
 
 export function Footer() {
   return <footer data-frame-cut="1" className={styles.footer}>
-    <Image src="/assets/roottrust-horizontal-negativo.svg" width={130} height={28} alt="roottrust" />
+    <span role="img" aria-label="roottrust" className={`${styles.signature} ${styles.footerSignature}`} />
     <p className={styles.slogan}>A base que sustenta o crescimento!</p>
     <span aria-hidden="true" className={styles.footerDivider} />
     <nav aria-label="Navegação do rodapé">

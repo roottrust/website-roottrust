@@ -23,7 +23,7 @@ export function Home() { return <main id="conteudo" data-graphics-root className
     <h1 className={(styles.heroTitle)}>Confiabilidade <span className={(styles.accentLine)}>com profundidade.</span></h1>
     <p className={(styles.heroDescription)}>Cibersegurança, infraestrutura em nuvem e software para operações críticas.</p>
     <div className={(styles.heroActions)}>
-      <a href="#contato" className={(styles.primaryCta)}>Solicitar diagnóstico<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></a>
+      <a href="#contato" className={(styles.primaryCta)}>Solicitar diagnóstico<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></a>
     </div>
   </div>
 </section><section data-sec="pilares" data-screen-label="Princípios" className={(styles.principles)}>
@@ -48,7 +48,7 @@ export function Home() { return <main id="conteudo" data-graphics-root className
                 <span className={(styles.practiceDescription)}>{p.acao}</span>
               </div>
               <a href="#contato" aria-label={(p.aria)} className={(styles.cutCta)}>
-                <span className={(styles.cutCtaInner)}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></span>
+                <span className={(styles.cutCtaInner)}><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></span>
               </a>
             </div>
           </div>
@@ -70,7 +70,7 @@ export function Home() { return <main id="conteudo" data-graphics-root className
         <h2 className={(styles.leaderTitle)}>Operações críticas <span className={(styles.accent)}>pedem mais do que tecnologia.</span></h2>
         <div className={(styles.leaderDescriptionStack)}>
           <p className={(styles.paragraph)}>Ambientes regulados, empresas em crescimento e decisões de liderança exigem uma abordagem integrada, com visão técnica e clareza de negócio.</p>
-          <p className={(styles.paragraphMuted)}>Ajudamos sua equipe a transformar complexidade em decisões confiáveis.</p>
+          <p className={(styles.paragraphMuted)}>Ajudamos sua equipe a transformar complexidade técnica em decisões mais claras.</p>
         </div>
       </div>
     </div>
@@ -83,7 +83,7 @@ export function Home() { return <main id="conteudo" data-graphics-root className
     </div>
     <div className={(styles.sectionHeading)}>
       <h2 className={(styles.sectionTitle)}>Ferramentas <span className={(styles.accentLine)}>para decidir.</span></h2>
-      <p className={(styles.toolsIntroduction)}>Recursos práticos para avaliar, priorizar e avançar com mais segurança.</p>
+      <p className={(styles.toolsIntroduction)}>Simulações e guias para organizar uma decisão. Os resultados dependem do que você informa.</p>
     </div>
     <div className={(styles.toolGrid)}>
       {ferramentas.map((f, index) => <Fragment key={index}>
@@ -91,11 +91,11 @@ export function Home() { return <main id="conteudo" data-graphics-root className
           <div className={styles.toolArt}><PillarArt kind={f.kind} /></div>
           <span className={(styles.toolTitle)}>{f.title}</span>
           <span className={(styles.toolDescription)}>{f.desc}</span>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={(styles.toolArrow)}><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={(styles.toolArrow)}><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
         </a>
       </Fragment>)}
     </div>
-    <p className={(styles.toolsNote)}>Resultado inicial sem cadastro.</p>
+    <p className={(styles.toolsNote)}>Resultado na própria página, sem cadastro.</p>
   </div>
 </section><section id="newsletter" data-sec="newsletter" data-screen-label="Newsletter" className={(styles.newsletter)}>
   <div className={(styles.newsletterColumns)}>
@@ -107,10 +107,10 @@ export function Home() { return <main id="conteudo" data-graphics-root className
       <h2 className={(styles.newsletterTitle)}>Análise <span className={(styles.accentLine)}>em dias úteis.</span></h2>
     </div>
     <div className={(styles.newsletterText)}>
-      <p className={(styles.paragraph)}>Insights práticos sobre segurança, nuvem, software e tecnologia para operações críticas.</p>
+      <p className={(styles.paragraph)}>Análises práticas sobre cibersegurança, nuvem e software, com fontes para aprofundar a leitura. Os envios dependem da publicação de cada edição.</p>
       <NewsletterForm config={newsletterAvailability()} variant="home" />
       
-      <Link href="/newsletter/edicoes" prefetch={false} className={(styles.archiveLink)}>Ver edições anteriores<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></Link>
+      <Link href="/newsletter/edicoes" prefetch={false} className={(styles.archiveLink)}>Ver edições anteriores<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></Link>
     </div>
   </div>
 </section><div data-band="cta" className={(styles.greenBand)}>

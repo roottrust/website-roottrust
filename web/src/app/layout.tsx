@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { Header } from "@/components/shell/Header";
 import { Footer } from "@/components/shell/Footer";
+import { themeBootstrapScript } from "@/components/theme/theme";
 import { GraphicsProvider, PauseMotionButton } from "@/features/graphics/GraphicsProvider";
 import "./globals.css";
 
@@ -16,7 +17,10 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="pt-BR" className={`${baloo.variable} ${archivo.variable}`}><body>
+  // suppressHydrationWarning só neste <html>: o script do head define data-theme/data-theme-pref antes da hidratação; não cobre filhos.
+  return <html lang="pt-BR" className={`${baloo.variable} ${archivo.variable}`} suppressHydrationWarning><head>
+    <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
+  </head><body>
     <a className="skipLink" href="#conteudo">Pular para o conteúdo</a>
     <GraphicsProvider><Header />{children}<Footer /><PauseMotionButton /></GraphicsProvider>
   </body></html>;

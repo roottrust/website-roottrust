@@ -104,6 +104,19 @@ export function mountPillar(host: HTMLElement, canvas: HTMLCanvasElement, initia
       vertexShader: VERT, fragmentShader: FRAG, transparent: true, depthTest: false,
       uniforms: { tScene: { value: renderTarget.texture }, res: { value: new THREE.Vector2(2, 2) }, cell: { value: 4 * dpr }, inkA: { value: new THREE.Color("#62AF96").convertSRGBToLinear() }, inkB: { value: new THREE.Color("#CCE9DC").convertSRGBToLinear() }, sinal: { value: new THREE.Color().setRGB(0, 214 / 255, 61 / 255) }, dis: { value: 0 } },
     });
+    const setPalette = (ink: string, soft: string, signal: string, theme: "light" | "dark") => {
+      if (disposed) return;
+      // This shader writes raw RGB; keep the approved dark conversion and use CSS RGB directly on light surfaces.
+      if (theme === "light") {
+        material.uniforms.inkA.value.setStyle(ink, THREE.LinearSRGBColorSpace);
+        material.uniforms.inkB.value.setStyle(soft, THREE.LinearSRGBColorSpace);
+      } else {
+        material.uniforms.inkA.value.set(ink).convertSRGBToLinear();
+        material.uniforms.inkB.value.set(soft).convertSRGBToLinear();
+      }
+      material.uniforms.sinal.value.setStyle(signal, THREE.LinearSRGBColorSpace);
+      animation?.invalidate();
+    };
     quadScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material));
     let width = 2, height = 2, auto = 0;
     const size = () => {
@@ -157,6 +170,7 @@ export function mountPillar(host: HTMLElement, canvas: HTMLCanvasElement, initia
     }
     return {
       dispose,
+      setPalette,
       setGate(gate: MotionGate) {
         if (disposed) return;
         allowed = gate.animated;

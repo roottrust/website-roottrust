@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useGraphicsMotion } from "./GraphicsProvider";
 import type { PillarKind } from "./pillar-scene";
@@ -8,12 +7,18 @@ import type { mountPillar } from "./pillar-runtime";
 import styles from "./graphics.module.css";
 
 export type { PillarKind } from "./pillar-scene";
+function updatePalette(host: HTMLDivElement | null, instance: ReturnType<typeof mountPillar> | null) {
+  if (!host || !instance) return;
+  const colors = getComputedStyle(host);
+  instance.setPalette(colors.getPropertyValue("--graphic-ink").trim(), colors.getPropertyValue("--graphic-soft").trim(), colors.getPropertyValue("--graphic-signal").trim(), colors.colorScheme === "light" ? "light" : "dark");
+}
 export function PillarArt({ kind, className = "", interactive = true, style }: { kind: PillarKind; className?: string; interactive?: boolean; style?: CSSProperties }) {
   const host = useRef<HTMLDivElement>(null), canvas = useRef<HTMLCanvasElement>(null);
   const instance = useRef<ReturnType<typeof mountPillar> | null>(null);
   const motion = useGraphicsMotion();
   const latest = useRef({ kind, animated: motion.animated, pageVisible: motion.pageVisible });
   const [status, setStatus] = useState<"loading" | "ready" | "failed">("loading");
+  useEffect(() => { updatePalette(host.current, instance.current); }, [motion.theme]);
   useEffect(() => {
     latest.current = { kind, animated: motion.animated, pageVisible: motion.pageVisible };
     instance.current?.swap(kind);
@@ -26,6 +31,7 @@ export function PillarArt({ kind, className = "", interactive = true, style }: {
       import("./pillar-runtime").then(({ mountPillar }) => {
         if (cancelled || !host.current || !canvas.current) return;
         instance.current = mountPillar(host.current, canvas.current, latest.current.kind, interactive, () => { if (!cancelled) setStatus("failed"); }, () => { if (!cancelled) setStatus("ready"); });
+        updatePalette(host.current, instance.current);
         instance.current.setGate(latest.current);
       }).catch(() => { if (!cancelled) setStatus("failed"); });
     };
@@ -43,6 +49,6 @@ export function PillarArt({ kind, className = "", interactive = true, style }: {
   }, [interactive]);
   return <div ref={host} className={`${styles.art} ${className}`} style={style} aria-hidden="true" data-graphic={kind} data-graphic-status={status}>
     <canvas ref={canvas} className={styles.canvas} style={{ visibility: status === "ready" ? "visible" : "hidden" }} />
-    {status !== "ready" && <Image data-graphic-fallback="true" src="/assets/simbolo-negativo.svg" alt="" width={566} height={506} className={styles.fallback} unoptimized />}
+    {status !== "ready" && <span data-graphic-fallback="true" className={styles.fallback} />}
   </div>;
 }

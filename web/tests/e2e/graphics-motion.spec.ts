@@ -54,6 +54,12 @@ async function drawsDuring(page: Page, ms: number) {
 }
 const total = (rows: { delta: number }[]) => rows.reduce((sum, row) => sum + row.delta, 0);
 const onScreen = <T extends { onScreen: boolean }>(rows: T[]) => rows.filter(row => row.onScreen);
+const pixelHash = (canvas: Locator) => canvas.evaluate((element: HTMLCanvasElement) => {
+  const pixels = element.getContext("2d")!.getImageData(0, 0, element.width, element.height).data;
+  let hash = 2166136261;
+  for (let index = 0; index < pixels.length; index += 4 * 19) hash = Math.imul(hash ^ (pixels[index] + (pixels[index + 1] << 8) + (pixels[index + 2] << 16) + pixels[index + 3]), 16777619);
+  return hash >>> 0;
+});
 
 /** On-screen pillar canvases with at least one non-transparent pixel (the Home ASCII canvas is empty outside its bands). */
 async function paintedState(page: Page) {
@@ -251,6 +257,13 @@ test.describe("graphics fallback contract", () => {
     await page.getByRole("button", { name: "Pausar animações" }).click();
     await page.getByRole("button", { name: "Retomar animações" }).click();
     await expect(arts.first()).toHaveAttribute("data-graphic-status", "failed");
+    const select = page.locator("header").getByLabel("Tema", { exact: true });
+    for (const theme of ["light", "dark"] as const) {
+      await select.selectOption(theme);
+      await expect(arts.first()).toHaveAttribute("data-graphic-status", "failed");
+      const background = await arts.first().locator('[data-graphic-fallback="true"]').evaluate(el => getComputedStyle(el).backgroundImage);
+      expect(background).toContain(theme === "light" ? "simbolo-positivo.svg" : "simbolo-negativo.svg");
+    }
     expect(errors).toEqual([]);
   });
 
@@ -300,6 +313,79 @@ test.describe("graphics fallback contract", () => {
     await expect(homeCanvas).toBeAttached();
     await expect(homeCanvas).toBeHidden();
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  });
+});
+
+test.describe("graphics theme contract", () => {
+  test.beforeEach(async ({ page }) => { await instrument(page); });
+
+  test("invalid ASCII palette uses the static fallback without breaking content", async ({ page }) => {
+    const errors: string[] = [];
+    page.on("pageerror", error => errors.push(error.message));
+    await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
+    await page.goto("/");
+    await expect(page.locator('main > img[data-graphic-fallback="true"]')).toHaveCount(0);
+    await page.addStyleTag({ content: 'main { --graphic-ink: invalid; }' });
+    await page.locator("header").getByLabel("Tema", { exact: true }).selectOption("light");
+    await expect(page.locator('main > img[data-graphic-fallback="true"]')).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Confiabilidade com profundidade.");
+    expect(errors).toEqual([]);
+  });
+
+  test("theme and system changes repaint paused graphics without replacing canvas or GPU", async ({ page }) => {
+    await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
+    await page.goto("/");
+    const art = page.locator('[data-sec="pilares"] [data-graphic]').first();
+    await art.evaluate(el => el.scrollIntoView({ block: "center" }));
+    await expect(art).toHaveAttribute("data-graphic-status", "ready");
+    const canvas = art.locator("canvas");
+    await canvas.evaluate(el => { (window as unknown as { __themeCanvas: Element }).__themeCanvas = el; });
+    await page.getByRole("button", { name: "Pausar animações" }).click();
+    const dark = await pixelHash(canvas);
+    const resources = await page.evaluate(() => ({ contexts: (window as unknown as { __gl: unknown[] }).__gl.length, canvases: document.querySelectorAll("canvas").length }));
+    const select = page.locator("header").getByLabel("Tema", { exact: true });
+    for (const theme of ["light", "dark", "light", "dark"] as const) {
+      await select.selectOption(theme);
+      if (theme === "light") {
+        await expect.poll(() => pixelHash(canvas)).not.toBe(dark);
+        expect(await canvas.evaluate((element: HTMLCanvasElement) => {
+          const pixels = element.getContext("2d")!.getImageData(0, 0, element.width, element.height).data;
+          for (let index = 0; index < pixels.length; index += 4) if (pixels[index + 3] > 128 && pixels[index + 1] >= 32) return true;
+          return false;
+        })).toBe(true);
+      }
+      else await expect.poll(() => pixelHash(canvas)).toBe(dark);
+    }
+    await select.selectOption("system");
+    await page.emulateMedia({ colorScheme: "light", reducedMotion: "no-preference" });
+    await expect.poll(() => pixelHash(canvas)).not.toBe(dark);
+    await expect(page.getByRole("button", { name: "Retomar animações" })).toHaveAttribute("aria-pressed", "true");
+    await page.waitForTimeout(200);
+    expect(total(await drawsDuring(page, 400))).toBe(0);
+    expect(await canvas.evaluate(el => (window as unknown as { __themeCanvas: Element }).__themeCanvas === el)).toBe(true);
+    expect(await page.evaluate(() => ({ contexts: (window as unknown as { __gl: unknown[] }).__gl.length, canvases: document.querySelectorAll("canvas").length }))).toEqual(resources);
+  });
+
+  test("theme change while hidden defers drawing until visible (simulated visibility)", async ({ page }) => {
+    await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
+    await page.goto("/");
+    const art = page.locator('[data-sec="pilares"] [data-graphic]').first();
+    await art.evaluate(el => el.scrollIntoView({ block: "center" }));
+    await expect(art).toHaveAttribute("data-graphic-status", "ready");
+    const canvas = art.locator("canvas"), dark = await pixelHash(canvas);
+    const setHidden = (hidden: boolean) => page.evaluate(value => {
+      Object.defineProperty(document, "hidden", { configurable: true, get: () => value });
+      document.dispatchEvent(new Event("visibilitychange"));
+    }, hidden);
+    await setHidden(true);
+    await page.waitForTimeout(200);
+    await page.emulateMedia({ colorScheme: "light" });
+    expect(total(await drawsDuring(page, 400))).toBe(0);
+    expect(await pixelHash(canvas)).toBe(dark);
+    await setHidden(false);
+    await expect.poll(() => pixelHash(canvas)).not.toBe(dark);
+    await page.waitForTimeout(200);
+    expect(total(await drawsDuring(page, 400))).toBe(0);
   });
 });
 

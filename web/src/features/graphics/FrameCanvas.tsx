@@ -10,16 +10,17 @@ import styles from "./graphics.module.css";
 export function FrameCanvas() {
   const frame = useRef<HTMLCanvasElement>(null);
   const controller = useRef<{ animation: Animation; engine: HomeAscii } | null>(null);
-  const { animated, pageVisible } = useGraphicsMotion();
+  const { animated, pageVisible, theme } = useGraphicsMotion();
   const latest = useRef({ animated, pageVisible });
   const [status, setStatus] = useState<"loading" | "ready" | "failed">("loading");
   useEffect(() => {
     latest.current = { animated, pageVisible };
     const current = controller.current;
     if (!current) return;
+    current.engine.setTheme(theme);
     current.engine.animated = animated; current.engine.invalidate();
     current.animation.setGate({ animated: false, pageVisible });
-  }, [animated, pageVisible]);
+  }, [animated, pageVisible, theme]);
   useEffect(() => {
     const fv = frame.current, root = fv?.closest<HTMLElement>("[data-graphics-root]");
     if (!fv || !root) throw new Error("FrameCanvas requires a data-graphics-root ancestor.");
