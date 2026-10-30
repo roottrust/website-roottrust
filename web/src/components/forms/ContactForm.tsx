@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { validateContact, type ContactErrors, type ContactFormConfig, type ContactValues } from "@/lib/forms";
 import { DemoControls, FormStatus } from "./FormStatus";
+import { challengeGroupId } from "./challenge-state";
 import { TurnstileWidget } from "./TurnstileWidget";
 import { useLocalSubmission } from "./useLocalSubmission";
 import styles from "./forms.module.css";
@@ -72,7 +73,7 @@ export function ContactForm({ config, variant }: { config: ContactFormConfig; va
       {mode === "demo" ? <DemoControls id={id} outcome={submission.outcome} onChange={submission.setOutcome} disabled={busy} /> : null}
       {pilot && siteKey ? <TurnstileWidget siteKey={siteKey} action="diagnostico" active={near} statusId={challengeStatusId} resetKey={challengeRound} onToken={setToken} /> : null}
       <button className="button" type="submit" aria-describedby={pilot && !token ? challengeStatusId : undefined} disabled={!submission.ready || busy || (pilot && !token)}>{busy ? "Enviando solicitação…" : "Solicitar diagnóstico"}{variant === "home" ? <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg> : null}</button>
-      <FormStatus mode={mode} status={submission.status} kind="contact" reference={submission.reference} />
+      <FormStatus mode={mode} status={submission.status} kind="contact" reference={submission.reference} retryAfter={submission.retryAfter} reviewId={`${id}-name`} challengeId={pilot ? challengeGroupId(challengeStatusId) : undefined} />
       <p className={styles.channels}>Fale com a Root Trust: <a href="mailto:contato@roottrust.com.br">contato@roottrust.com.br</a> ou <a href="tel:+5511940084692">11 94008-4692</a>.</p>
     </form>
   );

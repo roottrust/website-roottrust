@@ -138,6 +138,7 @@
 
 /* Faixas de marca preservam a própria superfície nos dois temas. */
 .leaderBand, .greenBand {
+  color:var(--text);
   color-scheme:dark; --page:#0b4739; --panel:#0b4739; --border:var(--rt-musgo);
   --text:var(--band-text); --text-muted:var(--band-muted); --text-subtle:#9db3a8;
   --accent:var(--rt-folha); --link:var(--rt-menta); --link-hover:var(--rt-folha);

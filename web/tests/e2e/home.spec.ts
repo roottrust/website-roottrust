@@ -16,7 +16,7 @@ test("Home preserves sections, responsive services and keyboard selectors", asyn
     await expect(page.getByRole("tab", { name: /03 Software/ })).toBeFocused();
     await expect(page.getByRole("tabpanel")).toContainText("Desenvolvemos e evoluímos sistemas sob medida");
     await page.getByRole("button", { name: /05 Evolução/ }).click();
-    await expect(page.locator('[aria-live="polite"][aria-atomic="true"]')).toContainText("Etapa 05 de 5: Evolução");
+    await expect(page.locator('[aria-live="polite"][aria-atomic="true"]').filter({ hasText: /^Etapa \d+ de 5:/ })).toContainText("Etapa 05 de 5: Evolução");
   } else {
     const services = page.locator('[data-sec="servicos"]');
     for (const title of ["Cibersegurança", "Infraestrutura em nuvem", "Software"]) {

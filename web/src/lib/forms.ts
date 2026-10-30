@@ -19,13 +19,15 @@ export function resolveFormMode(value: string | undefined): FormMode {
 export function validateContact(values: ContactValues): ContactErrors {
   const errors: ContactErrors = {};
   if (!values.name.trim()) errors.name = "Informe seu nome.";
+  else if (values.name.length > 120) errors.name = "Use até 120 caracteres no nome.";
   if (!values.company.trim()) errors.company = "Informe a empresa.";
+  else if (values.company.length > 160) errors.company = "Use até 160 caracteres na empresa.";
   const phone = values.whatsapp.trim();
   let digits = phone.replace(/\D/g, "");
   const hasCountry = digits.startsWith("55") && (digits.length === 12 || digits.length === 13);
   if (hasCountry) digits = digits.slice(2);
   const subscriber = digits.slice(2);
-  const plausible = /^\+?[\d\s().-]+$/.test(phone)
+  const plausible = values.whatsapp.length <= 32 && /^\+?[\d\s().-]+$/.test(phone)
     && (!phone.startsWith("+") || hasCountry)
     && /^[1-9]{2}(?:[1-9]\d{7}|9\d{8})$/.test(digits)
     && !/^(\d)\1+$/.test(subscriber);
@@ -39,7 +41,7 @@ export function validateEmail(value: string): string | undefined {
   const parts = value.trim().split("@");
   const local = parts[0] ?? "";
   const labels = (parts[1] ?? "").split(".");
-  const valid = parts.length === 2
+  const valid = value.length <= 254 && parts.length === 2
     && /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+$/.test(local)
     && !local.startsWith(".") && !local.endsWith(".") && !local.includes("..")
     && labels.length >= 2
@@ -78,6 +80,19 @@ export async function submitLocalForm(
 
 export type DiagnosticOutcome = { result: SubmissionResult; reference?: string; retryAfter?: number };
 
+// retryAfter is seconds: only a finite positive number is kept; anything else falls back to the generic wait message.
+export function normalizeRetryAfter(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : undefined;
+}
+
+// Presentation rounds up (never promises a shorter wait) and stays a static phrase: no countdown.
+export function retryAfterLabel(seconds: number): string {
+  const total = Math.ceil(seconds);
+  if (total < 60) return total === 1 ? "1 segundo" : `${total} segundos`;
+  const minutes = Math.ceil(total / 60);
+  return minutes === 1 ? "1 minuto" : `${minutes} minutos`;
+}
+
 const DIAGNOSTIC_REFERENCE = /^DG-[0-9A-Z]{10}$/;
 
 // Real transport for the pilot forms. A network failure is "error": the outcome is unknown, never success.
@@ -112,8 +127,8 @@ async function postPilot(
   if (response.status === 400) return { result: "invalid" };
   if (response.status === 403) return { result: field("code") === "challenge_failed" ? "challenge" : "forbidden" };
   if (response.status === 429) {
-    const wait = field("retryAfter");
-    return { result: "rate_limited", ...(typeof wait === "number" && Number.isFinite(wait) && wait > 0 ? { retryAfter: wait } : {}) };
+    const wait = normalizeRetryAfter(field("retryAfter"));
+    return { result: "rate_limited", ...(wait !== undefined ? { retryAfter: wait } : {}) };
   }
   return { result: response.status === 503 ? "unavailable" : "error" };
 }

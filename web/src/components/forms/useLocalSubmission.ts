@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { submitDiagnostic, submitLocalForm, submitNewsletter, submitReport, type ContactMode, type DemoOutcome, type FormMode, type FormRequest, type SubmissionResult } from "@/lib/forms";
+import { normalizeRetryAfter, submitDiagnostic, submitLocalForm, submitNewsletter, submitReport, type ContactMode, type DemoOutcome, type FormMode, type FormRequest, type SubmissionResult } from "@/lib/forms";
 
 const subscribe = () => () => {};
 const clientSnapshot = () => true;
@@ -14,6 +14,7 @@ export function useLocalSubmission(mode: ContactMode) {
   const [status, setStatus] = useState<SubmissionStatus>("idle");
   const [outcome, setOutcome] = useState<DemoOutcome>("success");
   const [reference, setReference] = useState<string | undefined>();
+  const [retryAfter, setRetryAfter] = useState<number | undefined>();
   const active = useRef<AbortController | null>(null);
   useEffect(() => () => active.current?.abort(), []);
 
@@ -24,6 +25,7 @@ export function useLocalSubmission(mode: ContactMode) {
     active.current = controller;
     setStatus("submitting");
     setReference(undefined);
+    setRetryAfter(undefined);
     try {
       if (mode === "pilot") {
         if (!token) throw new Error("Missing challenge token");
@@ -34,6 +36,7 @@ export function useLocalSubmission(mode: ContactMode) {
             : await submitNewsletter(request.email, request.editionSlug, token, controller.signal);
         if (!controller.signal.aborted) {
           setReference(result.reference);
+          setRetryAfter(normalizeRetryAfter(result.retryAfter));
           setStatus(result.result);
         }
       } else {
@@ -47,5 +50,5 @@ export function useLocalSubmission(mode: ContactMode) {
     }
   }
 
-  return { ready, status, outcome, reference, setOutcome, submit };
+  return { ready, status, outcome, reference, retryAfter, setOutcome, submit };
 }

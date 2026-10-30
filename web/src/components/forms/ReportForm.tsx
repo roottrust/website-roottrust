@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { validateEmail, type ContactFormConfig } from "@/lib/forms";
 import { DemoControls, FormStatus } from "./FormStatus";
+import { challengeGroupId } from "./challenge-state";
 import { TurnstileWidget } from "./TurnstileWidget";
 import { useLocalSubmission } from "./useLocalSubmission";
 import styles from "./forms.module.css";
@@ -58,13 +59,13 @@ export function ReportForm({ config, toolId, topic, variant }: { config: Contact
       {pilot ? (
         <label className={styles.consent}>
           <input type="checkbox" name="commercialConsent" checked={commercial} disabled={busy} onChange={(event) => setCommercial(event.target.checked)} />
-          <span>Também quero receber comunicações comerciais da Root Trust neste e-mail (opcional; o relatório chega mesmo sem marcar).</span>
+          <span>Também quero receber comunicações comerciais da Root Trust neste e-mail (opcional; posso pedir o relatório sem marcar).</span>
         </label>
       ) : null}
       {mode === "demo" ? <DemoControls id={id} outcome={submission.outcome} onChange={submission.setOutcome} disabled={busy} /> : null}
       {pilot && siteKey ? <TurnstileWidget siteKey={siteKey} action="relatorio" active={near} statusId={challengeStatusId} resetKey={challengeRound} onToken={setToken} /> : null}
       <button className="button" type="submit" aria-describedby={pilot && !token ? challengeStatusId : undefined} disabled={!submission.ready || busy || (pilot && !token)}>{busy ? "Solicitando…" : "Receber relatório"}</button>
-      <FormStatus mode={mode} status={submission.status} kind="report" />
+      <FormStatus mode={mode} status={submission.status} kind="report" retryAfter={submission.retryAfter} reviewId={`${id}-email`} challengeId={pilot ? challengeGroupId(challengeStatusId) : undefined} />
     </form>
   );
 }

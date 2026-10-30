@@ -2,8 +2,9 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { ContactForm } from "../../src/components/forms/ContactForm";
-import { pilotMessage } from "../../src/components/forms/FormStatus";
-import { canRetryChallenge, challengeMessage, type ChallengeState } from "../../src/components/forms/challenge-state";
+import { ReportForm } from "../../src/components/forms/ReportForm";
+import { FormStatus, pilotMessage } from "../../src/components/forms/FormStatus";
+import { canRetryChallenge, challengeGroupId, challengeMessage, type ChallengeState } from "../../src/components/forms/challenge-state";
 import { submitDiagnostic } from "../../src/lib/forms";
 
 const values = { name: "Ana Souza", company: "Acme", whatsapp: "(11) 94008-4692" };
@@ -97,5 +98,65 @@ describe("challenge state logic", () => {
   });
   it("only failed, expired and timeout offer a retry", () => {
     expect(states.filter(canRetryChallenge)).toEqual(["expired", "timeout", "failed"].sort((x, y) => states.indexOf(x as ChallengeState) - states.indexOf(y as ChallengeState)));
+  });
+});
+
+describe("shared feedback panel", () => {
+  const render = (props: Partial<Parameters<typeof FormStatus>[0]>) =>
+    renderToStaticMarkup(createElement(FormStatus, { mode: "pilot", status: "idle", kind: "contact", ...props }));
+  const liveRegions = (html: string) => html.match(/role="status"/g)?.length ?? 0;
+
+  it("keeps an empty persistent live region without an idle panel", () => {
+    for (const mode of ["pilot", "demo", "unavailable"] as const) {
+      const html = render({ mode });
+      expect(html).toContain('role="status" aria-live="polite" aria-atomic="true" class="srOnly"></p>');
+      expect(html).not.toContain("data-tone");
+    }
+  });
+  it("renders a decorative icon, a title and exactly one live region holding only the message", () => {
+    for (const status of ["submitting", "accepted", "invalid", "rate_limited", "challenge", "forbidden", "unavailable", "error"] as const) {
+      const html = render({ status, kind: "report", reviewId: "x", challengeId: "y" });
+      expect(liveRegions(html)).toBe(1);
+      expect(html).toContain('aria-hidden="true"');
+      expect(html).toMatch(/<p class="[^"]*">[^<]+<\/p><p role="status" aria-live="polite"[^>]*>[^<]+<\/p>/);
+    }
+  });
+  it("keeps the demo notice and the exact unavailable and demo messages", () => {
+    expect(render({ mode: "demo", status: "accepted" })).toContain("Demonstração: solicitação aceita localmente. Nenhum dado foi enviado.");
+    expect(render({ mode: "demo" })).toContain("Demonstração local — nenhum dado é enviado ou guardado.");
+    expect(render({ mode: "unavailable", status: "unavailable" })).toContain(">O envio ainda não está disponível. Nenhum dado foi enviado.</p>");
+  });
+  it("offers a useful action only where it helps", () => {
+    expect(render({ status: "invalid", reviewId: "campo" })).toContain("Rever os campos");
+    expect(render({ status: "challenge", challengeId: "grupo" })).toContain("Ir à verificação");
+    expect(render({ status: "error" })).toContain("mailto:");
+    expect(render({ status: "accepted" })).not.toMatch(/<button|<a /);
+    expect(render({ status: "submitting" })).not.toMatch(/<button|<a /);
+  });
+  it("rounds retryAfter up in the message and never shows a countdown", () => {
+    expect(pilotMessage("rate_limited", undefined, 1.2)).toContain("2 segundos");
+    expect(pilotMessage("rate_limited", undefined, 61)).toContain("2 minutos");
+    expect(pilotMessage("rate_limited")).not.toMatch(/\d/);
+    expect(render({ status: "rate_limited", retryAfter: 30 })).toContain("30 segundos");
+  });
+  it("treats a network or 5xx error as an uncertain outcome without inviting a blind resend", () => {
+    for (const kind of ["contact", "report", "newsletter"] as const) {
+      const html = render({ status: "error", kind });
+      expect(html).toContain("Não foi possível confirmar");
+      expect(html).not.toMatch(/tente novamente|envie de novo|reenvie/i);
+    }
+  });
+  it("says a registered report or newsletter request is not delivered or confirmed", () => {
+    expect(render({ status: "accepted", kind: "report" })).toContain("A entrega não é garantida");
+    expect(render({ status: "accepted", kind: "newsletter" })).toContain("não confirma a inscrição nem a entrega");
+  });
+  it("derives the challenge group id from the status id", () => {
+    expect(challengeGroupId("abc-challenge")).toBe("abc-challenge-group");
+  });
+  it("keeps optional commercial consent unchecked and allows requesting without ticking it", () => {
+    const html = renderToStaticMarkup(createElement(ReportForm, { config: { mode: "pilot", siteKey: "site-key" }, toolId: "rosi", topic: "ROSI" }));
+    expect(html).toContain("posso pedir o relatório sem marcar");
+    expect(html).toMatch(/type="checkbox"/);
+    expect(html).not.toMatch(/type="checkbox"[^>]*checked/);
   });
 });

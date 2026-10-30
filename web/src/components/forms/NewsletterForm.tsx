@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { validateEmail, type ContactFormConfig } from "@/lib/forms";
 import { DemoControls, FormStatus } from "./FormStatus";
+import { challengeGroupId } from "./challenge-state";
 import { TurnstileWidget } from "./TurnstileWidget";
 import { useLocalSubmission } from "./useLocalSubmission";
 import styles from "./forms.module.css";
@@ -56,7 +57,7 @@ export function NewsletterForm({ config, editionSlug, variant, cta, support, hel
       {mode === "demo" ? <DemoControls id={id} outcome={submission.outcome} onChange={submission.setOutcome} disabled={busy} /> : null}
       {pilot && siteKey ? <TurnstileWidget siteKey={siteKey} action="newsletter-inscricao" active={near} statusId={challengeStatusId} resetKey={challengeRound} onToken={setToken} /> : null}
       <button className="button" type="submit" aria-describedby={pilot && !token ? challengeStatusId : undefined} aria-label={busy ? "Solicitando confirmação…" : label} disabled={!submission.ready || busy || (pilot && !token)}>{variant === "home" ? <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg> : busy ? "Solicitando confirmação…" : variant === "inline" ? <>{label}<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></> : label}</button>
-      <FormStatus mode={mode} status={submission.status} kind="newsletter" />
+      <FormStatus mode={mode} status={submission.status} kind="newsletter" retryAfter={submission.retryAfter} reviewId={`${id}-email`} challengeId={pilot ? challengeGroupId(challengeStatusId) : undefined} />
     </form>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { canRetryChallenge, challengeMessage, type ChallengeState } from "./challenge-state";
+import { canRetryChallenge, challengeGroupId, challengeMessage, type ChallengeState } from "./challenge-state";
 import styles from "./forms.module.css";
 
 interface TurnstileApi {
@@ -30,6 +30,15 @@ function loadScript(): Promise<TurnstileApi> {
   });
 }
 
+type WidgetTheme = "dark" | "light";
+
+// Cloudflare documents no in-place theme switch that keeps the token, so the theme is read once, when the widget is created
+// (band scopes and the page theme both set color-scheme), and the surrounding surface stays pinned to it while the widget lives.
+const surfaceTheme = (element: HTMLElement): WidgetTheme => {
+  const scheme = getComputedStyle(element).colorScheme;
+  return scheme.includes("light") && !scheme.includes("dark") ? "light" : "dark";
+};
+
 // The script loads only once `active` turns true (form near the viewport or focused). Tokens are single-use: the parent
 // bumps `resetKey` after every submission attempt so the next one gets a fresh challenge.
 export function TurnstileWidget({ siteKey, action, active, resetKey, statusId, onToken }: {
@@ -40,6 +49,7 @@ export function TurnstileWidget({ siteKey, action, active, resetKey, statusId, o
   const onTokenRef = useRef(onToken);
   const [state, setState] = useState<ChallengeState>("idle");
   const [attempt, setAttempt] = useState(0);
+  const [widgetTheme, setWidgetTheme] = useState<WidgetTheme | null>(null);
   useEffect(() => { onTokenRef.current = onToken; });
 
   useEffect(() => {
@@ -47,16 +57,20 @@ export function TurnstileWidget({ siteKey, action, active, resetKey, statusId, o
     let cancelled = false;
     loadScript().then((api) => {
       if (cancelled || !container.current) return;
+      const theme = surfaceTheme(container.current);
       widgetId.current = api.render(container.current, {
         sitekey: siteKey,
         action,
-        theme: "dark",
+        theme,
+        // Compact stays within reflow widths without recreating a solved widget on resize.
+        size: "compact",
         language: "pt-br",
         callback: (token: string) => { setState("solved"); onTokenRef.current(token); },
         "expired-callback": () => { setState("expired"); onTokenRef.current(null); },
         "timeout-callback": () => { setState("timeout"); onTokenRef.current(null); },
         "error-callback": () => { setState("failed"); onTokenRef.current(null); },
       });
+      setWidgetTheme(theme);
       setState((current) => (current === "idle" ? "ready" : current));
     }).catch(() => { if (!cancelled) setState("failed"); });
     return () => {
@@ -87,9 +101,9 @@ export function TurnstileWidget({ siteKey, action, active, resetKey, statusId, o
   const shown: ChallengeState = active && state === "idle" ? "loading" : state;
 
   return (
-    <div className={styles.challenge} role="group" aria-label="Verificação de segurança">
-      <div ref={container} />
-      <p className={styles.notice} id={statusId} role="status" aria-live="polite">{challengeMessage(shown)}</p>
+    <div className={styles.challenge} data-widget-theme={widgetTheme ?? undefined} id={challengeGroupId(statusId)} tabIndex={-1} role="group" aria-label="Verificação de segurança">
+      <div ref={container} className={styles.challengeWidget} />
+      <p className={styles.notice} id={statusId} role="status" aria-live={shown === "ready" && resetKey > 0 ? "off" : "polite"}>{challengeMessage(shown)}</p>
       {canRetryChallenge(shown) ? <button className={styles.retry} type="button" onClick={retry}>Tentar novamente</button> : null}
       <p className={styles.notice}>Verificação protegida por Cloudflare Turnstile.</p>
     </div>

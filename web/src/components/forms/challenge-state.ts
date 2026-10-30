@@ -12,3 +12,5 @@ const MESSAGES: Record<ChallengeState, string> = {
 
 export const challengeMessage = (state: ChallengeState): string => MESSAGES[state];
 export const canRetryChallenge = (state: ChallengeState): boolean => state === "failed" || state === "expired" || state === "timeout";
+
+export const challengeGroupId = (statusId: string): string => `${statusId}-group`;

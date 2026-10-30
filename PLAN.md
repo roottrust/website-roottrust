@@ -405,18 +405,34 @@ Evidências parciais: lint/typecheck/614 unitários/build passaram. Quatro E2E n
 
 **Depende:** T1.2/T1.3/T2.1. **Arquivos:** FormStatus, forms.module.css, useLocalSubmission, forms.ts e formulários.
 
-- [ ] Painel/erros/actions conforme 4.4 nos dois temas; nenhum aviso/painel inicial padrão vazio.
-- [ ] Preservar protocolo, dados após falha, dupla submissão, retryAfter necessário e pedido≠entrega.
-- [ ] Demo explicitamente demo; nenhum erro cru, enumeração ou anúncio duplicado.
-- [ ] Testes focados dos estados e contratos alterados, sem envio externo.
+Preflight T2.3 em30/10: raiz Git conferida, dry-run29 arquivos e inspeção de segredos/gerados sem achados; `next-env.d.ts` gerado restaurado antes do staging. Checkpoint WIP LOCAL autorizado `84cdee118c847eef8e4ba3489975fb517e9f964b` (`wip: pre-claude T2.3`), sem push. Hash registrado antes da chamada. Sonnet escreve somente formulários/adapter e testes delimitados; sem internas, provedores, emails/PDFs, instalação ou efeitos externos. Gates completos e revisão independente depois da entrega.
+
+Entrega `da05edbf-e720-41a4-8119-5c3b56da2fab`, modelo observado `claude-sonnet-5-5`, `succeeded`: painel/ações sem avisos ociosos, campos semânticos, retryAfter preservado, resultado incerto neutro e consentimento comercial sem promessa de entrega. Sonnet executou lint/typecheck e34 unitários focados, sem build/E2E. Integração Codex corrigiu região viva persistente (sem caixa/gap idle), CAPTCHA sempre compacto e superfície fixada sem reset por tema, chevron SVG12×8 e foco na superfície do widget. Revisor GPT `/root/review_t13_contracts` apontou P2: limites do cliente divergentes da API e borda do contato1,33:1. Codex alinhou limites120/160/32 e email254 nos helpers compartilhados, mensagem400 genérica e borda Folha4,10:1. Sem P1/P2 adicional reportado; nenhuma escrita do revisor.
+
+Gates Codex após integração: lint/typecheck,37 arquivos/629 unitários e build passaram. Novo E2E dirigido teve4 passes e4 falhas no seletor do teste (nome do botão muda durante envio); seletor corrigido para botão submit estável sem alterar produção, atraso350ms ou guarda de duplicidade. Suíte E2E completa em execução; não declarar rodada verde antes do término. Consulta obrigatória da ponte `f129e4b0-8c0c-4ef3-b62e-2595a805468e` somente leitura em execução, patch saneado `references/audits/website-revision/t23-review.diff`. Logs `t23-*`; nenhuma submissão externa, instalação ou publicação. Internas aguardam gate A/T3.1; leitor real e CAPTCHA real ainda não certificados.
+
+Revisão da ponte terminou `succeeded` e identificou P1 real introduzido pela substituição CSS integradora Codex: perda acidental da regra base dos campos. Corrigido restaurando dimensões/borda/padding/cores/placeholder; E2E agora exige cores reais da faixa, além de contraste, evitando falso positivo por estilo nativo. P2 de anúncios concorrentes no reset pós-submit corrigido silenciando apenas `ready` após reset, preservando statusId e demais estados. E2E em curso foi interrompido, sem declarar passe; lint/typecheck/629 unitários/build repetidos na árvore corrigida passaram. Follow-up da mesma consulta terminou `succeeded`, confirmou P1/P2 resolvidos, sem execução de testes pelo revisor. P3 residual: anúncio do CAPTCHA solved ao reativar aria-live pode variar por leitor; botão habilita e descrição permanece acessível, leitor físico não verificado. Nova rodada E2E completa iniciada após correções, sem retries.
+
+Rodada seguinte terminou343 passes/6 skips/1 falha em teste antigo Home: seletor global aria-live/atomic encontrou também os novos formulários. Corrigido somente o seletor para o anúncio Etapa; a rodada posterior foi interrompida por descoberta visual legítima, sem declarar passe. Captura+revisão GPT confirmaram labels verdes invisíveis na faixa verde no tema claro: faltava recalcular `color` no escopo que muda `--text`. Corrigidos `.form` e faixas da Home com `color:var(--text)`, teste exige cor real do label igual à do input; nova checagem pontual da consulta `f129e4b0-8c0c-4ef3-b62e-2595a805468e` terminou `succeeded`, sem regressão identificada. Lint/typecheck/629 unitários/build passaram novamente. Capturas finais1440/390 nos dois temas sem pageerrors/POST/overflow; feedback do contato refeito recortando o próprio formulário para não incluir sobreposição do header fixo. Inspeção Codex confirmou labels/campos/painel legíveis. Nova rodada E2E completa em execução sobre essa árvore, sem retries; logs finais `t23-e2e-final.log`. Nenhuma repetição foi declarada verde nem usada como aceite humano.
+
+**T2.3 concluída tecnicamente:** lint, typecheck,37 arquivos/629 unitários, build e E2E completo344 passes/6 skips/zero retries (6,4min) na árvore corrigida. Evidências `references/audits/website-revision/t23-{lint,typecheck,unit,build}.log` e `t23-e2e-final.log`; rodadas anteriores com falha/interrupção preservadas como histórico acima. Revisões Codex, GPT independente e ponte Sonnet concluídas; P1/P2 encontrados tratados. Nenhuma nova dependência, alteração de fórmula, email/PDF/edição ou efeito em provedor. Gerado next-env inspecionado e restaurado após gates; nenhum commit final/push/deploy. Aceite visual permanece no gate A.
+
+- [x] Painel/erros/actions conforme 4.4 nos dois temas; nenhum aviso/painel inicial padrão vazio.
+- [x] Preservar protocolo, dados após falha, dupla submissão, retryAfter necessário e pedido≠entrega.
+- [x] Demo explicitamente demo; nenhum erro cru, enumeração ou anúncio duplicado.
+- [x] Testes focados dos estados e contratos alterados, sem envio externo.
 
 #### T2.4 [codex + Renato] Gate A: aprovar Home, header e feedback
 
 **Depende:** T2.1–T2.3. **Bloqueia páginas internas.**
 
-- [ ] Apresentar Home inteira desktop/mobile claro/escuro e estados de feedback com fakes seguros.
-- [ ] Registrar aceite explícito ou ajustes; aprovação antiga do escuro/silêncio não substituem esse gate.
-- [ ] Revisão independente do diff visual/contratos, sem redesign ou novas rodadas sem motivo.
+Material local de revisão em `references/audits/website-revision/gate-a/index.html`, servido somente em `http://127.0.0.1:3102/`; Home interativa demo em `http://127.0.0.1:3100/`. Quatro capturas completas1440/390 claro/escuro,32 capturas de seção,4 exemplos de formulário e amostras estáticas do componente real para oito estados dos três fluxos. Dados/protocolo fictícios, nenhum POST/API; fontes prontas, pausa/reduced para estabilidade. `capture-results.json`: zero pageerrors/POST/overflow nos quatro cenários; links locais válidos. Codex inspecionou amostra de hero mobile, princípios, serviços, newsletter e contato; GPT independente inspecionou seis capturas e confirmou a correção visual final dos rótulos. Sem outro bloqueante concreto; capturas por elemento podem recortar o header, as quatro capturas completas e a Home interativa são a referência do shell. Leitor real/hardware/CAPTCHA real não certificados; P3 de anúncio solved permanece documentado. Material apresentado para aceite de Renato; gate A ainda pendente, internas bloqueadas.
+
+**Aceite explícito de Renato em30/10/2026:** resposta nativa “Aprovar o gate A e avançar (recomendado).” Home/header/feedback nos dois temas aceitos para avanço às internas. Gate B, elegibilidade do destino, ativação de destinatários e publicação seguem independentes; nenhum commit final/push/PR autorizado.
+
+- [x] Apresentar Home inteira desktop/mobile claro/escuro e estados de feedback com fakes seguros.
+- [x] Registrar aceite explícito ou ajustes; aprovação antiga do escuro/silêncio não substituem esse gate.
+- [x] Revisão independente do diff visual/contratos, sem redesign ou novas rodadas sem motivo.
 
 ### Fase 3 — internas e conteúdo final
 
@@ -586,7 +602,7 @@ Rollback de interface usa versão compatível/conferida, não snapshot antigo pr
 | Revisão independente do plano | Concluída, com correção | GPT /root/review_website_revision_plan apontou P1 de elegibilidade Vercel: removida suposição de exceção por demonstração e incluído gate antes do rollout. Rechecagem concluiu que o P1 foi resolvido, sem outras contradições grandes. |
 | Aprovação do plano | Aprovada em 30/10/2026 | Renato escolheu “Aprovar o plano; implementar na nova conversa”. Não iniciar nesta sessão. |
 | Fase1 | Local concluída; comparação remota pendente | T1.2/T1.3 concluídas; preflight Sonnet5.5 passou. Lacuna Vercel403 em T1.1 deve ser resolvida em T4.3 antes do rollout. |
-| Fase2/gate A | T2.1/T2.2 técnicas concluídas; aceite pendente | Feedback T2.3 e apresentação completa do gate A ainda pendentes. |
+| Fase2/gate A | Concluída e aceita em30/10/2026 | Renato aprovou o gate A e o avanço às internas;629 unitários e344 E2E/6 skips. |
 | Fase3/gate B | Não iniciada | Internas e Privacidade revisada. |
 | Fase4 | Não iniciada | Public, capacidade e elegibilidade testados. |
 | Fase5 | Não iniciada | Gates, deployment, ensaio, aceite e arquivo. |

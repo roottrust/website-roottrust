@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { resolveFormMode, submitLocalForm, submitReport, validateContact, validateEmail } from "../../src/lib/forms";
+import { normalizeRetryAfter, resolveFormMode, retryAfterLabel, submitLocalForm, submitReport, validateContact, validateEmail } from "../../src/lib/forms";
 
 const contact = { name: "Pessoa de teste", company: "Empresa demonstrativa", whatsapp: "(11) 94008-4692" };
 
@@ -59,5 +59,27 @@ describe("local forms", () => {
     controller.abort();
     await assertion;
     await expect(submitLocalForm({ kind: "report", email: "bad", toolId: "rosi" }, "demo", "success", new AbortController().signal)).rejects.toThrow("Invalid form request");
+  });
+  it("keeps retryAfter only as a finite positive number of seconds", () => {
+    for (const value of [0, -1, Number.NaN, Number.POSITIVE_INFINITY, "30", null, undefined]) expect(normalizeRetryAfter(value)).toBeUndefined();
+    expect(normalizeRetryAfter(30)).toBe(30);
+    expect(normalizeRetryAfter(0.4)).toBe(0.4);
+  });
+  it("associates overlong contact and email values with the same limits as the API", () => {
+    expect(validateContact({ ...contact, name: "a".repeat(121) }).name).toContain("120");
+    expect(validateContact({ ...contact, company: "a".repeat(161) }).company).toContain("160");
+    expect(validateContact({ ...contact, whatsapp: " ".repeat(22) + "11940084692" }).whatsapp).toBeDefined();
+    expect(validateEmail("a".repeat(243) + "@example.com")).toBeDefined();
+    expect(validateContact({ ...contact, name: "a".repeat(120), company: "a".repeat(160) })).toEqual({});
+    expect(validateEmail("a".repeat(242) + "@example.com")).toBeUndefined();
+  });
+  it("presents retryAfter rounded up, in seconds then minutes, without a countdown", () => {
+    expect(retryAfterLabel(0.4)).toBe("1 segundo");
+    expect(retryAfterLabel(1)).toBe("1 segundo");
+    expect(retryAfterLabel(1.2)).toBe("2 segundos");
+    expect(retryAfterLabel(59.1)).toBe("1 minuto");
+    expect(retryAfterLabel(59)).toBe("59 segundos");
+    expect(retryAfterLabel(60)).toBe("1 minuto");
+    expect(retryAfterLabel(61)).toBe("2 minutos");
   });
 });
