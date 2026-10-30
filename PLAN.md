@@ -309,25 +309,62 @@ Baseline visual local inventariada: 12 exports aprovados mais `Home.baseline.dc.
 
 Execução iniciada em 30/10/2026. Entrega delimitada: matriz de propostas em `docs/web/revision-editorial-2026-10-30.md`, evidência vinculada a este plano, sem tarefas/status paralelos e sem aplicar copy às internas antes do gate A. Codex revisa fatos/abrangência e executa gates. Checkpoint/sessão serão registrados antes/depois da chamada.
 
-- [ ] Cobrir toda matriz 4.3 com antes/proposta/razão/fonte; perguntar só fatos realmente ausentes.
-- [ ] Hero exato, métodos por pilar/Home geral e equilíbrio de Cibersegurança; não perder informação útil de Pentest.
-- [ ] Revisar FAQ/metadados/estados/Privacidade sem tocar e-mails/PDFs/edições existentes.
-- [ ] Não inventar métricas, casos, certificações, horário de envio ou cobertura humana24×7.
+Checkpoint WIP LOCAL T1.2: `5d1647d17e966e276d371b45e66c0d8e90e4938a` (`wip: pre-claude T1.2`), após `git add -A --dry-run`, inspeção dos quatro documentos candidatos, busca saneada de segredos, `git diff --cached --stat`/`--check`. Sem segredos/gerados detectados; inclui documentos preexistentes conforme autorização de 10/10. Nenhum push/commit final autorizado.
+
+Entrega Sonnet: sessão `1609b0d7-5c75-4a7c-aa70-b6a9ddeaeb7e`, modelo observado `claude-sonnet-5-5`, `succeeded`, sem esforço explícito. Único arquivo criado: [matriz editorial](docs/web/revision-editorial-2026-10-30.md). Revisão integradora Codex corrigiu ordem do gate B, preservação de consentimento comercial opcional existente, unidade de retryAfter, neutralidade de feedback e distinção entre preferência visual/coleta pública; completou cobertura de dívida/migração/campos/header/NewsletterParts/Turnstile omitida no rascunho. Questões já decididas não serão reenviadas ao usuário. Fatos legais/operacionais ausentes permanecem limitados, para revisão da página concreta no gate B. Nenhum código, e-mail, PDF ou edição existente alterado. Gates em execução; AC serão marcados após validação.
+
+- [x] Cobrir toda matriz 4.3 com antes/proposta/razão/fonte; perguntar só fatos realmente ausentes.
+- [x] Hero exato, métodos por pilar/Home geral e equilíbrio de Cibersegurança; não perder informação útil de Pentest.
+- [x] Revisar FAQ/metadados/estados/Privacidade sem tocar e-mails/PDFs/edições existentes.
+- [x] Não inventar métricas, casos, certificações, horário de envio ou cobertura humana24×7.
+
+**Validação T1.2:** revisão independente Codex da matriz e comparação de escopo contra WIP; somente PLAN e evidência editorial compõem a entrega. Links relativos, hero literal e diff-check passaram. Em `web/`, `npm run lint`, `npm run typecheck`, `npm test` (36 arquivos/614 testes), `npm run build` e `npm run test:e2e -- --workers=1` (290 passes, 6 skips, sem retries, 6,4 min) passaram. Logs locais: `references/audits/website-revision/t12-{lint,typecheck,unit,build,e2e}.log`. Skips preservados são limitações históricas (captura opt-in, hidden real/headless e modifier mobile), não passes. Build alterou somente os imports gerados de `next-env.d.ts`; diff inspecionado e restaurado ao estado anterior, sem incluir gerados na entrega. Nenhuma nova medição visual/runtime externo foi feita por esta rodada.
 
 #### T1.3 [codex] Fechar contratos de tema, feedback e abertura segura
 
 **Depende:** T1.1. **Dono:** frontend + revisor segurança.
 
-- [ ] Matriz de feedback/ações, tokens de contraste e paletas por Canvas/Three/fallback.
-- [ ] Mecanismo pequeno de tema/boot/persistência/fallback documentado; sem dependência nova desnecessária.
-- [ ] Mapeamento public/pilot/off/demo, catálogo, segmentos e limites, sem bypass ou desligamento acoplado.
-- [ ] Revisão independente GPT da abordagem de segurança antes da implementação public. Se persistir conflito difícil: `[claude:consulta]`, modelo `opus`, somente após avisar Renato, sem shell/escrita/provedores.
+**Contrato de execução — Codex, revisão GPT independente em 30/10/2026:** manter uma árvore SSR de conteúdo e a composição aprovada; sem nova dependência. Módulo cliente pequeno de tema independente de GraphicsProvider, bootstrap estático síncrono no head e CSS variables semânticas. Persistir somente a escolha explícita `system|light|dark` em chave versionada `rt-theme:v1`; sem escrita automática em storage ao visitar, cookies ou dados de ferramentas/contatos. Ler/gravar storage em try/catch; falha conserva a escolha na sessão, sem quebrar a UI. SO inicial: light quando detectado, caso contrário dark. Manual prevalece; Sistema reage a mudanças do SO; SPA/reload preservam escolha. Sem scripts externos novos, interpolação de entrada, fetch ou remontagem da árvore por tema.
+
+Bootstrap define atributos de tema antes da primeira pintura. SSR/primeiro render do controle permanecem determinísticos; usar snapshot de servidor estável e snapshot cliente primitivo (padrão já usado no projeto). Qualquer supressão de hidratação fica estritamente no elemento raiz cujos atributos conhecidos foram alterados pelo bootstrap, com justificativa; nenhuma supressão ampla de componentes ou erros de runtime. CSS acompanha prefers-color-scheme sem JS quando possível. Seletor nativo "Tema" com Sistema/Claro/Escuro; manter foco, menu/Escape, CTA, offsets e fontes locais. Sem animação na troca de tema. Header começa com alvo de assinatura 25–30% maior em desktop; validar 320/390 antes de fixar dimensões; usar arquivos oficiais positivo/negativo completos e cópias com hash/procedência, sem invert, recorte ou lettering HTML.
+
+| Papel semântico proposto | Escuro | Claro | Contrato |
+|---|---|---|---|
+| Página / painel | `#171717` / `#1D1D1D` | `#F5F5F2` / `#FFFFFF` | Cores oficiais `--rt-*` imutáveis; novas cores UI identificadas como adaptação web. |
+| Texto / apoio | `#F5F5F2` / `#CCE9DC` | `#003428` / `#4C6B58` | Não usar Folha/Menta em texto pequeno sobre claro. |
+| Destaque/foco | `#62AF96` | `#175B4B` | Controles com borda própria `#6B8276`; borda decorativa não substitui foco/limite de campo. |
+| Faixa Verde Raiz | `#003428`, texto `#F5F5F2`, apoio `#CCE9DC` | Mesmo par | Escopar semânticos da superfície para texto/campos/gráficos, sem inverter a faixa ao trocar tema. |
+| Erro (texto/fundo) | `#FFC2B8` / `#3B2420` | `#8B2D22` / `#FFF0EB` | Ícone/título/texto, nunca só cor; sem Sinal como assinatura genérica. |
+| ASCII/Three/fallback | Folha/Menta e traço existente | Floresta/Verde Raiz, traço Musgo | Mesma geometria. Paletas distintas por superfície da página/faixa. |
+
+Medição numérica sRGB sem alpha: texto claro 12,63:1, apoio claro 5,41:1, foco claro 7,30:1; texto escuro 16,41:1, apoio sobre painel 13,05:1, foco escuro 6,91:1; borda controle 4,13:1 sobre branco e 4,08:1 sobre painel escuro; faixa texto/apoio 12,63:1/10,68:1; erro claro/escuro 7,58:1/9,36:1. São amostras propostas, não medição final da UI ou certificação. Cores finais e composições seguem gate A.
+
+Gráficos: ler tokens do host/superfície fora do loop e atualizar rampas/uniforms por método/setter + invalidate ao mudar tema. Não recriar renderers/scenes/canvases ou observers por preferência. Manter gates animated/pageVisible/intersecting, descarte e guarda de import tardio; atualizar latest refs antes de inicialização. Troca pausada/reduced redesenha uma vez, hidden/offscreen só ao voltar a ser relevante. Fallback oficial com variante legível, sem dois canvases/árvores escondidos. Pausa permanece independente. Turnstile também deve acompanhar a superfície real sem perder token ou causar submit automático; tratar no lote de formulários.
+
+Feedback: painel compartilhado FormStatus (ícone decorativo, título, mensagem e ação quando útil), sem painel no idle. Erros de campo associados e foco no primeiro inválido após submit; resumo sem leitura duplicada de todos os erros. Uma região viva coerente por mudança, sem toast/modal padrão. Preservar AbortController/ref de submissão ativa, protocolo e campos após falha; nunca afirmar rejeição certa quando resultado de rede é incerto. Guardar retryAfter em segundos finitos positivos, arredondar apresentação para cima, sem countdown que anuncie a cada segundo nem retry automático de POST. Ações apropriadas: rever campo, nova verificação, recarregar ou contato oficial, sem expor configuração. Modos reais distinguem pedido persistido de confirmação/entrega; demo mantém aviso e "nenhum dado foi enviado".
+
+Public: atualizar todos os pontos inventariados da T1.1 de forma coerente. Modo público explícito; off/desconhecido fecha, demo não faz rede, pilot conserva allowlists e inspeção do segmento. Public dispensa só a pertença à antiga allowlist; origem/IP/Turnstile/limites/validação/HMAC/replay/configs continuam obrigatórios. Readiness por fluxo, catálogo real/projeção pública, webhook/jobs/decisões reconhecem public. Nenhuma resposta de ferramenta em rede/storage/log/URL; relatório e marketing opcional não inscrevem newsletter. Gate B e elegibilidade Vercel antes de ativação. Limitação remota da T1.1 continua em T4.3.
+
+Revisor GPT `/root/review_t13_contracts` (somente leitura, sem testes/provedores) apontou três P2 incorporados ao contrato para T4.1/T4.2; a rechecagem documental confirmou que o registro representa o parecer, sem novo bloqueante:
+
+1. **Admissão/capacidade:** contabilizar consumidos e pedidos pendentes com reserva atômica na mesma transação que aceita o pedido, após deduplicação. Duplicata idempotente não reserva de novo; transferência ao consumo e liberação só com estado conhecido, sem dupla cobrança. Confirmações precisam caber na validade de 24h. Tetos locais100/dia UTC/3000mês e marketing1000 não comprovam uso total da conta; ações externas exigem margem e acompanhamento. Sem nova varredura global por submit; paginação/bounds/concor­rência e falta de capacidade recusam honestamente antes de202, sem descartar aceitos.
+2. **Supressão remota:** sincronização genérica não aplica `unsubscribed:false` só porque registro local diz confirmado. Reativação exige prova de nova confirmação posterior à revogação ou reconciliação explícita. Webhook atrasado/job antigo não desfaz cancelamento.
+3. **Cancelamento:** readiness mínima própria (token, defesa e persistência), sem exigir remetentes/Resend/atestados de envio. Registrar cancelamento mesmo com capacidade/envio pausados. Falha de sincronização remota mantém Broadcast bloqueado para segmento não reconciliado; sem garantir opt-out remoto que não ocorreu.
+
+Broadcast exige confirmado/consentimento real no segmento exclusivo e reconciliação completa fail-closed, preservando aprovação24h, registro antes de efeito e resultado incerto sem duplo create/send. Sem importar leads ou apagar inspeção do piloto. Revisão da abordagem sem outros bloqueantes em tema/feedback; implementação e testes ainda pendentes. Não foi necessária consulta Opus.
+
+- [x] Matriz de feedback/ações, tokens de contraste e paletas por Canvas/Three/fallback.
+- [x] Mecanismo pequeno de tema/boot/persistência/fallback documentado; sem dependência nova desnecessária.
+- [x] Mapeamento public/pilot/off/demo, catálogo, segmentos e limites, sem bypass ou desligamento acoplado.
+- [x] Revisão independente GPT da abordagem de segurança antes da implementação public. Se persistir conflito difícil: `[claude:consulta]`, modelo `opus`, somente após avisar Renato, sem shell/escrita/provedores.
 
 ### Fase 2 — base visual e aceite da Home
 
 #### T2.1 [claude:escreve] Implementar temas e shell — Sonnet
 
 **Depende:** T1.3. **Arquivos:** tokens/globals/layout, components/shell e módulo pequeno de tema, se necessário.
+
+Execução iniciada em 30/10/2026, conforme contrato fechado em T1.3. Escopo inclui testes focados de preferência/hidratação/storage/reflow e cópia pública necessária da assinatura positiva oficial. Originais intactos; Codex confere proveniência, diff e gates. Home/gráficos ficam em T2.2, feedback/formulários em T2.3 e internas bloqueadas pelo gate A.
 
 - [ ] SO inicial, claro/escuro/Sistema preservados; storage bloqueado, reload e SPA sem quebra/flash recorrente/hidratação inválida.
 - [ ] Header/footer/assinaturas por tema; marca maior proporcional, sem clipping a 320 px ou disputa com menu/seletor/CTA.
@@ -526,8 +563,8 @@ Rollback de interface usa versão compatível/conferida, não snapshot antigo pr
 | Pesquisa/entrevista | Concluídas | Fontes, GET/metadados Vercel e D01–D19. |
 | Revisão independente do plano | Concluída, com correção | GPT /root/review_website_revision_plan apontou P1 de elegibilidade Vercel: removida suposição de exceção por demonstração e incluído gate antes do rollout. Rechecagem concluiu que o P1 foi resolvido, sem outras contradições grandes. |
 | Aprovação do plano | Aprovada em 30/10/2026 | Renato escolheu “Aprovar o plano; implementar na nova conversa”. Não iniciar nesta sessão. |
-| Fase1 | Em execução — T1.1 parcial | Baseline/GET/inventários registrados na tarefa; ponte ausente e metadados env Vercel 403. Copy/contratos ainda não iniciados. |
-| Fase2/gate A | Não iniciada | Amostras e aceite visual. |
+| Fase1 | Local concluída; comparação remota pendente | T1.2/T1.3 concluídas; preflight Sonnet5.5 passou. Lacuna Vercel403 em T1.1 deve ser resolvida em T4.3 antes do rollout. |
+| Fase2/gate A | T2.1 iniciada; aceite pendente | Temas/shell; demais lotes e gate visual ainda não concluídos. |
 | Fase3/gate B | Não iniciada | Internas e Privacidade revisada. |
 | Fase4 | Não iniciada | Public, capacidade e elegibilidade testados. |
 | Fase5 | Não iniciada | Gates, deployment, ensaio, aceite e arquivo. |
