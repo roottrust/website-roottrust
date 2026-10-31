@@ -76,4 +76,7 @@
   .inlineReport .error, .inlineReport .notice, .inlineReport .feedback, .inlineReport .demoControl, .inlineReport .consent { grid-column:1 / -1; }
 }
 
+.actionStack { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: flex-start; gap: 16px; width: 100%; min-width: 0; }
+.actionStack > p { max-width: 560px; }
+
 .feedbackAction:hover, .retry:hover { background: color-mix(in srgb, currentColor 8%, transparent); }

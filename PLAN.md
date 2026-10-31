@@ -468,18 +468,34 @@ Capturas finais de Privacidade atualizadas nos quatro cenários,200/zero erros/P
 
 **Depende:** gate A/T2.3. **Arquivos:** páginas/clients confirmar e cancelar + feedback comum.
 
-- [ ] Loading, token inválido/expirado, sucesso e já processado nos dois temas, com foco/ação úteis.
-- [ ] Idempotência e transporte seguro de token preservados; sem reativação/envio por navegação indevida.
-- [ ] Cancelamento continua acessível se novos envios/inscrições estiverem pausados por capacidade.
+Preflight T3.2 em31/10/2026: raiz Git/main conferidos, dry-run20 arquivos e inspeção de segredos/gerados/diff-check sem achados; next-env gerado restaurado. Checkpoint WIP LOCAL autorizado `ebda4d8a87ed602709c30e570a6de5ef3a12c320` (`wip: pre-claude T3.2`), hash registrado antes da chamada. Sonnet limitado às ações cliente/páginas, apresentação compartilhada do feedback e helpers/testes necessários. APIs/criptografia/config/provedores/emails/PDFs/catálogo/modelos intactos; sem novo modo public ou efeitos externos. Contrato inclui captura/limpeza segura do fragmento, POST só por ação, guarda imediata de duplicidade, abort/descarte e classificação correta de400/403/409/410/429/503/5xx/rede, com preservação do token quando o resultado não for inválido/consumido. Gates completos e revisão independente após entrega.
+
+Entrega Sonnet `5f1115ce-f895-45d4-adf6-5b066c30cb0d`, modelo observado `claude-sonnet-5-5`, `succeeded` (360s). Implementou adapter puro, hook compartilhado com ref/abort/hashchange, NewsletterAction e wrappers, extração de FeedbackPanel preservando DOM/idle, CSS de pilha e testes. Sonnet executou649 unitários/tipos/lint, sem build/E2E. Integração Codex neutralizou409/410 sem inferir inscrição ativa, corrigiu mensagem incerta que prometia link usado também no cancelamento (API replay retorna200), adicionou ajuda noscript e títulos absolutos, e tornou espera de payload no teste determinística/abort esperado explícito. Dois servidores E2E e prévia manual agora fixam BACKEND_MODE=off localmente, sem alterar defaults/provedores remotos. APIs/cripto/conteúdos/PDFs intactos.
+
+Revisões: GPT independente confirmou contratos HTTP/idempotência no servidor e depois o patch T3.2, sem P1/P2. Consulta obrigatória Sonnet somente leitura `8c441640-d12d-461b-bde3-05492b5635a5` leu diff real `references/audits/website-revision/t32-review.diff` e terminou `succeeded`, sem P1/P2; não executou gates. P3 conhecidos: fetch não tem timeout novo (pré-existente); histórico de hashchange pode criar entrada duplicada,403 retém token em memória sem retry, leitor real não certificado. Readiness mínima independente do cancelamento segue naT4, não inferir resolvida só pela UI.
+
+Gates integradores: lint/typecheck,39 arquivos/650 unitários e build passaram;72 E2E focados de ações/feedback/foundation passaram (44,6s), sem skips/retries. Capturas das ações com APIs interceptadas em execução; E2E completo obrigatório ainda pendente. Logs `t32-*`. Nenhum destinatário real ou provedor acionado; gate B permanece pendente.
+
+Capturas T3.2 concluídas:32 imagens (duas ações×pronto/indisponível/concluído/link inutilizável×desktop/mobile×claro/escuro), `references/audits/website-revision/gate-a/gate-b/`. Oito cenários, cada um com três POSTs interceptados previstos, zero pageerrors/overflow/token visível em DOM ou URL; arquivo `capture-results.json`. Codex inspecionou cancelamento mobile claro indisponível e confirmação desktop escura concluída, sem bloqueantes de legibilidade/layout. Nenhum provedor acionado. E2E completo está em execução; backend local explicitamente off nos dois servidores de teste. Fontes permanecem estáveis após gates de lint/typecheck/unit/build; testes não foram pulados nem tiveram retries acrescentados.
+
+**T3.2 concluída tecnicamente:** lint/typecheck,39 arquivos/650 unitários, build e E2E completo414 passes/6 skips/zero retries (7,2min). Logs `t32-{lint,typecheck,unit,build,e2e}.log`; fonte da aplicação não mudou depois do build, apenas esperas de teste e env local off foram explicitados e lint/tipos/E2E revalidados. Revisões Codex/GPT/ponte e capturas concluídas sem P1/P2. GPT fez ainda revisão visual de quatro capturas (duas ações,409 e Privacidade), sem bloqueantes, sem certificar jurídico/operação real. Entrada de cancelamento no cliente não depende de quota/readiness de novos envios; desacoplamento mínimo da configuração do servidor e reconciliação continuam contratos T4, sem alegar teste real de esgotamento. Next-env gerado inspecionado/restaurado; nenhum commit final/push/deploy.
+
+- [x] Loading, token inválido/expirado, sucesso e já processado nos dois temas, com foco/ação úteis.
+- [x] Idempotência e transporte seguro de token preservados; sem reativação/envio por navegação indevida.
+- [x] Cancelamento continua acessível se novos envios/inscrições estiverem pausados por capacidade.
 
 #### T3.3 [codex + Renato] Gate B: revisar Privacidade e coleta
 
 **Depende:** T1.2/T3.1. **Bloqueia ativação public.**
 
-- [ ] Fluxos/provedores/finalidades/retenção/cópias e preferência visual reais, sem dizer “nada envia” com API ativa.
-- [ ] Canal oficial e responsável operacional; nenhum cargo/dado legal/base presumidos.
-- [ ] Marketing/newsletter independentes, sem falsa certificação ou parecer jurídico.
-- [ ] Renato revisa explicitamente a página; até lá nenhuma publicação abre destinatários.
+Material para revisão em `http://127.0.0.1:3100/privacidade` e galeria local `http://127.0.0.1:3102/gate-b/`, com quatro capturas de Privacidade e amostras de ações com APIs interceptadas. Preview serve FORM_MODE=demo/BACKEND_MODE=off, sem coleta operacional. Texto explicita dados/finalidades, IP/Turnstile, Firestore/Resend/Discord/hospedagem, memória das ferramentas, preferência visual, consentimentos independentes, duas rotinas locais de seis meses e cópias externas sob responsabilidade de Renato sem prazo universal. Permanece provisório e declara pendências de identificação jurídica/bases legais/prazos de atendimento/países/política de cópias externas; nenhum dado legal fabricado ou parecer jurídico. Revisões técnicas/visuais não substituem o aceite explícito de Renato. Gate B pendente, nenhuma ativação autorizada pelo silêncio.
+
+**Aceite explícito de Renato em31/10/2026:** “Aprovar o texto e registrar os limites (recomendado)”. Aprovação do texto operacional com as pendências descritas, sem transformá-la em parecer jurídico nem preencher dados legais por inferência. Limites de cópias externas, identificação/bases/prazos/países permanecem explícitos; a aprovação não os resolve ficticiamente. Gate B cumprido para prosseguir, enquanto abertura e rollout continuam dependentes das fases4/5 e elegibilidade do destino. Nenhum destinatário, provedor, billing ou deployment alterado neste aceite.
+
+- [x] Fluxos/provedores/finalidades/retenção/cópias e preferência visual reais, sem dizer “nada envia” com API ativa.
+- [x] Canal oficial e responsável operacional; nenhum cargo/dado legal/base presumidos.
+- [x] Marketing/newsletter independentes, sem falsa certificação ou parecer jurídico.
+- [x] Renato revisa explicitamente a página; até lá nenhuma publicação abre destinatários.
 
 ### Fase 4 — modo público e integrações
 
@@ -621,7 +637,7 @@ Rollback de interface usa versão compatível/conferida, não snapshot antigo pr
 | Aprovação do plano | Aprovada em 30/10/2026 | Renato escolheu “Aprovar o plano; implementar na nova conversa”. Não iniciar nesta sessão. |
 | Fase1 | Local concluída; comparação remota pendente | T1.2/T1.3 concluídas; preflight Sonnet5.5 passou. Lacuna Vercel403 em T1.1 deve ser resolvida em T4.3 antes do rollout. |
 | Fase2/gate A | Concluída e aceita em30/10/2026 | Renato aprovou o gate A e o avanço às internas;629 unitários e344 E2E/6 skips. |
-| Fase3/gate B | T3.1 técnica concluída |636 unitários/build e366 E2E/6 skips, revisões e capturas concluídos; T3.2 e gate B pendentes. |
+| Fase3/gate B | Concluída; gate B aceito em31/10/2026 com limites |650 unitários/build e414 E2E/6 skips; Renato aprovou o texto operacional e registro das pendências. |
 | Fase4 | Não iniciada | Public, capacidade e elegibilidade testados. |
 | Fase5 | Não iniciada | Gates, deployment, ensaio, aceite e arquivo. |
 

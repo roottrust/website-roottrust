@@ -17,13 +17,13 @@ export default defineConfig({
     command: "npm run start -- --hostname 127.0.0.1 --port 3100",
     url: "http://127.0.0.1:3100",
     reuseExistingServer: false,
-    env: { FORM_MODE: "demo" },
+    env: { FORM_MODE: "demo", BACKEND_MODE: "off" },
     timeout: 60000,
   }, {
     command: "npm run start -- --hostname 127.0.0.1 --port 3101",
     url: "http://127.0.0.1:3101",
     reuseExistingServer: false,
-    env: { FORM_MODE: "" },
+    env: { FORM_MODE: "", BACKEND_MODE: "off" },
     timeout: 60000,
   }],
 });

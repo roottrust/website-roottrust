@@ -1,12 +1,13 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { retryAfterLabel, type ContactMode, type DemoOutcome, type SubmissionResult } from "@/lib/forms";
 import styles from "./forms.module.css";
 
 type FormKind = "contact" | "newsletter" | "report";
 type FormStatusValue = "idle" | "submitting" | SubmissionResult;
 type Tone = "progress" | "success" | "info" | "problem";
-type Action = "review" | "challenge" | "contact";
-interface Feedback { tone: Tone; title: string; message: string; action?: Action }
+type Action = "review" | "challenge" | "contact" | "renew";
+export interface Feedback { tone: Tone; title: string; message: string; action?: Action }
 
 export function DemoControls({ id, outcome, onChange, disabled }: {
   id: string; outcome: DemoOutcome; onChange: (value: DemoOutcome) => void; disabled: boolean;
@@ -114,6 +115,24 @@ const ICONS: Record<Tone, ReactNode> = {
 };
 
 // Keep the live node mounted before its first update; idle wrappers have no visual box or layout gap.
+export function FeedbackPanel({ feedback, reviewId, challengeId, renewHref }: {
+  feedback: Feedback | null; reviewId?: string; challengeId?: string; renewHref?: string;
+}) {
+  return (
+    <div className={feedback ? styles.feedback : styles.emptyFeedback} data-tone={feedback?.tone}>
+      {feedback ? <svg className={styles.feedbackIcon} aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{ICONS[feedback.tone]}</svg> : null}
+      <div className={feedback ? styles.feedbackBody : styles.emptyFeedback}>
+        {feedback ? <p className={styles.feedbackTitle}>{feedback.title}</p> : null}
+        <p role="status" aria-live="polite" aria-atomic="true" className={feedback ? styles.status : "srOnly"}>{feedback?.message ?? ""}</p>
+        {feedback?.action === "review" && reviewId ? <button type="button" className={styles.feedbackAction} onClick={() => document.getElementById(reviewId)?.focus()}>Rever os campos</button> : null}
+        {feedback?.action === "challenge" && challengeId ? <button type="button" className={styles.feedbackAction} onClick={() => document.getElementById(challengeId)?.focus()}>Ir à verificação</button> : null}
+        {feedback?.action === "contact" ? <a className={styles.feedbackAction} href="mailto:contato@roottrust.com.br">Falar com a Root Trust</a> : null}
+        {feedback?.action === "renew" && renewHref ? <Link className={styles.feedbackAction} href={renewHref}>Solicitar novo link</Link> : null}
+      </div>
+    </div>
+  );
+}
+
 export function FormStatus({ mode, status, kind, reference, retryAfter, reviewId, challengeId }: {
   mode: ContactMode; status: FormStatusValue; kind: FormKind; reference?: string; retryAfter?: number; reviewId?: string; challengeId?: string;
 }) {
@@ -122,16 +141,7 @@ export function FormStatus({ mode, status, kind, reference, retryAfter, reviewId
     <>
       {mode === "demo" ? <p className={styles.notice}>Demonstração local — nenhum dado é enviado ou guardado.</p> : null}
       <noscript><p>{mode === "pilot" ? "Ative JavaScript para enviar a solicitação, ou use os canais de contato." : "Ative JavaScript para validar este formulário local, ou use os canais de contato."}</p></noscript>
-        <div className={feedback ? styles.feedback : styles.emptyFeedback} data-tone={feedback?.tone}>
-          {feedback ? <svg className={styles.feedbackIcon} aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{ICONS[feedback.tone]}</svg> : null}
-          <div className={feedback ? styles.feedbackBody : styles.emptyFeedback}>
-            {feedback ? <p className={styles.feedbackTitle}>{feedback.title}</p> : null}
-            <p role="status" aria-live="polite" aria-atomic="true" className={feedback ? styles.status : "srOnly"}>{feedback?.message ?? ""}</p>
-            {feedback?.action === "review" && reviewId ? <button type="button" className={styles.feedbackAction} onClick={() => document.getElementById(reviewId)?.focus()}>Rever os campos</button> : null}
-            {feedback?.action === "challenge" && challengeId ? <button type="button" className={styles.feedbackAction} onClick={() => document.getElementById(challengeId)?.focus()}>Ir à verificação</button> : null}
-            {feedback?.action === "contact" ? <a className={styles.feedbackAction} href="mailto:contato@roottrust.com.br">Falar com a Root Trust</a> : null}
-          </div>
-        </div>
+      <FeedbackPanel feedback={feedback} reviewId={reviewId} challengeId={challengeId} />
     </>
   );
 }
