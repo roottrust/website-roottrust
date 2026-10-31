@@ -347,7 +347,7 @@ Public: atualizar todos os pontos inventariados da T1.1 de forma coerente. Modo 
 
 Revisor GPT `/root/review_t13_contracts` (somente leitura, sem testes/provedores) apontou três P2 incorporados ao contrato para T4.1/T4.2; a rechecagem documental confirmou que o registro representa o parecer, sem novo bloqueante:
 
-1. **Admissão/capacidade:** contabilizar consumidos e pedidos pendentes com reserva atômica na mesma transação que aceita o pedido, após deduplicação. Duplicata idempotente não reserva de novo; transferência ao consumo e liberação só com estado conhecido, sem dupla cobrança. Confirmações precisam caber na validade de 24h. Tetos locais100/dia UTC/3000mês e marketing1000 não comprovam uso total da conta; ações externas exigem margem e acompanhamento. Sem nova varredura global por submit; paginação/bounds/concor­rência e falta de capacidade recusam honestamente antes de202, sem descartar aceitos.
+1. **Admissão/capacidade:** contabilizar consumidos e pedidos pendentes com reserva atômica na mesma transação que aceita o pedido, após deduplicação. Duplicata idempotente não reserva de novo; transferência ao consumo e liberação só com estado conhecido, sem dupla cobrança. Confirmações precisam caber na validade de 24h. Tetos locais100/dia UTC/3000mês e marketing1000 não comprovam uso total da conta; ações externas exigem margem e acompanhamento. Sem nova varredura global por submit; paginação/bounds/concorrência e falta de capacidade recusam honestamente antes de202, sem descartar aceitos.
 2. **Supressão remota:** sincronização genérica não aplica `unsubscribed:false` só porque registro local diz confirmado. Reativação exige prova de nova confirmação posterior à revogação ou reconciliação explícita. Webhook atrasado/job antigo não desfaz cancelamento.
 3. **Cancelamento:** readiness mínima própria (token, defesa e persistência), sem exigir remetentes/Resend/atestados de envio. Registrar cancelamento mesmo com capacidade/envio pausados. Falha de sincronização remota mantém Broadcast bloqueado para segmento não reconciliado; sem garantir opt-out remoto que não ocorreu.
 
@@ -532,12 +532,28 @@ InícioT4.2: preflight24 arquivos inspecionados sem achados de segredo/gerado; r
 
 Revisão independente GPT da árvore parcial apontouP2: uma revogação local antiga não prova a cronologia da supressão remota atual; refresh antigo pode substituir baseline novo; cancelamento entre inspeção e stamp de Broadcast não é cercado por versão de consentimento. Codex também identificou reserva herdada de períodoUTC antigo sem rechecagem de capacidade atual, has_more ausente interpretado como fim de listagem e possível editionQueued verdadeiro diante de job deduplicado morto/concluído. Retomada deve fechar esses casos com fakes controlados e completar testes de capacidade/paginação/UTC/expiração/consentimento, além de copy por modo; sem replanejarD01–D19 ou inventar garantia de atomicidade externa.
 
-- [ ] Identidades válidas fora da antiga lista aceitas em public; limites IP/identidade e validação intactos.
-- [ ] Sem novos pedidos impossíveis por quota nem 202 enganoso; sem upgrade/reset ou descarte de pedidos aceitos.
-- [ ] Broadcast somente aos confirmados do segmento exclusivo; cancelado/não confirmado/lead não inscrito não recebem.
-- [ ] Capacidade/paginação não presumem máximo de 100 e-mails de piloto; bounds/concorrência e alterações externas tratados honestamente.
-- [ ] Validade24h, resultado incerto e reconciliação preservados, sem duploBroadcast.
-- [ ] Sem revisão editorial/de design dos e-mails/PDFs/Routine nesta tarefa.
+Retomada da mesma sessão/assunto em31/10, após aviso e análise: dry-run14 arquivos, inspeção de segredo/gerados/diff-check sem achados; checkpoint WIP LOCAL autorizado `a487102bdeeeae37c8877987af9fb8ad443a9d5c` (`wip: pre-claude T4.2 resume`), hash registrado antes da continuação. Base de revisão do conjuntoT4.2 continua `ea5955a5fd5b4bd1a15c3215862ca4d8842455ae`; o novo WIP preserva a implementação parcial. Sem repetição silenciosa do prompt amplo, mudança de modelo/esforço/defaults ou efeitos externos. Continuação delimitada aos bloqueantes concretos e cobertura faltante, com os mesmos arquivos autorizados. Novo timeout/falha impeditiva exige encerrar/registrar e consultar Renato.
+
+**Limite impeditivo da retomada:** mesmo sessionId `8f5c7e2e-f585-4e3b-b335-7357daf34608`, turno12:34:59–12:45:54UTC/655s, `failed`. Saída explícita: limite da sessão com renovação às13h30 America/Sao_Paulo. Durante a execução, modelo observadoSonnet5.5; evento final retornoumodelo`<synthetic>` e api_error/unrecognized_model no stderr, não evidência de troca de executor. `claude-cancel` chamado e estadofailedterminal reconfirmado. Sem repetição, esforço/defaults alterados, conector/CLI/API paga ou fallback. Renato avisado; próxima escrita depende da decisão solicitada para continuação conforme5.3/5.4.
+
+Árvore posterior ao limite continua parcial: tipos e706 unitários/42 arquivos passaram novamente (`t42-limit-{typecheck,unit}.log`), mas os novos cenários de regressão pedidos não foram entregues; sem lint/build/E2E/revisão final alegados. Retomada alterou parser/fencing da medição, política de supressão global, cercas de consentimento no Broadcast, reservas herdadas e resultado deduplicado, ainda exigindo leitura final e testes dirigidos. CopyPrivacidadepublic segue pendente. Nenhum envio, ativação ou deployment. Cadência de baseline/localholders deve também ser revisada pelo orçamento de leituras: implementação parcial de10min consultaIDs e relê cada titular, estimativa estática~2N por refresh (950×2×144=273600/dia, antes de outros fluxos), acima das50mil leituras/dia Free [oficiais](https://firebase.google.com/docs/firestore/quotas). Não é medição/carga/esgotamento real; ajustar consulta/cadência com limite honesto antes de abrir, sem contratar ou alegar garantia de cota global.
+
+**Exceção explícita de Renato em31/10/2026:** resposta “Opção2. Utilize modelos como GPT6.1 Terra / modelos de mais baixo custo que sejam ‘iguais’ aos modelos do Claude mas no GPT para finalizar essas tarefas”. Autoriza Codex a concluirT4.2 com executor GPT, sem aguardar cota ou usarCLI/API paga doClaude. Implementação restante delegada a `gpt-6.1-terra`; Codex integra, executa gates e mantém revisão por outroGPT independente. Consultas de ponte indisponíveis desta entrega serão cobertas e identificadas como revisõesGPT nesta exceção, sem alegar revisãoClaude executada nem equivalência exata de modelos/preços. Tarefas restantes do mapeamento podem usarGPT por função conforme instrução atual de Renato; não mudaD01–D19, gates humanos/segurança, limites de publicação ou autorização de commit final/push. Uma escrita por vez e arquivos delimitados; Claude estáterminal/inativo. Sem alteração de defaults globais.
+
+Entrega nativa `/root/t42_terra_finish`, modelo solicitado/configurado `gpt-6.1-terra`, concluída com revisão Codex e GPT `/root/review_t13_contracts`. NenhumMCPClaude apóslimite. Fechou supressão global sem updatefalse genérico, bloqueio/adiamento da edição individual com syncpendente, nova confirmação para contato bloqueado, geração e sequência de baseline, cercas de versão de consentimento e aprovação no stamp, transferência de reserva entrebucketsUTC e dedupdead/done honesto. Cancelamento persiste marker/outbox independente de sender/quota; reconciliação manual continua necessária para supressão global cuja cronologia o provedor não comprova. Nova confirmação local não apaga essa supressão e a entrega continua adiada sem consumir tentativa; envio já autorizado/emtrânsito não é atomicamente cancelável retroativamente. Nenhum email/PDF/edição/modeloferramenta/Routine/Worker reescrito.
+
+Baseline foi calibrado para refresh4h, validade8h, snapshotlatest único por titular, seq+generation e margem50. Estimativa estática em950 titulares/seisrefreshes:~5700leituras/dia nessa rotina, antes dasdemaisoperações e sem provar cota global. Snapshotausente/parcial/stalefechaadmissão; lista decontatos usa paginação/validação/bounds, não varredura a cada submit. Conta/alteraçõesexternas seguem acompanhamento deRenato, sem promessa decustozero ou autotroca de plano. CopyPrivacy por modo foi ajustada sem remover pendências jurídicas/retencão/cópias do gateB; responsáveloperacional das cópias e canal oficial permanecem explícitos.
+
+Revisão GPT final do código/novos testes fechou os trêsP2 anteriores, sem P1/P2 residual no escopo, somenteleitura. Codex revisou quotas/admission/callers e integrou teste de recuperaçãopor diaUTC real emvezde zerar contador fake. Novasprovas de última unidade report/confirmação concorrentes, tokenpreservado semquota+consumouma vez, última vaga marketing concorrente, paginação120contatos/malformed/cursorrepetido, scanantigo vsnovo/reservaemvoo, reservaUTC com mêscheio, supressãoSDK/nenhumupdatefalse/entregaadiada, cancelamentoentreinspeçãoestamp e dedupdead/done. Não alegar exaustividade, carga/provedores reais ou ausência de risco. Lint/typecheck,45arquivos/718unitários e build passaram; E2Ecompleto emexecução, logs `t42-{lint,typecheck,test,build,e2e}.log`. Fonte daaplicação não mudou depois dobuild; só fixture deteste mudou e lint/tipos/unit foram revalidados. T4.2 não concluída pelo contadorunit enquanto E2E não encerrar.
+
+**T4.2 concluída tecnicamente em31/10:** lint/typecheck,45arquivos/718unitários, build e E2Ecompleto414passes/6skips/zero retries (7,6min), sem provedores reais. Next-env gerado foi inspecionado/restaurado; nenhuma alteração posterior de fonte daaplicação. RevisõesCodex/GPTindependente e exceçãoTerra registradas; nenhumcommitfinal/push/PR/deploy. Serviços públicos só poderão ser ativados apósconfiguração/elegibilidade/ensaio previstos.
+
+- [x] Identidades válidas fora da antiga lista aceitas em public; limites IP/identidade e validação intactos.
+- [x] Sem novos pedidos impossíveis por quota nem 202 enganoso; sem upgrade/reset ou descarte de pedidos aceitos.
+- [x] Broadcast somente aos confirmados do segmento exclusivo; cancelado/não confirmado/lead não inscrito não recebem.
+- [x] Capacidade/paginação não presumem máximo de 100 e-mails de piloto; bounds/concorrência e alterações externas tratados honestamente.
+- [x] Validade24h, resultado incerto e reconciliação preservados, sem duploBroadcast.
+- [x] Sem revisão editorial/de design dos e-mails/PDFs/Routine nesta tarefa.
 
 #### T4.3 [codex] Revisar segurança e preparar configuração do rollout
 
@@ -547,10 +563,14 @@ Preflight remoto somente leitura antecipado duranteT4.2,31/10: MCP confirmou pro
 
 MCP não expõerootDirectory no resumo; negativa403 anterior de metadados de env não foi repetida sem mudança de permissão. Fallback somente leitura na CLI54.15.1 falhou: inspect não conseguiu criar configuração global por permissão; envls executado emweb não encontrou vínculo. Semvercel link, instalação/update, override de permissão ou download/leitura de.env/valores. RootDirectory e nomes/estados de configuração permanecem não comprovados; nenhum efeito remoto. Aplicada skill vercel:deployments-cicd para inspeção, sem release.
 
-- [ ] Revisão de todos os callers public/pilot/consentimento sem P1/P2 conhecido.
-- [ ] Checklist só nomes/estados: Firebase, Turnstile, origem/IP, remetentes/Reply-To, webhook, keys internas/jobs/segmento; não abrir `.env*` nem pedir chaves no chat.
-- [ ] Canal privado/atendimento do diagnóstico e destinatários do ensaio confirmados; sem expor cadastro em chat/log.
-- [ ] GateB registrado e rollback pensado por fluxo; não promover snapshot antigo cegamente.
+Checklist de configuração preparado semvalores: `BACKEND_MODE` literalpublic e `FORM_MODE` fora dedemo; Firebase via`FIREBASE_SERVICE_ACCOUNT_JSON` ouADCválido; `TURNSTILE_SITE_KEY`/secret/hostnames, `TRUSTED_ORIGINS`/IPheader reais eIDsecret; chavesjobs/draft/publish separadas válidas; webhookprivado diagnóstico e followup/trigger atestados; ResendAPI/from/replyto/origin/domínio/segmento exclusivo ewebhook assinados. Os nomes estão nasregrasT1.1, mas allowlistscontinuamobrigatóriasapenasnopilot. Atestado legado`NEWSLETTER_PILOT_SEGMENT_CONFIRMED` ainda é requerido pelo loaderpublic; seu nome não prova elegibilidade/consentimento: guardas de segmento+confirmação+sync permanecem obrigatórias. Sómodo/siteKey vão ao cliente. Presença/escopo/overrides/rootDirectory remotos continuam não comprovados, nãoinferir causa deunavailable. Canal privado/atendimento e destinatários controlados para NOVOensaio continuam pendentes de confirmaçãooperador; nenhum cadastrolido/divulgado.
+
+Rollback por fluxo preparado, semexecutar: não promover snapshot antigo semsuportepublic/cancelamento. Um deploycompatível da mesmaárvore com atestado`JOBS_TRIGGER_CONFIRMED` retirado fecha novos pedidos/handlers deenvio, preservando outbox e manutenção autenticada; manterBACKEND_MODEpublic, origens/IDsecret/Firebase e configuração mínimadowebhook conserva cancelamento e opt-out. Nãoapagarconfigderemetente/API/webhookpara“pausar” semavaliarseudesacoplamento; offglobal podeinterrompercancelamento. Env é parte dodeployment: esse procedimentoprecisade versão/configcompatívelconferida, não éumrollbackrealvalidado. Nenhumlimitecontadordados/aprovação24hfoiresetado, nenhumcanceladoreativadoouenvioincertorepetido.
+
+- [x] Revisão de todos os callers public/pilot/consentimento sem P1/P2 conhecido.
+- [x] Checklist só nomes/estados: Firebase, Turnstile, origem/IP, remetentes/Reply-To, webhook, keys internas/jobs/segmento; não abrir `.env*` nem pedir chaves no chat. CLI confirmou presença/Production; resolvers public e catálogo real comprovaram readiness de formato/atestados/Firestore, não entrega nosprovedores.
+- [x] Canal privado/atendimento do diagnóstico e destinatários do ensaio confirmados; sem expor cadastro em chat/log. Confirmação explícita31/10 antes do rolloutT5.2.
+- [x] GateB registrado e rollback pensado por fluxo; não promover snapshot antigo cegamente.
 
 ### Fase 5 — validação, publicação e encerramento
 
@@ -562,41 +582,229 @@ Rechecagem de segurança antecipada31/10 (antes do fechamentoT4.2; sem alteraç�
 
 [Atualização oficial Next de14/10](https://nextjs.org/blog/nextjs-security-update-october-14-2026) corrigida desde16.4.1 (instalado16.4.2). [Aviso de27/10](https://nextjs.org/blog/upcoming-nextjs-security-release-november-2026) anuncia sete moderadas para03/11, ainda sem patches/advisories publicados nesta verificação; não inventar correção antecipada. Revalidar se o rollout ocorrer após essa data.
 
-- [ ] lint, typecheck, unit, build e E2E existentes; registrar passes/skips/falhas/retries reais.
-- [ ] Matriz da seção 7 com copy, contraste/overflow, modos, gráficos e privacidade; capturas estáveis por seção.
-- [ ] Fakes/interceptações para efeitos externos, sem colocar público num segmento de teste.
-- [ ] Spotcheck de regressão de desempenho, sem novo projeto de LCP ou benchmark de 400 filhos.
-- [ ] Revalidar advisories oficiais; patches necessários localizados e gates pertinentes, sem audit fix force/upgrade amplo automático.
+Patch localizado Codex em31/10, apósexecutorTerra encerrar: `npm update zod --ignore-scripts --no-audit --no-fund` atualizou sóresoluçãotransitiva4.6.5→4.6.7 no lockfile (package.json intacto, semdependênciadiretanova). Npm também removeu2pacotesextraneous preexistentes; nenhum outro pacote versionado foi atualizado e build/unit passaram. Auditposterior completo21moderate/0high/0critical; produção6moderate/0high/0critical. Não házeroaviso geral: glob/minimatch e propagação declarada permanecem, sem caminho de entrada público identificado nasbibliotecas/validação/scripts examinados por doisGPTs; isso não é certificação. As revisões GitHub usaramghCLI. Nenhumaexecuçãoauditfixforce/downgrade/override major.
+
+T5.1 consolidada em31/10: reutiliza a rodada finalT4.2 da mesmaárvore (718unit/414E2E/6skips), semnovaexecuçãocompleta idêntica. Matriz temática/contraste/reflow/SPA/gráficos/copy/privacidade e capturasT2/T3 permanecem; backendpublic/quotas/consentimento/catálogo/cancelamento cobertosporfakes/unit, sem provedor/CAPTCHA/inbox reais. Limites de leitor/hardware/CI/INP mantidos, semcertificação. LogsT42 e capturasanterioresestáveisemreferences/audits/website-revision; fonte públicaeditorial continua projeção semcorpos/respostasferramentas.
+
+SpotchecksLighthouse13.5cached, Chrome156, buildprodução localoff, mobile/CPU4x/slow4Gsimulados/escuro, duas amostras porrota. HomeLCP3213,6/3154,5ms, TBT274,5/151ms, JS180509bytes; ROSILCP2971/2980ms, TBT537/483ms, JS316893bytes; CLS0emambas. Relatórios`t51-lighthouse-{home,rosi}[-2].json` e summary. Baselinesanteriores eram mediana de3rodadas:HomeLCP2808,5/TBT59,5/JS173328 eROSILCP2873,0/TBT453,5/JS316395. Homeapresenta piora laboratorial~12–14%LCP/JS+4,1%, TBTvariável; ROSI~3–4%LCP. Amostragemcurta não comprova INPdecampo/nemausênciaderegressão; meta2,5scontinua NÃOatingida. Repetiçãoseletivafoimotivada porTBT da primeiraamostra, não uma nova rodada de gates. D16 e limites de desempenho permanecem explícitos noaceitefinal, semabrirprojetodeLCP/benchmark de400filhos.
+
+- [x] lint, typecheck, unit, build e E2E existentes; registrar passes/skips/falhas/retries reais.
+- [x] Matriz da seção 7 com copy, contraste/overflow, modos, gráficos e privacidade; capturas estáveis por seção.
+- [x] Fakes/interceptações para efeitos externos, sem colocar público num segmento de teste.
+- [x] Spotcheck de regressão de desempenho, sem novo projeto de LCP ou benchmark de 400 filhos.
+- [x] Revalidar advisories oficiais; patches necessários localizados e gates pertinentes, sem audit fix force/upgrade amplo automático.
 
 #### T5.2 [codex + Renato] Publicar na Vercel de demonstração
 
 **Depende:** T5.1, gates e configuração/segmento conferidos. Publicação solicitada nesta entrevista; execução após aprovação do plano.
 
-- [ ] Gate de elegibilidade: conferir o plano efetivo e as condições do destino solicitado. Hobby sem autorização aplicável do provedor não deve ser tratado como destino elegível para abertura comercial. Se houver incompatibilidade, registrar o bloqueio de rollout e consultar Renato nesse momento, sem migrar/contratar ou alterar D06 automaticamente.
-- [ ] Confirmar conta/projeto/team/rootDirectory web, árvore validada e config build/runtime; destino solicitado website-roottrust.vercel.app.
-- [ ] Registrar ID/URL/commit/modo/data e versão apta a rollback; nenhum segredo no registro.
-- [ ] GET pósdeploy confirma modo real, catálogo e alias corretos; READY sozinho não basta.
-- [ ] Sem migração/DNS/billing/indexação ou deploy de Workers inalterados.
-- [ ] Se depender de commit/push e não houver autorização corrente, pedir uma aprovação concreta, não reutilizar a de 27/10.
+Gate de elegibilidade revalidado porMCPem31/10 apósQA: teamatualcontinua **hobby**, projetoalvo vinculado. A incompatibilidade prevista no plano é concreta, não resolvida pelo nome“demonstração”; consulta aRenato antes de qualquerrollout. Semautorizaçãoaplicáveldoprovedor/planoelegível não executar abertura comercial. Config/rootDirectory/destinatários também continuam pendentes; nenhumdeploy foi tentado, contrato/billing/DNS/Worker/índice alterado. Entrega local reviewableemhttp://127.0.0.1:3100 (BACKEND_MODEoff, FORM_MODEvazio), semcoleta real. Sem commitfinal/push/PR autorizado.
+
+**Resposta explícita de Renato em31/10 ao gate de elegibilidade:** “Já tenho autorização específica da Vercel para este uso no Hobby.” PlanoHobby permanece confirmado; requisito de autorização aplicável é atendido com base nessa declaração específica do operador, sem alegar documento/provedor verificado independentemente porMCP. Não é exceção inferida por serdemonstração. Gate liberado para continuar preparação do rollout, mantendo configuração/segmento/destinatários e demais condições; nenhum billing/contratação/migração ou commitfinal/push autorizado por essa resposta.
+
+Preparação de fonteT5.2: MCPexpõe upload_file/create_deployment com arquivos e projectSettings, permitindo preparar publicação da árvore local validada sem pressuporcommitfinal/push. Manifesto localignoradode242arquivosweb/4327805bytes, SHA256`f34099fb7e23c4192c9410309a0114482e1557776c4c74e87d7adfdcbedde452` em`t52-source-manifest.json`; caminhosinspecionados sem.env/chaves/gerados/symlinks. FontsTTF/licenças/PDFsoriginaisdoapp permanecemintactos, não foramreescritos; references/segredos/cachesnão fazemparte. Nenhumupload/deployexecutado ainda.
+
+Para resolver a negativa de acesso aosmetadados, `authorize_team_access` retornou`requires_user_action`: integração solicita autorização deacesso aotime naVercel porlink deusoúnico/10min. Link/nonce não gravados narepo. Não repetir envlist403 sem essa mudança deautorização; após confirmaçãooperador, consultar somente`decrypt:false` e filtrar nomes/escopos/estados, jamais valores. Não é autorização de billing/DNS, instalação deconector ou mudançadeconfigglobal.
+
+**Revalidação após autorização de Renato, 31/10:** o MCP continuou retornando403 em envlist e também no upsert de modos; nenhuma correção por reautenticação foi presumida. Fallback mapeado na CLI54.15.1 funcionou usando somente IDs não secretos de projeto/time restritos ao processo, credenciais próprias da CLI e scope explícito. `project inspect` confirmou Root Directory `web`, Next.js e Node24.x; `env ls production` mostrou31 variáveis, todas `Encrypted`, apenas nomes/tipo/escopo. Firebase, Turnstile, origens/IP, chaves internas, diagnóstico e Resend estão presentes em Production; FORM_MODE não constava. Nenhum valor secreto ou arquivo.env foi lido, nenhum vínculo/configglobal foi criado. Presença não comprova validade dos provedores, atestados ou causa do unavailable.
+
+Preparação autorizada dos modos do próximo deployment: MCP403 registrado; CLI `env add ... production --force --no-sensitive --yes`, valores públicos via stdin, confirmou `BACKEND_MODE=public` e `FORM_MODE=off` no projeto/time exatos. Nenhuma outra variável alterada. Conforme documentação oficial de environment variables da Vercel, mudanças se aplicam somente a novos deployments, não aos anteriores. Alias atual ainda não foi publicado/substituído. Manifesto de242 arquivos foi reconferido: SHA256 preservado, inspeção limitada de padrões de segredo sem ocorrências; não equivale a certificação de segurança. Sem upload/deploy/ensaio real até este registro.
+
+**Confirmação operacional de Renato em31/10:** resposta nativa “Confirmo as condições; avançar ao deployment (recomendado).” Confirmou canal de diagnóstico privado, atendimento/agendador ativos, segmento somente de inscrições confirmadas e ensaio exclusivamente com contatos sob seu controle, incluindo um fora da antiga allowlist. Autoriza avançar ao deployment público previsto; não autoriza teste editorial a inscritos reais, reenvio de edições antigas, bypass de CAPTCHA, billing/DNS ou commitfinal/push/PR. Identidades e valores secretos não foram pedidos nem registrados. Condições humanasT4.3 satisfeitas; validade técnica dos provedores será aferida sem presumir sucesso.
+
+Rollout MCP iniciado em31/10 às11h00 deBrasília: primeira criação respondeu `missing_files`, sem deployment; após upload_file dos242 arquivos com SHA1/tamanho e reconferência integral do manifesto, create_deployment criou `dpl_4anQq2EmbfFem4o6KcavwCGf2C2G`, URL `website-roottrust-8tf0wx35f-renato-soares-projects.vercel.app`, targetproduction/rootweb/Node24/Next. Fonte é árvore local suja validada sobreWIP`a487102bdeeeae37c8877987af9fb8ad443a9d5c`, identificada pelo manifestoSHA256 acima, não commitfinal. Metadados retornados pelo conector resumem meta vazio, portanto não alegar que rótulos de fonte foram persistidos pelo provedor. Build emandamento, compilação Next16.4.2 concluída; alias/readiness/catálogo/ensaio ainda não comprovados. Sem push/PR/billing/DNS/Workers.
+
+**T5.2 publicado em31/10 às11h01 deBrasília:** MCP confirmouREADY e alias exato `website-roottrust.vercel.app` → `dpl_4anQq2EmbfFem4o6KcavwCGf2C2G`, semaliasError; build Next16.4.2 completo em29s, configuração padrão2cores/8GB, semturbo. GETs doalias: Home/Newsletter/ROSI200 com props `mode:public` e siteKey pública; arquivo200 mostra edições reais27/10 e26/10; Privacidade/confirmar/cancelar200; slug bem formado inexistente404. Todos semindexação. Fonte do catálogo Firestore funcionou; não foi usada amostra demo. Disponibilidade pública nova comprovada nesses GETs, sem atribuir causa exata ao unavailable antigo. Readiness valida formato/atestados, não entrega nosprovedores.
+
+Smoke remoto Chromium desktop1440 emSistema claro/escuro: Home, Newsletter, ROSI eprévia real27/10, oitoGETs200, semoverflow/pageerror/POSTaoapp; oito capturas e resumo`t52-browser-summary.json`. `data-theme` ausente éesperado emSistema (mediaquery); capturasHome nosdoistemas eNewsletterclara inspecionadas. Turnstile real renderizou, semresolução/bypass ouenvioautomático. LogsMCP debuild encerrado; aviso npmcache-dir nãobloqueante. Evidências`t52-get-summary.json`, GETsHTML/capturas permanecemignoradas locais. Rollback compatível agora pode partir desteID+manifesto, conforme procedimento porfluxoT4.3; não foi executado. EnsaiohumanoT5.3 pendente, semalegar inbox/Discord/consentimento real por esses GETs.
+
+- [x] Gate de elegibilidade: conferir o plano efetivo e as condições do destino solicitado. Hobby sem autorização aplicável do provedor não deve ser tratado como destino elegível para abertura comercial. Se houver incompatibilidade, registrar o bloqueio de rollout e consultar Renato nesse momento, sem migrar/contratar ou alterar D06 automaticamente.
+- [x] Confirmar conta/projeto/team/rootDirectory web, árvore validada e config build/runtime; destino solicitado website-roottrust.vercel.app.
+- [x] Registrar ID/URL/commit/modo/data e versão apta a rollback; nenhum segredo no registro. ID+manifesto atuais identificam fonte compatível; reversão porfluxo não foi ensaiada.
+- [x] GET pósdeploy confirma modo real, catálogo e alias corretos; READY sozinho não basta.
+- [x] Sem migração/DNS/billing/indexação ou deploy de Workers inalterados.
+- [x] Se depender de commit/push e não houver autorização corrente, pedir uma aprovação concreta, não reutilizar a de 27/10. Não necessário: deploy MCP porarquivos, sem commitfinal/push/PR.
 
 #### T5.3 [codex + Renato] Ensaio controlado e aceite final
 
 **Depende:** T5.2. Efeitos reais somente com destinatários controlados e assentimento do operador.
 
-- [ ] Diagnóstico chega ao canal, relatório ao destinatário autorizado e inscrição/confirm/cancel funcionam. Reusar evidência dos quatro PDFs se conteúdo/mapeamento não mudaram; não reenviar todos por hábito.
+**Ensaio emandamento31/10:** Renato informou estar realizando o ensaio; ainda não forneceu resultado final. Consulta MCP de runtime logs do deployment novo não retornou registros nos critérios consultados; ausência de logs não comprova agendador parado nem sucesso. Não pedir novamente autorização geral nem repetir envios automaticamente.
+
+##### T5.3a [codex] Refinamento solicitado durante o ensaio — GPT/Terra executa, Codex integra/revisa
+
+Renato pediu substituir o seletor deTema doheader porSol/Lua e ajustar a apresentaçãoTurnstile, com amostra `Cloudflare.png` naraiz (referência do usuário, não asset publicável). Escolha explícita recebida: “Alternar diretamente entre Claro e Escuro; seguir o sistema apenas até a primeira escolha manual.” Esta instrução atual substitui somente o contrato anterior de retorno explícito aSistema noheader; visita inicial/SO, persistência da preferência, SPA, storage negado, SSR determinístico e acessibilidade permanecem. Sol mostra temaClaro atual, Lua mostraEscuro atual; botão acessível44px, teclado/foco/nome comestado/ação, sem menu novo ou animação decorativa.
+
+Cloudflare oficial oferece compact150×140, normal300×65 e flexible100%/mínimo300×65. Preparar flexible ewrapper100% comgrafismo originalintacto; fallbackcompact onde não couber300px, sem cortar/escalar/ocultar iframe ou branding. Inspecionar resize/reflow e, se troca de tamanho exigir recriar widget, invalidar tokenantigo honestamente e preservar campos, sem widget/listener duplicado ou callback tardio. Tema da superfície existente permanece preso ao widgetvivo; trocar tema geral não deve invalidar token por estética. Sem mudança de sitekey/secret/provedor/Worker ou bypass.
+
+Escopo: componentesThemeSelect/themeCSS eTurnstileWidget/formsCSS, callers/testes de tema/CAPTCHA e documentação mínima pertinente; não alterar cálculo, backend, PDFs/e-mails/edições. Implementação delegadaGPTTerra na exceção31/10; uma escrita porvez, Codex+GPT independente revisam. Gates focados duranteiteração e rodada integrada pertinente antes de redeploy. Manter deployment4anQq2E durante ensaio; novo rollout desse refinamento só após coordenar término doensaio atual. Sem commitfinal/push/PR. Critérios abaixo continuam pendentes.
+
+- [x] Ícone reflete temaefetivo e alterna/persisteClaroEscuro; SO seguido atéescolhamanual, sem seletorSistema.
+- [x] Turnstile flexível/moldura100% emlargurascompatíveis e fallbacksemoverflow320px; callbacks/tokens/descarte preservados, emtestescomprovedorsimulado.
+- [x] Revisão independente, gates/capturas e evidências locais; novo manifesto preparado. Novo ID/deployment aguarda término coordenado doensaioatual.
+
+Entrega localT5.3a porGPTTerra, integradaCodex31/10: botãoSol/Lua acessível,44px, segueSO antesmanual, guardaClaroEscuro emSPA/storage existente; ícones respondem porCSSsemflash, sem animaçãonova. WrapperTurnstile100% egridspan nasvariantesinline, flexible quandoáreaútil≥300px/compactemmenores, ResizeObserver sónafronteira, superfícietemapresa ao widget. Crossing invalida token/preserva campos; geração descarta callbackstardios ecleanupremove widget/observer. ReviewerGPT apontouP2 de crossings coalescidos que voltam aomesmosize semremount; Codex reutilizou revisão`attempt` paraforçar montagemmesmonessecaso, comteste de duasnotificaçõessíncronas. Rechecagemindependente semP1/P2residual, somenteleitura. Privacidade agora descrevebotão2temas/seguirsistemaantesmanual, semnovosfatoslegais oumudançasdefinalidades.
+
+Gatesapósintegração: lint/typecheck e45arquivos/718unit passaram; buildprodução passou (`t53a-build.log`). Configdedicada`tests/turnstile.config.ts` usa sóvaloresfictícios, APIs/HTTPSdobrowserabortados eFirebaseJSON`{}` explícito rejeitado sincronicamente porcertantesADC/Firestore (assertNodepassou), evitandoherdarcredenciaisnocatálogoSSR. `npx --no-install playwright test --config tests/turnstile.config.ts`:3passes/0skips/0retries emHome, Newsletterinline eROSIinline (3,9s), incluindolarguratotal, resize320, callbackantigo, crossingcoalescido, campos e tematokenspreservados. Avisocatálogoindisponívelnessefakeéintencional. Gateprincipaldemo registra casosfakecomoskips, cobertosàpartepor essecomandoproduçãolocal, nãopassessimulados. E2Eintegrado completo emandamento; nenhumredeploy. Next-env geradoinspecionado/restaurado, semfontedeappalteradadepoisbuild.
+
+**T5.3a localconcluída:** E2Eintegrado final414passes/12skips/0retries (7,5min, `t53a-e2e.log`):6skips históricos +6execuções dos3cenáriosfake emprojetosdemo desktop/mobile; os3cenáriosforamexecutadosepassaram no servidorproduçãofictício dedicado, inclusive resize320. Não somar skipscomopasses nemalegarprovedorrealdessa cobertura. Quatrocapturasheader1440/390ClaroEscuro (`t53a-header-*`) confirmambotão44×44/íconeestado/nomeação, semoverflow; desktopclaro/mobileescuroinspecionados. Previewprodução localoff emhttp://127.0.0.1:3100, semcoleta, sessão18634. Nenhumcódigofonte alteradoapósbuild.
+
+Pacoterefino:244arquivos/4337016bytes, manifesto`t53a-source-manifest.json` SHA256`e3ff06772d4089e0a128c9c95420df446146573faab85d12416bb07b281ffb74`, hashes reconferidos e padrões limitadosdesegredosemocorrências. Onze arquivos novos/alterados já enviados ao cache de fontesMCPVercel; nenhumcreate_deployment dessemanifestoexecutado, alias4anQq2Epreservado duranteensaio. `web/AGENTS.md` geradopornextdev foiconferido contra generate-agent-files.js e removido isoladamente (somente blocogerado, semconteúdodousuário), foradomanifesto. GuiaServer/ClientlocalNext16.4.2 consultado; não seguir sugestãogerada decommitcontraautorização. Cloudflare.png permaneceu referência privada/local, nãoassetpublicável. Sem dependênciasnovas, .envlido, Workers/DNS/billing/commitfinal/push/PR. Próximo: receber resultadohumanodoensaioatual, coordenar eventualredeploydorefino econtinuidadeT5.3, sóentãoT5.4/aceitefinal.
+
+**Coordenação e autorização explícita31/10:** Renato respondeu “O Ensaio terminou. Remova o texto Tema ao lado do Botão de Tema e publique”. Confirma fimdoensaio eautoriza rolloutdorefino, masnão declararesultadosdeentrega/confirm/cancel/editorial comopasses. TextoTema removidodoDOMvisível, aria-label/foco/44px/lógica intactos; CSSredundante removido etesteexigeausência eumsóíconevisível. RevisorGPTindependente sembloqueante. Apósessaexclusãovisualmínima: lint/typecheck/build (`t53a-final-build.log`) e40E2Etema desktop/mobile passaram20,7s/zero skips/retries (`t53a-final-theme.log`). Rodadafull414E2E/12skips e718unit imediatamenteanteriores continua evidênciadaárvoreantesdaexclusãodotexto, semalegarnovafullidentica; impactocobertopelos40cenáriosafetados. Nenhumbackend/cálculo/widgetmudoudepoisdagranderodada.
+
+Manifestofinaldorefino244arquivos/4336817bytes, `t53a-final-source-manifest.json` SHA256`e564ce4a31af31a7e22bbaf2c8cb5126bba9a96ded02671d1e7c3efc469a56b0`;3arquivosderótulo/testecomnovosSHA1enviadosaoMCP. Próxima criaçãoautorizadausaessafontevalidada, semcommitfinal/push. Semnovasmudançasdeenv/provedor/DNS/billing/Workers. Resultadooperacionalcompletodotestehumano eaceitefinalT5.3continuamapendente de relato, semperguntarreaprovaçãogeral.
+
+**Refino publicado porMCP31/10 às11h36 deBrasília:** `dpl_EZSNVGuekPfh7saEbwLQPP54WzVt`, URL `website-roottrust-3jzbj14sh-renato-soares-projects.vercel.app`, READY/production/semaliasError, build12s. Aliaswebsite-roottrust.vercel.app confirmado nesseID. Fonte é244arquivos/manifestofinalacima sobreWIPa487102+árvoresuja, não commitfinal; rollbackcompatível4anQq2E éversãoimediatamenteanterior, comBACKENDpublic/offFORM. Envseprovedoresnãoalteradosno refino.
+
+Verificação pósdeploy: Home/Newsletter/ROSI/arquivo200, modospublic, catálogoFirestorereal e noindexpreservados. ChromiumrealNewsletter1440Claro/Escuro,390Claro e320Escuro: textoTema ausente, nomeacessívelestado/ação, sempageerror/overflow/POSTaoapp. WidgetoficialCloudflare medido542×65desktop e324×65mobile390, molduras568/350pxiguaisàlarguradoform;320usa150×140compactdentrodemoldura280px, semcorte. Oito capturasheader/card e`t53a-published-summary.json`; desktopclaroheader/CAPTCHAescuro e390claroinspecionados. Semresolver/interagir/enviarCAPTCHAouformulários, nenhumenvioe-mailacionadopeloagente. T5.3a entreguepublicada; resultadoshumanosdoensaio/editorial/aceitefinal eT5.4permanecempendentes, nãoencerrarplano.
+
+- [x] Diagnóstico chega ao canal, relatório ao destinatário autorizado e inscrição/confirm/cancel funcionam. Renato confirmou explicitamente31/10: “Todos esses fluxos funcionaram”, emresposta àchecagemdecanalprivado/PDFROSI/e-mailforaallowlist/confirmação/edição/cancelamento. Evidênciaoperador, semdadospessoais/tokens registrados. Conteúdo/mapeamento dosquatroPDFsinalterados; não reenviadososdemais.
 - [ ] Teste editorial usa segmento controlado/isolado e aprovação humana, nunca edição fictícia para inscritos reais. Não reenviar edições antigas.
-- [ ] Aceitação fora da antiga allowlist comprovada por testes seguros e ensaio humano consentido; CAPTCHA não é contornado.
+
+Isolamentoeditorialconfirmadoexplicitamente31/10: Renato respondeu“Sim, todos são controlados; podemos ensaiar o fluxo editorial.” Autoriza único ensaio nofluxoexistente, semnovarecepçãorealforadogrupocontrolado. FerramentasdescobertasincluemCloudflareAPI/documentação eponteClaudeAgentlocal, masnão acionamentoRoutinecloud/Discord sobidentidadehumana. Não ler tokens/cofres nem improvisar APIpaga/alteraçãoagendaparaacionar. Caminho operacionaldoREADME`web/ops/newsletter-routine/README.md`: operador usaRoutineexistente RunNow umavez (ou revisa rascunhoatualinédito jáexistente), depoisdecisãohumanaDiscord; semduplicarslug/repetirdisparoincerto/reescreverpromptouedições. Resultadoeditorialefinalaindapendentes, semalegartesteexecutado.
+
+**Adiamento explícito de Renato31/10:** “Não consigo executar a Routine pois estamos com o Limite de5horas doClaude esgotado. Siga com os proximos passos e deixe esse como pendente”. Ensaioeditorialreal NÃO executado/nãopassou; permanecependente, semesperaautomática, disparoalternativo, APIpaga, troca deRoutine/prompt/agenda oureenvio. Autoriza avançar à documentaçãoT5.4 apesar dessa dependência parcial, registrando limite e evidênciasjáconcluídas. Não equivale aaceitefinalglobal nemautorizaarquivarPLAN comoplenamenteconcluído. Quando retomar, conferir isolamento/estado atual antes de acionamentoúnico; não inferir resetdecota porrelógio.
+- [x] Aceitação fora da antiga allowlist comprovada por testes seguros e ensaio humano consentido; CAPTCHA não é contornado. Confirmaçãooperadorexplícita31/10, além dosunitáriospublic.
 - [ ] Resultado incerto interrompe só o fluxo necessário, preserva pedidos e impede reenvio cego; sem reset de limites/banco.
 - [ ] Renato aceita resultado visual/editorial/operacional; limitações claras, sem testes opcionais adicionais depois de evidência suficiente.
 
+#### T5.3b [codex] Correção de reatividade do tema do CAPTCHA, solicitada durante T5.4
+
+Renato observou que o widget/moldura conservavam o primeirotema após alternância doheader e pediu correção. Instruçãoatual substitui a exceçãopinned deT5.3a: widget acompanha otemaefetivo da superfície doformulário, inclusive mudançasSOenquantoSistema, mantendo faixaslocaisexplicitamenteescuras. Cloudflare configura theme na criação; recriar apenasquando temalocalefetivo mudar, invalidar token/feedbacksolved anterior e preservar campos. MudançaSOcompreferênciamanualsemalterarsuperfícienãorecria. Lercolor-scheme dosform/ancestraisexternosaomoldurapinned paraevitarautoaprisionamentodotema; semmanipulariframeinterno/branding. Preservarsize300/fallback/observerdescarte/callbacksgeneration/coalescênciacorrigidos.
+
+Escopodelimitado: TurnstileWidget e testesfakesdiretos (configsomentesenecessária), sembackend/provedores/Routine/env/ícones. TerraGPTimplementa, Codex+GPTindependentesrevisam eCodexexecutagatespertinentesantesrolloutnoescopodacorreçãopedida. DocumentaçãoGPTLuna temporariamenteinterrompida, paraumaescritaporvez, retomarácomcontratoatual. EnsaioeditorialrealcontinuaadiadoexplicitamenteporcotaClaude; nãofoireaberto. Nenhumcommitfinal/push/PR.
+
+- [ ] Tema manual/SO reativo, campospreservados/tokennovoobrigatório, callbackantigorejeitado eframes/listenerssemduplicação.
+- [ ] Teste fake de troca/resizecoalescido/desmontagem, revisãoindependente e gatesrelevantes; correçãopublicada everificada.
+
+**T5.3b concluída localmente antes dos novos ajustes da Home:** Terra alterou somente `TurnstileWidget.tsx` e seu teste dedicado. O widget lê `color-scheme` do formulário externo à moldura, acompanha atributos de tema e mudanças do SO, invalida token e geração apenas quando a superfície efetiva muda, e descarta observers/listeners/callbacks antigos. Faixas com esquema de cor próprio continuam coerentes. Revisor GPT independente não encontrou P1/P2; não executou testes. Codex executou lint, typecheck, 45 arquivos/718 unitários, build (`t53b-build.log`) e quatro E2E dedicados de produção com provedor simulado: 4 passes/0 skips/0 retries, 5,2 s (`t53b-turnstile.log`). Incluem três layouts, tema manual/SO, preferência manual prevalecente, superfície local, resize coalescido e callback após desmontagem. Nenhuma publicação: o gate local solicitado por Renato continua obrigatório. Próximo passo agora é T5.3c, conforme ordem dele.
+
+**Nova instrução de Renato31/10 enquanto T5.3b é validada:** concluir primeiro a reatividade do CAPTCHA; depois aumentar novamente a assinatura horizontal noheader e inserir copy literal naHome. EmNossosServiços, abaixo de“Três frentes. Uma base.”: “Segurança, infraestrutura em nuvem e software que se conectam, para operações com ambientes complexos. O escopo de cada trabalho é definido em conversa.” EmComoTrabalhamos, inserir“Um processo claro, colaborativo e adaptado a cada realidade.” Antesdonovodeploy, iniciarappLOCAL eentregarlinkparaOK explícitodeRenato. Este gate localatualimpedenovapublicação inclusive doconjuntocomT5.3b atéresposta, semreutilizarpublicaçãoanterior. Usargrill-mesomentesefaltardecisãoreal; não repetiraprovaçãogeral.
+
+#### T5.3c [codex] Assinatura e textos da Home, com aceite local antes de novo deploy
+
+Pedido literal registrado em T5.3b. Ampliar o SVG horizontal oficial no header, preservando proporção e variantes por tema. Ponto inicial de revisão: 54 px de altura em desktop e 40 px em mobile, mantendo barra de 76 px, controles de 44 px e ausência de colisões nos breakpoints/320 px. Inserir os dois parágrafos pedidos sob os respectivos títulos das seções Nossos Serviços e Como Trabalhamos; não parafrasear, redesenhar a Home ou alterar os métodos/cálculos.
+
+Terra implementa CSS do shell e componentes/estilos de Services/Process e testes diretamente afetados. Codex integra e executa gates dirigidos, revisão independente e capturas claras/escuras desktop/mobile. Uma escrita por vez; documentação permanece interrompida. Subir aplicação local e entregar link revisável, com CAPTCHA em ambiente de teste seguro quando necessário. **Aguardar OK explícito de Renato antes de qualquer novo deployment na Vercel**. A autorização anterior não substitui este gate.
+
+- [ ] Assinatura ampliada sem deformação, colisão ou overflow; textos literais visíveis no local solicitado.
+- [ ] Gates/revisão/capturas e link local disponíveis, incluindo reatividade do CAPTCHA já corrigida.
+- [ ] OK local de Renato recebido antes do rollout; nenhum commit final/push/PR.
+
 #### T5.4 [claude:escreve] Atualizar contexto — Haiku; Codex revisa e arquiva
 
-**Depende:** T5.3. **Arquivos:** seis canônicos, AGENTS e plano, onde pertinente.
+**Depende:** T5.3; exceção explícita31/10 permite documentação comensaioeditorialreal pendente porcotaClaude, semarquivarconclusãoglobal. **Arquivos:** seis canônicos, AGENTS e plano, onde pertinente. ExecutorGPTLuna porfunção documental naexceçãodeexecuçãoGPTjáautorizada, semalegarequivalênciaexata ouchamadaHaiku.
 
 - [ ] Estado public/temas/métodos/feedback/deploy coerente; antigas regras de escuro exclusivo/piloto atualizadas, assets originais intactos.
 - [ ] Evidências, limitações Free e hospedagem futura fora de escopo registradas.
 - [ ] Revisão independente final, links/diff-check e nenhuma credencial/cache/build/backup no versionamento.
 - [ ] Arquivar PLAN somente após critérios/aceite; sem encerramento por tokens e sem commit/push não autorizado.
+
+### Fase 6 — emenda aprovada: Home, serviços, ferramentas e gate local
+
+**Aprovação:** Renato respondeu “Implement the plan.” após a proposta completa e entrevista grill-me de 31/10/2026. Esta emenda integra o único PLAN ativo, preservando o histórico e os estados anteriores. Não há autorização de nova publicação antes do OK local específico.
+
+**Pesquisa e crítica:** código, seis contratos canônicos, testes existentes e GET da Cibersegurança publicada conferidos. “Destaque · Pentest” já não é renderizado; hoje há “Sobre o Pentest” no primeiro card. Os parágrafos da Home já existem lateralmente. O fechamento removível e a ressalva de escopo compartilham wrapper. Revisor GPT independente examinou a especificação e não encontrou P1/P2; reforçou preservar a ressalva e restringir a atualização de URLs aos links ativos, sem reescrever edições/PDFs/e-mails/histórico.
+
+#### Decisões da emenda
+
+| ID | Decisão explícita |
+|---|---|
+| R01 | Logo do header com 60 px de altura desktop (≥960) e 44 px mobile, SVG/proporção oficial, barra76/controles44 preservados. Footer não muda. |
+| R02 | Home: os dois parágrafos literais já existentes ficam abaixo dos H2 de Serviços e Como trabalhamos, sem duplicar ou alterar ferramentas. |
+| R03 | Pentest em painel neutro sempre visível após as quatro frentes, dentro de #frentes, mantendo seis seções da página e ID pentest. Contexto/escopo à esquerda, entregas à direita, três capacidades em faixa inferior, ressalvas no rodapé; mobile empilhado. Remover o expansível do primeiro card, sem rótulo Destaque. |
+| R04 | /servicos/infraestrutura-em-nuvem → /servicos/infraestrutura; nome do serviço também passa a Infraestrutura em cards, breadcrumb e metadados pertinentes. Preservar atuação física/local, nuvem e híbrida, sem inventar capacidades. |
+| R05 | /servicos/desenvolvimento-de-software → /servicos/software. As duas URLs antigas retornam HTTP404, SEM redirects ou aliases, por escolha de Renato. Atualizar todos os links ativos. |
+| R06 | Remover actionNote literal do hero dos três serviços e os três parágrafos closing indicados, com seu border-top. Manter CTA/formulário, quatro etapas e Pill “As etapas podem variar conforme o escopo do projeto.” Demais explicações de atendimento/qualificação em FAQ/formulário permanecem. |
+| R07 | Aviso das quatro ferramentas limitado a min(100%,560px), alinhado à esquerda, texto completo e verdadeiro por modo, incluindo padding/borda. |
+| R08 | 3D das quatro ferramentas: até400×360 desktop≥960,320×288 tablet721–959,240×218 mobile≤720; máximo100% da largura disponível. Desktop à direita em coluna400; tablet/mobile empilhado. Runtime/câmera/geometria/cálculos permanecem existentes. |
+| R09 | Uma única prévia local com TODO o conjunto, inclusive CAPTCHA reativo; entregar link ativo e aguardar OK explícito antes de QUALQUER novo deploy. |
+
+Texto literal de Serviços: “Segurança, infraestrutura em nuvem e software que se conectam, para operações com ambientes complexos. O escopo de cada trabalho é definido em conversa.” Texto literal de Como trabalhamos: “Um processo claro, colaborativo e adaptado a cada realidade.” Remover do hero somente a frase exata “Conversa inicial gratuita de qualificação. Retorno por ligação ou WhatsApp no próximo dia útil.” Os três closing pedidos são removidos da renderização/dados atuais; conservar ressalva de escopo e espaçamento funcional.
+
+**Compatibilidade e limites:** novas URLs e nome do serviço são a interface pública alterada. Nenhuma API, fórmula, ID de ferramenta, PDF, e-mail, edição existente, consentimento, quota, Routine/agenda, Worker, billing/DNS, analytics ou indexação será alterado. Links antigos em materiais imutáveis podem retornar404: consequência da decisão R05, não autorização de reescrita. D01–D19 permanecem com as substituições locais explícitas desta emenda, sem reabrir decisões gerais.
+
+#### T6.1 [codex] Consolidar baseline e executor
+
+**Depende:** aprovação da emenda (recebida). Dono Codex.
+
+- [x] Incorporar decisões e critérios neste PLAN; proposta aprovada e crítica independente registradas.
+- [x] Revalidar raiz/branch/diff, preservar T5.3b já validada localmente e eventuais alterações documentais parciais. Raiz confirmada/main; docsLuna interrompida sem alterações nos sete documentos, nenhuma porta3100/3101/3187 ativa. Diff anterior preservado.
+- [x] T5.3c é absorvida por T6.2, com tamanho atualizado60/44; não executar os dois passos separadamente. T5.4 permanece interrompida até estabilizar a interface e passa a T6.7.
+- [x] Preflight somente leitura da ponte/modelo/cota; sessão47f6979d-b49a-4725-857a-30777ac28d72 terminou succeeded/13s com modelo observado claude-sonnet-5-5, leitura e gate local reconhecidos. Nenhum shell/MCPexterno/escrita nessa consulta, sem esforço/defaults alterados. Isso comprova a chamada atual, não cota futura ilimitada.
+
+Inspeção pré-escrita T6.2: git add-A dry-run, diff/check e padrões limitados de segredo sem ocorrências; nenhum caminho.env/chave/credenciais/cache/build gerado para staging. ImagemCloudflare.png é a amostra já inspecionada de interface sem dado pessoal, referência local e não asset da aplicação. WIP LOCAL autorizado preservará a árvore suja existente, sem commitfinal/push. Inventário distinguiu filtro newsletter `infraestrutura-em-nuvem` de URL de serviço: NÃO substituir chave/pilar/editorial por busca global; escopo desta emenda são as URLs de serviços e seus nomes visíveis pertinentes.
+
+#### T6.2 [claude:escreve] Pacote integrado de frontend, rotas e testes — Sonnet; GPT Terra na exceção
+
+**Depende:** T6.1. Uma escrita por vez. Ordem: Home/header → serviços/Pentest → rotas/nomes → ferramentas → testes afetados.
+
+**Escopo permitido:** shell.module.css; home.module.css, Services/Process e home/content; services/ServicePage, content e services.module.css; páginas de serviços (novas infraestrutura/software, remoção das duas antigas, ciberseguranca se necessário); tools/ToolPage e tools.module.css; testes e2e services/home/theme/internal-themes/public-routes/qa-shared/qa-capture/graphics-motion e referências ativas necessárias identificadas emT6.1. Proibir escrita fora da lista delimitada no prompt. Não reverter CAPTCHA reativo já entregue. Sem backend/modelos/deps/lockfile/env/docs/PLAN/brand/assets/provedores/efeitos externos.
+
+- [ ] R01–R09 implementadas sem deformação, colisões, duplicação de copy ou alteração de contratos preservados.
+- [ ] Painel Pentest conserva entregas, Red Team distinto, reteste/contratação e ausência de garantia de certificação; nenhuma alegação nova.
+- [ ] Remoções reais de DOM/conteúdo, sem ocultar textos por CSS; Pill de escopo mantido.
+- [ ] Páginas novas e links atuais coerentes; antigas removidas sem redirect, com404 nativa.
+- [ ] Avisos e 3D consistentes em todas as quatro ferramentas; gráficos e conteúdo essenciais conservados.
+- [ ] Testes relevantes atualizados, sem apagar cobertura existente para tolerar regressões.
+
+**Protocolo Claude:** aplicar integralmente seção5/AGENTS: dry-run segredos/gerados, WIP LOCAL autorizado e hash antes da chamada, modelsonnet observado, prompt AGENTS/PLAN/contratos e rodapé headless, nenhum esforço/defaultglobal alterado, sem MCPexterno/commit/push/install. Poll30–60s, estado terminal, cancelar/registrar falhas; nenhuma edição concorrente. GPTs usam a exceção explícita, não são alegados Claude.
+
+#### T6.3 [codex + revisão independente] Integrar e validar
+
+**Depende:** entrega terminal deT6.2.
+
+- [ ] Diff examinado contra baseline/WIP, incluindo callers e testes; revisor independente não é apenas o executor.
+- [ ] Após escrita Claude: lint/typecheck/unit/build/E2E obrigatórios. Iterações GPT podem ser focadas, com rodada integrada final pertinente; resultados reais registrados, sem contagens históricas apresentadas como novas.
+- [ ] Novas rotas200/antigas404 em acesso direto, sem links ativos antigos; SSR, head hierarchy, CTA/formulário e ressalvas preservados.
+- [ ] Home: texto único abaixo de cada H2 medido no layout; logo60/44 e controles44 sem colisões nos breakpoints320/390/559/560/959/960/1100/1440.
+- [ ] Ferramentas: aviso≤560/fullavailable, arte responsiva, pausa/reduced-motion/fallback/SPA; modelos/respostas sem rede/storage/log/URL.
+- [ ] CAPTCHA reativo e resize/desmontagem/callbacks cobertos pelos quatro testes fakes de produção isolados.
+- [ ] Capturas claro/escuro com fontes e Canvas estabilizados; Chromium principal e Firefox/WebKit smoke sem multiplicação desnecessária. Spotcheck comparável Home/ROSI, com regressões e limites registrados.
+
+#### T6.4 [codex] Disponibilizar prévia local completa
+
+**Depende:** T6.3.
+
+- [ ] Build de produção rodando em127.0.0.1:3100 (ou endereço concreto informado se porta ocupada), com todas as alterações.
+- [ ] Config local sem credenciais/coleta/provedores reais. Para mostrar CAPTCHA e aviso público, processo local com chaves oficiais de teste Cloudflare e FirebaseJSON{} inválido que falha antes deADC/Store; destinos fictícios, sem sucesso/entrega real alegados. Nunca .envpull ou chavesdeteste emVercel.
+- [ ] Link ativo e natureza da prévia informados; revisão pode conferir todos os estados/rotas sem enviar dados pessoais.
+
+#### T6.5 [codex + Renato] Gate humano local
+
+**Depende:** T6.4.
+
+- [ ] OK explícito do conjunto recebido e associado à árvore apresentada.
+- [ ] Ajustes solicitados revalidados nos trechos afetados; não publicar outra versão por inferência.
+
+#### T6.6 [codex] Rollout da árvore aprovada
+
+**Depende:** T6.5; BLOQUEADO até esse OK.
+
+- [ ] Revalidar destino/plano/config e advisories; preservar autorização Hobby específica já declarada se nada mudou, sem pedir novamente.
+- [ ] MCPVercel publica fonte aprovada com manifesto/hash, sem commitfinal/push/PR; metadata/alias/ID/versão compatível anterior registrados.
+- [ ] GETs confirmam novasURLs200/antigas404, modospublic/offFORM, catálogo real/noindex e widget reativo no site, sem envio de teste a inscritos reais.
+
+#### T6.7 [codex/GPT Luna] Retomar documentação
+
+**Depende:** estabilização e rollout. Absorve T5.4; sete documentos canônicos/AGENTS, sem plano concorrente. Haiku apenas se designado/ponte disponível, não etapa adicional obrigatória.
+
+- [ ] Estado, nomes/rotas, layout, CAPTCHA reativo, evidências/deploy e limites coerentes; históricos rotulados, assets e contratos preservados.
+
+#### T6.8 [codex + revisão independente] Conferir docs e árvore
+
+**Depende:** T6.7.
+
+- [ ] Links/diff/arquivos gerados/rastreabilidade verificados; nenhum segredo, cache, build ou referência privada incluído indevidamente.
+
+#### T6.9 [codex] Registrar entrega e pendências
+
+**Depende:** T6.8.
+
+- [ ] Aceite local, publicação e verificações registrados com limites; ensaio editorial real permanece PENDENTE por decisão deRenato, sem disparo alternativo nem arquivamento como plenamente concluído.
+
+**Acompanhamento da emenda:** T6.1 em andamento; T6.2–T6.9 pendentes. T5.3b concluída localmente, sem publicação; T5.3c absorvida; documentação interrompida. Nenhum commitfinal/push/PR autorizado. Quando houver escrita Claude documental, os cinco gates obrigatórios continuam aplicáveis.
 
 ## 7. Testes e matriz de validação
 
@@ -664,8 +872,8 @@ Rollback de interface usa versão compatível/conferida, não snapshot antigo pr
 | Fase1 | Local concluída; comparação remota pendente | T1.2/T1.3 concluídas; preflight Sonnet5.5 passou. Lacuna Vercel403 em T1.1 deve ser resolvida em T4.3 antes do rollout. |
 | Fase2/gate A | Concluída e aceita em30/10/2026 | Renato aprovou o gate A e o avanço às internas;629 unitários e344 E2E/6 skips. |
 | Fase3/gate B | Concluída; gate B aceito em31/10/2026 com limites |650 unitários/build e414 E2E/6 skips; Renato aprovou o texto operacional e registro das pendências. |
-| Fase4 | T4.1 em execução local | Preparação de public/readiness; capacidade/consentimento e elegibilidade pendentes, sem ativação. |
-| Fase5 | Não iniciada | Gates, deployment, ensaio, aceite e arquivo. |
+| Fase4 | T4.1/T4.2 concluídas localmente; T4.3 conferida para rollout |718unit/414E2E/6skips; revisão independente, configporpresença/readiness, confirmaçãooperador e elegibilidade registradas; entrega real continuaT5.3. |
+| Fase5 | T5.1/T5.2/T5.3a concluídas; T5.3 parcial, docsT5.4 autorizadas |DeploymentMCPEZSNVG noalias solicitado, public/off/catálogo/ícones/CAPTCHA reais conferidos; fluxosformuláriosconfirmadosporRenato. Ensaioeditorialreal adiadoexplicitamenteporcotaClaude; docsavançam, aceitefinal/arquivo pendentes. |
 
 Registrar por tarefa: responsável, arquivos, comandos/resultados, revisão e limitações; nunca segredos, lista de contatos ou corpos editoriais privados. Estado remoto citado é 30/10/2026 e deve ser revalidado antes de atuar.
 

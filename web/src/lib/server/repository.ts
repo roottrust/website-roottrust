@@ -3,7 +3,7 @@ import { newConfirmationId, opaqueId, verifyConfirmationToken } from "./ids";
 import { MAX_REGENERATIONS_PER_DAY, type DecisionAction, type DecisionResult } from "./newsletter-protocol";
 import { checkEmail, extractOpening, type EditionInput } from "./validation";
 import { enqueueJob } from "./jobs";
-import { RESEND_DAILY_LIMIT, RESEND_MONTHLY_LIMIT, capacityWaitMs, emailCapacityDenied, marketingClosedReason, marketingDenied, readBaseline, readCounters, reserveMarketingSlot, takeSlot, type EmailLimits } from "./capacity";
+import { RESEND_DAILY_LIMIT, RESEND_MONTHLY_LIMIT, bumpConsentEpoch, capacityWaitMs, emailCapacityDenied, marketingClosedReason, marketingDenied, readBaseline, planReservationMove, readConsentEpoch, readCounters, reserveMarketingSlot, takeSlot, type EmailLimits } from "./capacity";
 import type { Denied, Gate } from "./limits";
 import type { Store, Tx } from "./store";
 import { COLLECTIONS, JOB_KINDS, type DiagnosticRecord, type EditionBroadcastRecord, type EditionDraftRecord, type EditionPublicRecord, type EditionRevisionRecord, type JobRecord, type LeadEventRecord, type LeadRecord, type NewsletterDeliveryRecord, type ReplayRecord, type ReportDeliveryRecord, type SlugReservationRecord, type SubscriptionConfirmationRecord, type SubscriptionRecord, type SubscriptionStatus, type ToolId } from "./types";
@@ -223,14 +223,14 @@ export async function requestSubscriptionConfirmation(
     const denied = await gate?.(tx);
     if (denied) return denied;
     const current = await tx.get<SubscriptionRecord>(COLLECTIONS.subscriptions, id);
-    if (current?.status === "confirmed") {
+    if (current?.status === "confirmed" && current.contactSyncState !== "blocked") {
       const slug = value.editionSlug ?? generalSlug;
       if (!slug || !(await tx.get(COLLECTIONS.editionsPublic, slug))) return { ok: true as const, action: "none" as const };
       // shortcut: a dead send needs provider reconciliation before any retry; never create a second same-day send blindly.
       // An existing job (pending, done or dead) already owns its slot: dedup creates no new obligation.
       const jobId = deliveryJobId(secret, id, slug, now);
       const existingJob = await tx.get<JobRecord>(COLLECTIONS.jobs, jobId);
-      if (existingJob) return existingJob.status === "dead" ? { ok: true as const, action: "none" as const } : { ok: true as const, action: "delivery_queued" as const, editionSlug: slug };
+      if (existingJob) return (existingJob.status === "dead" || existingJob.status === "done") ? { ok: true as const, action: "none" as const } : { ok: true as const, action: "delivery_queued" as const, editionSlug: slug };
       const counters = await readCounters(tx, now);
       const wait = capacityWaitMs(counters, limits);
       if (wait !== undefined) return emailCapacityDenied(wait);
@@ -242,8 +242,11 @@ export async function requestSubscriptionConfirmation(
     // Every check precedes the first write: a returned refusal does not undo buffered writes.
     const previous = current?.pendingConfirmationId ? await tx.get<SubscriptionConfirmationRecord>(COLLECTIONS.subscriptionConfirmations, current.pendingConfirmationId) : undefined;
     const inherited = previous?.reservation?.kind === "admission" && !previous.attemptStartedAt && !previous.sentAt && !previous.consumedAt ? previous : undefined;
-    const counters = inherited ? undefined : await readCounters(tx, now);
-    const wait = counters ? capacityWaitMs(counters, limits) : undefined;
+    // An inherited admission from an older UTC day/month is validated against (and moved to) the CURRENT buckets here, with
+    // the other checks and before any write: a denial leaves the token and the previous reservation exactly as they were.
+    const counters = await readCounters(tx, now);
+    const move = inherited?.reservation ? await planReservationMove(tx, inherited.reservation, counters, limits) : undefined;
+    const wait = move ? (move.ok ? undefined : move.waitMs) : capacityWaitMs(counters, limits);
     if (wait !== undefined) return emailCapacityDenied(wait);
     const needsSlot = options.marketing === true && !current?.marketingSlotAt;
     const baseline = needsSlot ? await readBaseline(tx) : undefined;
@@ -252,7 +255,7 @@ export async function requestSubscriptionConfirmation(
       reserveMarketingSlot(tx, baseline);
     }
     const confirmationId = newConfirmationId();
-    const reservation = inherited?.reservation ?? (counters ? takeSlot(tx, counters, "admission") : undefined);
+    const reservation = move?.ok ? move.apply(tx, "admission") : takeSlot(tx, counters, "admission");
     if (inherited) {
       const moved: SubscriptionConfirmationRecord = { ...inherited };
       delete moved.reservation;
@@ -284,7 +287,9 @@ export async function requestSubscriptionConfirmation(
 }
 
 export type ConfirmationOutcome =
-  | { status: "confirmed"; editionSlug?: string; selectedEditionUnavailable?: true }
+  // `editionSlug`: a delivery of that edition is queued or still pending. `editionAlreadyProcessed`: the same-day delivery job
+  // already finished (done or dead), so nothing new was queued and no second send is made.
+  | { status: "confirmed"; editionSlug?: string; selectedEditionUnavailable?: true; editionAlreadyProcessed?: true }
   | { status: "invalid" | "expired" | "already_used" | "superseded" }
   // No e-mail unit (or marketing slot) free: nothing was written, the token stays usable.
   | { status: "capacity"; retryAfterSec: number; reason: "email_capacity" | "marketing_capacity" };
@@ -307,12 +312,14 @@ export async function confirmSubscription(store: Store, secret: string, token: u
     const subscription = await tx.get<SubscriptionRecord>(COLLECTIONS.subscriptions, confirmation.subscriptionId);
     if (!subscription) return { status: "invalid" as const };
     if (subscription.pendingConfirmationId !== confirmation.id) return { status: subscription.status === "cancelled" ? "invalid" as const : "superseded" as const };
+    const epoch = await readConsentEpoch(tx);
     const slug = confirmation.editionSlug ?? generalSlug;
     const edition = slug ? await tx.get<EditionPublicRecord>(COLLECTIONS.editionsPublic, slug) : undefined;
     // Capacity first, token second: without room nothing is written and the same link keeps working.
     const deliverySlug = slug && edition ? slug : undefined;
     const jobId = deliverySlug ? deliveryJobId(secret, subscription.id, deliverySlug, now) : undefined;
-    const needsDelivery = jobId !== undefined && !(await tx.get<JobRecord>(COLLECTIONS.jobs, jobId));
+    const existingJob = jobId ? await tx.get<JobRecord>(COLLECTIONS.jobs, jobId) : undefined;
+    const needsDelivery = jobId !== undefined && !existingJob;
     const counters = needsDelivery ? await readCounters(tx, now) : undefined;
     const wait = counters ? capacityWaitMs(counters, limits) : undefined;
     if (wait !== undefined) return { status: "capacity" as const, retryAfterSec: Math.max(1, Math.ceil(wait / 1000)), reason: "email_capacity" as const };
@@ -329,12 +336,14 @@ export async function confirmSubscription(store: Store, secret: string, token: u
     if (syncContacts) Object.assign(confirmed, { contactSyncState: "pending", contactSyncSince: at, contactSyncReason: "confirmed" });
     tx.set(COLLECTIONS.subscriptionConfirmations, confirmation.id, { ...confirmation, consumedAt: at });
     tx.set(COLLECTIONS.subscriptions, subscription.id, confirmed);
+    bumpConsentEpoch(tx, epoch, at);
     if (syncContacts) await enqueueJob(tx, secret, { kind: JOB_KINDS.newsletterContactSync, key: `${subscription.id}:${at}`, payload: { subscriptionId: subscription.id }, maxAttempts: NEWSLETTER_JOB_ATTEMPTS }, now);
     if (!deliverySlug || !jobId) return confirmation.editionSlug ? { status: "confirmed" as const, selectedEditionUnavailable: true as const } : { status: "confirmed" as const };
     if (counters && needsDelivery) {
       const delivery: NewsletterDeliveryRecord = { id: jobId, subscriptionId: subscription.id, editionSlug: deliverySlug, reservation: takeSlot(tx, counters, "admission") };
       tx.set(COLLECTIONS.newsletterDeliveries, jobId, delivery);
     }
+    if (existingJob && (existingJob.status === "done" || existingJob.status === "dead")) return { status: "confirmed" as const, editionAlreadyProcessed: true as const };
     await enqueueDelivery(tx, secret, subscription.id, deliverySlug, now);
     return { status: "confirmed" as const, editionSlug: deliverySlug };
   });
@@ -347,11 +356,13 @@ export async function cancelSubscriptionTx(tx: Tx, secret: string, subscription:
   if (subscription.status === "cancelled") return "already_cancelled";
   if (subscription.status !== "confirmed") return "invalid";
   const at = now.toISOString();
+  const epoch = await readConsentEpoch(tx);
   // The provider contact must be reconciled even when no provider is configured now: the pending marker keeps Broadcast
   // closed and the job waits for a handler instead of being skipped.
   const canceled: SubscriptionRecord = { ...subscription, status: "cancelled", canceledAt: at, revokedAt: at, contactSyncState: "pending", contactSyncSince: at, contactSyncReason: "cancelled", updatedAt: at };
   delete canceled.pendingConfirmationId;
   tx.set(COLLECTIONS.subscriptions, subscription.id, canceled);
+  bumpConsentEpoch(tx, epoch, at);
   await enqueueJob(tx, secret, { kind: JOB_KINDS.newsletterContactSync, key: `${subscription.id}:${at}`, payload: { subscriptionId: subscription.id }, maxAttempts: NEWSLETTER_JOB_ATTEMPTS }, now);
   return "cancelled";
 }
@@ -658,12 +669,16 @@ export async function updateBroadcastState(
   id: string,
   now: Date,
   change: (current: EditionBroadcastRecord) => { set?: Partial<EditionBroadcastRecord>; clear?: (keyof EditionBroadcastRecord)[] } | undefined,
-): Promise<{ applied: boolean; state: EditionBroadcastRecord }> {
+  // Runs in the same transaction, after `change` accepted and before anything is written; a reason refuses the stamp.
+  authorize?: (tx: Tx) => Promise<string | undefined>,
+): Promise<{ applied: boolean; state: EditionBroadcastRecord; denied?: string }> {
   return store.transaction(async (tx) => {
     const current = await tx.get<EditionBroadcastRecord>(COLLECTIONS.editionBroadcasts, id);
     if (!current) throw new Error("broadcast_state_missing");
     const patch = change(current);
     if (!patch) return { applied: false, state: current };
+    const denied = authorize ? await authorize(tx) : undefined;
+    if (denied) return { applied: false, state: current, denied };
     const next: EditionBroadcastRecord = { ...current, ...patch.set, updatedAt: now.toISOString() };
     for (const key of patch.clear ?? []) delete next[key];
     tx.set(COLLECTIONS.editionBroadcasts, id, next);

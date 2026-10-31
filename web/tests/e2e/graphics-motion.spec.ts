@@ -257,9 +257,9 @@ test.describe("graphics fallback contract", () => {
     await page.getByRole("button", { name: "Pausar animações" }).click();
     await page.getByRole("button", { name: "Retomar animações" }).click();
     await expect(arts.first()).toHaveAttribute("data-graphic-status", "failed");
-    const select = page.locator("header").getByLabel("Tema", { exact: true });
+    const select = page.locator("header").getByRole("button", { name: /^Tema atual:/ });
     for (const theme of ["light", "dark"] as const) {
-      await select.selectOption(theme);
+      if (!(await select.getAttribute("aria-label"))?.startsWith(`Tema atual: ${theme === "light" ? "claro" : "escuro"}.`)) await select.click();
       await expect(arts.first()).toHaveAttribute("data-graphic-status", "failed");
       const background = await arts.first().locator('[data-graphic-fallback="true"]').evaluate(el => getComputedStyle(el).backgroundImage);
       expect(background).toContain(theme === "light" ? "simbolo-positivo.svg" : "simbolo-negativo.svg");
@@ -326,7 +326,7 @@ test.describe("graphics theme contract", () => {
     await page.goto("/");
     await expect(page.locator('main > img[data-graphic-fallback="true"]')).toHaveCount(0);
     await page.addStyleTag({ content: 'main { --graphic-ink: invalid; }' });
-    await page.locator("header").getByLabel("Tema", { exact: true }).selectOption("light");
+    await page.locator("header").getByRole("button", { name: /^Tema atual:/ }).click();
     await expect(page.locator('main > img[data-graphic-fallback="true"]')).toBeVisible();
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Confiabilidade com profundidade.");
     expect(errors).toEqual([]);
@@ -343,9 +343,9 @@ test.describe("graphics theme contract", () => {
     await page.getByRole("button", { name: "Pausar animações" }).click();
     const dark = await pixelHash(canvas);
     const resources = await page.evaluate(() => ({ contexts: (window as unknown as { __gl: unknown[] }).__gl.length, canvases: document.querySelectorAll("canvas").length }));
-    const select = page.locator("header").getByLabel("Tema", { exact: true });
+    const select = page.locator("header").getByRole("button", { name: /^Tema atual:/ });
     for (const theme of ["light", "dark", "light", "dark"] as const) {
-      await select.selectOption(theme);
+      if (!(await select.getAttribute("aria-label"))?.startsWith(`Tema atual: ${theme === "light" ? "claro" : "escuro"}.`)) await select.click();
       if (theme === "light") {
         await expect.poll(() => pixelHash(canvas)).not.toBe(dark);
         expect(await canvas.evaluate((element: HTMLCanvasElement) => {
@@ -356,9 +356,8 @@ test.describe("graphics theme contract", () => {
       }
       else await expect.poll(() => pixelHash(canvas)).toBe(dark);
     }
-    await select.selectOption("system");
     await page.emulateMedia({ colorScheme: "light", reducedMotion: "no-preference" });
-    await expect.poll(() => pixelHash(canvas)).not.toBe(dark);
+    await expect.poll(() => pixelHash(canvas)).toBe(dark);
     await expect(page.getByRole("button", { name: "Retomar animações" })).toHaveAttribute("aria-pressed", "true");
     await page.waitForTimeout(200);
     expect(total(await drawsDuring(page, 400))).toBe(0);

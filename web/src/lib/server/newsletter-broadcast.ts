@@ -1,5 +1,5 @@
 import { Resend } from "resend";
-import { MARKETING_CONTACT_LIMIT, scanAccount, type AccountScan } from "./capacity";
+import { MARKETING_CONTACT_LIMIT, parseContactsPage, readConsentEpoch, scanAccount, type AccountScan } from "./capacity";
 import { opaqueId } from "./ids";
 import { DRAFT_ID } from "./newsletter-protocol";
 import { PermanentFailure, RetryLater, type JobHandler } from "./jobs";
@@ -11,8 +11,8 @@ import {
   updateBroadcastState,
   type BroadcastBasis,
 } from "./repository";
-import type { Store } from "./store";
-import { COLLECTIONS, type EditionBroadcastRecord, type EditionRevisionRecord, type SubscriptionRecord } from "./types";
+import type { Store, Tx } from "./store";
+import { COLLECTIONS, type EditionBroadcastRecord, type EditionDraftRecord, type EditionRevisionRecord, type SubscriptionRecord } from "./types";
 import { checkEmail, checkHttpsUrl } from "./validation";
 
 // Resend marketing Broadcasts to a dedicated PILOT segment. Broadcasts have no idempotency key, so nothing here may repeat a
@@ -169,7 +169,7 @@ export function resendAccountScan(apiKey: string): AccountScan {
     scanAccount(async (after, guard) => {
       const { data, error } = await client.contacts.list({ limit: PAGE_SIZE, ...(after ? { after } : {}) }, { signal: guard });
       if (error || !data) return { ok: false, reason: `list_${error?.statusCode ?? "failed"}` };
-      return { ok: true, contacts: data.data.map((contact) => ({ id: contact.id, email: contact.email })), hasMore: data.has_more };
+      return parseContactsPage(data);
     }, signal);
 }
 
@@ -189,10 +189,12 @@ function resendProvider(apiKey: string): BroadcastProvider {
       for (let page = 0; page < pages; page += 1) {
         const { data, error } = await client.contacts.list({ segmentId, limit: PAGE_SIZE, ...(after ? { after } : {}) }, { signal });
         if (error || !data) return failure(error);
-        for (const contact of data.data) emails.push(contact.email.trim().toLowerCase());
+        const parsed = parseContactsPage(data);
+        if (!parsed.ok) return { ok: false, code: parsed.reason, status: null };
+        for (const contact of parsed.contacts) emails.push(contact.email.trim().toLowerCase());
         if (emails.length > max) return { ok: true, value: { emails, complete: false } };
-        if (!data.has_more) return { ok: true, value: { emails, complete: true } };
-        after = data.data.at(-1)?.id;
+        if (!parsed.hasMore) return { ok: true, value: { emails, complete: true } };
+        after = parsed.contacts.at(-1)?.id;
         if (!after || cursors.has(after)) return { ok: false, code: "bad_pagination", status: null };
         cursors.add(after);
       }
@@ -223,10 +225,14 @@ function resendProvider(apiKey: string): BroadcastProvider {
       for (let page = 0; page < MAX_LIST_PAGES; page += 1) {
         const { data, error } = await client.broadcasts.list({ limit: 100, ...(after ? { after } : {}) }, { signal });
         if (error || !data) return failure(error);
+        const list: unknown = (data as { data?: unknown }).data;
+        const hasMore: unknown = (data as { has_more?: unknown }).has_more;
+        if (!Array.isArray(list) || typeof hasMore !== "boolean" || list.length > 100 || list.some((item) => typeof item?.id !== "string" || item.id === "")) return { ok: false, code: "bad_page", status: null };
         for (const item of data.data) if (item.name === name) matches.push(toRemote(item));
-        if (!data.has_more) return { ok: true, value: { matches, complete: true } };
-        after = data.data.at(-1)?.id;
-        if (!after) return { ok: false, code: "bad_pagination", status: null };
+        if (!hasMore) return { ok: true, value: { matches, complete: true } };
+        const next = data.data.at(-1)?.id;
+        if (!next || next === after) return { ok: false, code: "bad_pagination", status: null };
+        after = next;
       }
       return { ok: true, value: { matches, complete: false } };
     },
@@ -323,18 +329,44 @@ export function createBroadcastHandler(store: Store, config: BroadcastConfig, no
   // A segment with a contact outside the allowlist is not transient: retrying cannot fix it, and a retry loop would keep
   // probing a contaminated list. It fails permanently (job dead, error alert); nothing re-queues it. Recovery is a manual,
   // inspected procedure (workers/newsletter-discord/README.md).
-  const requireSafeSegment = async (signal: AbortSignal): Promise<void> => {
+  // Returns the consent version read BEFORE the inspection: the stamp compares it in its own transaction, so a confirmation,
+  // cancellation or reconciliation that lands after the inspection (even right before the stamp) is never missed.
+  const requireSafeSegment = async (signal: AbortSignal): Promise<number> => {
+    const epoch = await store.transaction((tx) => readConsentEpoch(tx));
     const safety = await checkSegment(signal);
     if (safety === "unavailable") throw new Error("segment_check_unavailable");
     if (safety === "sync_pending") throw new RetryLater(SYNC_PENDING_WAIT_MS, { deferral: true });
     if (safety === "unsafe") throw new PermanentFailure("segment_not_pilot_safe");
+    return epoch;
+  };
+
+  // Same transaction as the stamp: the consent version must still be the inspected one and the approval still valid.
+  // Limit: once a stamp is committed (or the provider has the request) the send cannot be cancelled from here; a later
+  // cancellation only reaches later sends, through the contact sync.
+  const authorizeStamp = (basis: BroadcastBasis, epoch: number) => async (tx: Tx): Promise<string | undefined> => {
+    if ((await readConsentEpoch(tx)) !== epoch) return "consent_changed";
+    const draft = await tx.get<EditionDraftRecord>(COLLECTIONS.editionDrafts, basis.state.draftId);
+    if (!draft || draft.status !== "approved" || draft.approvedRevision !== basis.state.revision) return "not_approved";
+    return isApprovalFresh(draft.decidedAt) ? undefined : "approval_expired";
+  };
+
+  const refuseStamp = (denied: string): never => {
+    if (denied === "consent_changed") {
+      logEvent("warn", "newsletter_consent_changed_before_stamp", {});
+      throw new RetryLater(SYNC_PENDING_WAIT_MS, { deferral: true });
+    }
+    logEvent("error", "newsletter_approval_invalid_at_stamp", { reason: denied });
+    throw new PermanentFailure(denied === "approval_expired" ? "approval_expired" : "broadcast_not_approved");
   };
 
   // The approval is valid for APPROVAL_VALIDITY_MS. A missing or unparsable instant counts as stale. Checked right before
   // each stamp (the point of no return); the public edition is untouched, only the delivery is refused.
-  const requireFreshApproval = (approvedAt: string | undefined): void => {
+  const isApprovalFresh = (approvedAt: string | undefined): boolean => {
     const approved = approvedAt ? Date.parse(approvedAt) : Number.NaN;
-    if (!Number.isFinite(approved) || now().getTime() - approved > APPROVAL_VALIDITY_MS) {
+    return Number.isFinite(approved) && now().getTime() - approved <= APPROVAL_VALIDITY_MS;
+  };
+  const requireFreshApproval = (approvedAt: string | undefined): void => {
+    if (!isApprovalFresh(approvedAt)) {
       logEvent("error", "newsletter_approval_expired", {});
       throw new PermanentFailure("approval_expired");
     }
@@ -373,11 +405,16 @@ export function createBroadcastHandler(store: Store, config: BroadcastConfig, no
     }
 
     requireFreshApproval(basis.approvedAt);
-    await requireSafeSegment(signal);
+    const epoch = await requireSafeSegment(signal);
     signal.throwIfAborted();
-    const stamped = await updateBroadcastState(store, state.id, now(), (current) =>
-      current.broadcastId || current.createAttemptAt || current.reconcile || current.sentAt ? undefined : { set: { createAttemptAt: now().toISOString() } },
+    const stamped = await updateBroadcastState(
+      store,
+      state.id,
+      now(),
+      (current) => (current.broadcastId || current.createAttemptAt || current.reconcile || current.sentAt ? undefined : { set: { createAttemptAt: now().toISOString() } }),
+      authorizeStamp(basis, epoch),
     );
+    if (stamped.denied) refuseStamp(stamped.denied);
     // Another run holds the stamp or the state moved on: this run must not create.
     if (!stamped.applied) throw new Error("broadcast_state_changed");
     const created = await guarded(signal, (guard) => provider.createDraft(buildBroadcastMessage(config, basis.revision, stamped.state.name), guard));
@@ -427,11 +464,16 @@ export function createBroadcastHandler(store: Store, config: BroadcastConfig, no
       logEvent("error", "newsletter_remote_diverged", {});
       return void (await markReconcile(state.id));
     }
-    await requireSafeSegment(signal);
+    const epoch = await requireSafeSegment(signal);
     signal.throwIfAborted();
-    const stamped = await updateBroadcastState(store, state.id, now(), (current) =>
-      current.sentAt || current.reconcile || current.sendAttemptAt ? undefined : { set: { sendAttemptAt: now().toISOString() } },
+    const stamped = await updateBroadcastState(
+      store,
+      state.id,
+      now(),
+      (current) => (current.sentAt || current.reconcile || current.sendAttemptAt ? undefined : { set: { sendAttemptAt: now().toISOString() } }),
+      authorizeStamp(basis, epoch),
     );
+    if (stamped.denied) refuseStamp(stamped.denied);
     if (!stamped.applied) throw new Error("broadcast_state_changed");
     const sent = await guarded(signal, (guard) => provider.send(broadcastId, guard));
     if (sent.ok) {

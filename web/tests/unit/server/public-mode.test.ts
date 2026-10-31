@@ -12,7 +12,7 @@ import {
   type Deps,
 } from "../../../src/lib/server/http";
 import { signInternalRequest } from "../../../src/lib/server/internal-auth";
-import { RetryLater, enqueueJob, processJobs } from "../../../src/lib/server/jobs";
+import { enqueueJob } from "../../../src/lib/server/jobs";
 import { isOperationalMode, resolveBackendMode } from "../../../src/lib/server/mode";
 import { createBroadcastHandler, loadBroadcastConfig, type BroadcastProvider } from "../../../src/lib/server/newsletter-broadcast";
 import { createContactSyncHandler, resolveNewsletterAvailability } from "../../../src/lib/server/newsletter-email";
@@ -223,7 +223,7 @@ describe("public admission of new e-mail addresses", () => {
   });
 
   it("a missing, partial, stale or full marketing baseline closes admission with a neutral 503 and writes nothing", async () => {
-    const stale = new Date(NOW.getTime() - 31 * 60_000).toISOString();
+    const stale = new Date(NOW.getTime() - 9 * 60 * 60_000).toISOString();
     const cases: Array<[string, Partial<MarketingBaselineRecord> | undefined]> = [
       ["missing", undefined],
       ["partial", { complete: false, reason: "truncated" }],
@@ -363,7 +363,7 @@ describe("cancellation readiness in public", () => {
     expect(sync).toBeDefined();
     const provider = vi.fn(async () => undefined);
     await createContactSyncHandler(env.store, env.deps.broadcast!, provider)(sync, context());
-    expect(provider).toHaveBeenCalledWith(EMAIL, false, expect.anything(), { reactivate: false });
+    expect(provider).toHaveBeenCalledWith(EMAIL, false, expect.anything());
     expect((env.store.dump(COLLECTIONS.subscriptions)[SUB_ID] as SubscriptionRecord).contactSyncState).toBeUndefined();
   });
 
@@ -447,7 +447,7 @@ describe("public effects", () => {
     expect((await handleSubscription(postSubscription({ email: "novo@fora.test" }), env.deps)).status).toBe(202);
 
     const partial = publicEnv();
-    await seedBaseline(partial.store, { measuredAt: new Date(NOW.getTime() - 20 * 60_000).toISOString() });
+    await seedBaseline(partial.store, { measuredAt: new Date(NOW.getTime() - 5 * 60 * 60_000).toISOString() });
     const bad = vi.fn(async () => ({ complete: false as const, reason: "truncated" }));
     expect(((await (await handleJobsProcess(sign(), { ...partial.deps, accountScan: bad })).json()) as { marketingBaseline?: string }).marketingBaseline).toBe("closed");
     expect(baselineOf(partial.store)).toMatchObject({ complete: false, reason: "truncated" });

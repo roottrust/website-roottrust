@@ -81,18 +81,25 @@ export async function handleResendWebhook(request: Request, config: ResendWebhoo
       const subscriptionId = allowed ? opaqueId(config.idSecret, "sb", `email:${email}`) : undefined;
       const subscription = subscriptionId ? await tx.get<SubscriptionRecord>(COLLECTIONS.subscriptions, subscriptionId) : undefined;
       const at = occurredAt.toISOString();
+      // Every read happens before the first write (Firestore transactions refuse reads after writes).
+      const subscribers = new Map<string, SubscriptionRecord | undefined>();
+      if (state) {
+        for (const record of [...confirmations, ...deliveries]) {
+          if (record && !subscribers.has(record.subscriptionId)) subscribers.set(record.subscriptionId, await tx.get<SubscriptionRecord>(COLLECTIONS.subscriptions, record.subscriptionId));
+        }
+      }
       const shouldCancel = Boolean(allowed && (contactUnsubscribed || suppress) && subscription?.status === "confirmed" && subscription.confirmedAt && subscription.confirmedAt <= at);
       // Revokes locally and leaves the contact sync pending (Broadcast closed until reconciled). A late event for an
       // already cancelled or later-confirmed subscription never undoes anything.
       if (shouldCancel && subscription) await cancelSubscriptionTx(tx, config.idSecret, subscription, occurredAt);
       if (state) {
         for (const record of confirmations) if (record && allowed && (!record.resendId || record.resendId === emailId) && (record.resendId === emailId || record.id === taggedConfirmation) && record.attemptStartedAt && Date.parse(at) + 1000 >= Date.parse(record.attemptStartedAt) && (!record.deliveryStateAt || record.deliveryStateAt <= at)) {
-          const subscriber = await tx.get<SubscriptionRecord>(COLLECTIONS.subscriptions, record.subscriptionId);
+          const subscriber = subscribers.get(record.subscriptionId);
           if (subscriber?.email !== email) continue;
           tx.set(COLLECTIONS.subscriptionConfirmations, record.id, { ...record, resendId: emailId, deliveryState: state, deliveryStateAt: at, ...(state === "delivered" ? { sentAt: record.sentAt ?? at } : { reconcile: true }) });
         }
         for (const record of deliveries) if (record && allowed && (!record.resendId || record.resendId === emailId) && (record.resendId === emailId || record.id === taggedDelivery) && record.attemptStartedAt && Date.parse(at) + 1000 >= Date.parse(record.attemptStartedAt) && (!record.deliveryStateAt || record.deliveryStateAt <= at)) {
-          const subscriber = await tx.get<SubscriptionRecord>(COLLECTIONS.subscriptions, record.subscriptionId);
+          const subscriber = subscribers.get(record.subscriptionId);
           if (subscriber?.email !== email) continue;
           tx.set(COLLECTIONS.newsletterDeliveries, record.id, { ...record, resendId: emailId, deliveryState: state, deliveryStateAt: at, ...(state === "delivered" ? { sentAt: record.sentAt ?? at } : { reconcile: true }) });
         }

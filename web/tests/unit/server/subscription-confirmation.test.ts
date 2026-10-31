@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { confirmationToken, newConfirmationId, opaqueId, verifyConfirmationToken } from "../../../src/lib/server/ids";
 import { gateOf, subscriptionLimitSpecs, DEFAULT_LIMITS } from "../../../src/lib/server/limits";
 import { claimJobs, enqueueJob, failJob, purgeExpired } from "../../../src/lib/server/jobs";
-import { CONFIRMATION_TTL_MS, confirmSubscription, requestSubscriptionConfirmation } from "../../../src/lib/server/repository";
+import { CONFIRMATION_TTL_MS, cancelSubscription, confirmSubscription, requestSubscriptionConfirmation } from "../../../src/lib/server/repository";
 import { createFirestoreStore, createMemoryStore, type Store } from "../../../src/lib/server/store";
 import { COLLECTIONS, JOB_KINDS, type EditionPublicRecord, type JobRecord, type SubscriptionConfirmationRecord, type SubscriptionRecord } from "../../../src/lib/server/types";
 import { parseConfirmation } from "../../../src/lib/server/validation";
@@ -229,12 +229,23 @@ describe("active and cancelled subscribers", () => {
     expect((await subscription(store)).status).toBe("confirmed");
   });
 
-  it("does not claim a fresh delivery when the same-day job is already dead", async () => {
+  it.each(["dead", "done"] as const)("does not claim a fresh delivery when the same-day job is already %s", async (status) => {
     const store = createMemoryStore();
     await confirmed(store);
     const [job] = await jobs(store, JOB_KINDS.newsletterDelivery);
-    await store.transaction(async (tx) => tx.set(COLLECTIONS.jobs, job.id, { ...job, status: "dead", lastError: "reconciliation_required" }));
+    await store.transaction(async (tx) => tx.set(COLLECTIONS.jobs, job.id, { ...job, status, lastError: "reconciliation_required" }));
     expect(await requestSubscriptionConfirmation(store, SECRET, { email: EMAIL, editionSlug: "recente" }, later(60_000))).toEqual({ ok: true, action: "none" });
+    expect(await jobs(store, JOB_KINDS.newsletterDelivery)).toHaveLength(1);
+  });
+
+  it.each(["dead", "done"] as const)("reconfirmation does not claim the %s delivery was queued again", async (status) => {
+    const store = createMemoryStore();
+    await confirmed(store);
+    const [delivery] = await jobs(store, JOB_KINDS.newsletterDelivery);
+    await store.transaction(async (tx) => tx.set(COLLECTIONS.jobs, delivery.id, { ...delivery, status }));
+    expect(await cancelSubscription(store, SECRET, { id: SUB_ID, confirmedAt: later(1000).toISOString() }, later(2000))).toBe("cancelled");
+    const next = await request(store, { editionSlug: "recente" }, later(3000));
+    expect(await confirmSubscription(store, SECRET, next.token, later(4000))).toEqual({ status: "confirmed", editionAlreadyProcessed: true });
     expect(await jobs(store, JOB_KINDS.newsletterDelivery)).toHaveLength(1);
   });
 

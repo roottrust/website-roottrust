@@ -1,7 +1,7 @@
 import { Resend } from "resend";
 import { cancellationToken, confirmationToken } from "./ids";
 import { PermanentFailure, RetryLater, type JobHandler } from "./jobs";
-import { RESEND_DAILY_LIMIT, RESEND_MONTHLY_LIMIT, releaseReservation, releaseUnstartedAdmission, startAttempt } from "./capacity";
+import { RESEND_DAILY_LIMIT, RESEND_MONTHLY_LIMIT, bumpConsentEpoch, readConsentEpoch, releaseReservation, releaseUnstartedAdmission, startAttempt } from "./capacity";
 import { buildBroadcastMessage, loadBroadcastConfig, type BroadcastConfig } from "./newsletter-broadcast";
 import { IDEMPOTENCY_WINDOW_MS } from "./report";
 import { logEvent, safeErrorCode } from "./safe";
@@ -225,6 +225,7 @@ export function createEditionDeliveryHandler(store: Store, secret: string, confi
       await releaseUnstartedAdmission(store, COLLECTIONS.newsletterDeliveries, job.id, config);
       return;
     }
+    if (basis.subscription.contactSyncState) throw new RetryLater(60_000, { deferral: true });
     if (!basis.subscription.confirmedAt) return refuse(store, COLLECTIONS.newsletterDeliveries, job.id, config, "missing_confirmation_date");
     if (!basis.published || !basis.draft || !basis.revision || basis.draft.status !== "approved" || basis.draft.approvedRevision !== basis.published.revision || basis.revision.slug !== editionSlug) return refuse(store, COLLECTIONS.newsletterDeliveries, job.id, config, "edition_not_approved");
     if (config.mode !== "public" && !config.allowlist.includes(basis.subscription.email)) return refuse(store, COLLECTIONS.newsletterDeliveries, job.id, config, "recipient_not_in_pilot_allowlist");
@@ -236,20 +237,22 @@ export function createEditionDeliveryHandler(store: Store, secret: string, confi
       const draft = published ? await tx.get<EditionDraftRecord>(COLLECTIONS.editionDrafts, published.draftId) : undefined;
       const revision = published ? await tx.get<EditionRevisionRecord>(COLLECTIONS.editionRevisions, `${published.draftId}.${published.revision}`) : undefined;
       const current = await tx.get<NewsletterDeliveryRecord>(COLLECTIONS.newsletterDeliveries, job.id);
+      if (subscription?.contactSyncState) throw new RetryLater(60_000, { deferral: true });
       if (!subscription || subscription.status !== "confirmed" || !published || !draft || draft.status !== "approved" || draft.approvedRevision !== published.revision || !revision || revision.slug !== editionSlug) return undefined;
       return current ?? { id: job.id, subscriptionId, editionSlug };
     });
   };
 }
 
-// `remote_unsubscribed`: the provider contact is globally unsubscribed and local state cannot explain why or prove a newer
-// consent, so it was left untouched. Any other outcome is a completed reconciliation.
+// `remote_unsubscribed`: the provider contact is globally unsubscribed. The site holds no proof of WHEN, so it is never cleared
+// by generic sync (a delayed opt-out webhook can postdate any local confirmation); the contact is left untouched and the
+// local record blocked for manual reconciliation. Any other outcome is a completed reconciliation.
 export type ContactSyncResult = void | "remote_unsubscribed";
-export type ContactSync = (email: string, active: boolean, signal: AbortSignal, options?: { reactivate: boolean }) => Promise<ContactSyncResult>;
+export type ContactSync = (email: string, active: boolean, signal: AbortSignal) => Promise<ContactSyncResult>;
 
 function resendContactSync(config: BroadcastConfig): ContactSync {
   const client = new Resend(config.apiKey);
-  return async (email, active, signal, options) => {
+  return async (email, active, signal) => {
     const request = { signal };
     const found = await client.contacts.get(email, request);
     if (found.error && found.error.statusCode !== 404) throw new Error(`contact_lookup_${found.error.name}`);
@@ -264,11 +267,7 @@ function resendContactSync(config: BroadcastConfig): ContactSync {
       contact = again.data;
     }
     if (active && contact) {
-      if (contact.unsubscribed) {
-        if (!options?.reactivate) return "remote_unsubscribed";
-        const updated = await client.contacts.update({ email, unsubscribed: false }, request);
-        if (updated.error) throw new Error(`contact_update_${updated.error.name}`);
-      }
+      if (contact.unsubscribed) return "remote_unsubscribed";
       const added = await client.contacts.segments.add({ email, segmentId: config.segmentId }, request);
       if (added.error && added.error.statusCode !== 409) throw new Error(`contact_segment_add_${added.error.name}`);
     } else if (!active && contact) {
@@ -282,8 +281,9 @@ const sameConsentState = (a: SubscriptionRecord, b: SubscriptionRecord | undefin
   b !== undefined && a.status === b.status && a.confirmedAt === b.confirmedAt && a.canceledAt === b.canceledAt && a.revokedAt === b.revokedAt;
 
 // Reconciles the provider contact with the local consent. Generic sync only ever removes from the segment or adds a contact
-// that is not unsubscribed; `unsubscribed: false` on an existing contact needs a local confirmation newer than the last
-// revocation. The provider offers no atomic compare, so after every remote call the local state is re-read: if it moved, the
+// that is not unsubscribed; it NEVER sends `unsubscribed: false` to an existing contact, not even after a newer local
+// confirmation: a later provider-side opt-out may still be in flight and the site cannot order it. Lifting a global
+// suppression is a manual, operator-side reconciliation. The provider offers no atomic compare, so after every remote call the local state is re-read: if it moved, the
 // loop reconciles again; if it keeps moving, the marker stays "pending" (Broadcast stays closed) and the job retries.
 export function createContactSyncHandler(store: Store, config: BroadcastConfig, sync?: ContactSync): JobHandler {
   const syncContact = sync ?? resendContactSync(config);
@@ -298,11 +298,11 @@ export function createContactSyncHandler(store: Store, config: BroadcastConfig, 
         if (config.mode !== "public" && !config.allowlist.includes(subscription.email)) throw new PermanentFailure("contact_not_in_pilot_allowlist");
         if (subscription.contactSyncState === "blocked") return;
         const active = subscription.status === "confirmed";
-        const reactivate = active && subscription.revokedAt !== undefined && subscription.confirmedAt !== undefined && subscription.confirmedAt > subscription.revokedAt;
-        const result = await syncContact(subscription.email, active, guard, { reactivate });
+        const result = await syncContact(subscription.email, active, guard);
         const settled = await store.transaction(async (tx) => {
           const current = await tx.get<SubscriptionRecord>(COLLECTIONS.subscriptions, id);
           if (!current || !sameConsentState(subscription, current)) return false;
+          const epoch = await readConsentEpoch(tx);
           const updated: SubscriptionRecord = { ...current };
           if (result === "remote_unsubscribed") {
             updated.contactSyncState = "blocked";
@@ -314,6 +314,7 @@ export function createContactSyncHandler(store: Store, config: BroadcastConfig, 
             delete updated.contactSyncReason;
           }
           tx.set(COLLECTIONS.subscriptions, id, updated);
+          bumpConsentEpoch(tx, epoch, current.updatedAt);
           return true;
         });
         if (settled) return;

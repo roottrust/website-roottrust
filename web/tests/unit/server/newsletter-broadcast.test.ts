@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { cancelSubscription } from "../../../src/lib/server/repository";
 import { opaqueId } from "../../../src/lib/server/ids";
 import { PermanentFailure, RetryLater, enqueueJob, processJobs, type JobHandler } from "../../../src/lib/server/jobs";
 import {
@@ -216,6 +217,25 @@ describe("publish job", () => {
 });
 
 describe("broadcast delivery", () => {
+  it("does not create after cancellation between segment inspection and the authorization stamp", async () => {
+    const { store, fake } = await harness();
+    for (const email of ALLOW) {
+      const id = opaqueId(SECRET, "sb", `email:${email}`);
+      await store.transaction(async (tx) => tx.set(COLLECTIONS.subscriptions, id, { id, email, status: "confirmed", confirmedAt: NOW.toISOString(), createdAt: NOW.toISOString(), updatedAt: NOW.toISOString() }));
+    }
+    let cancelled = false;
+    const wrapped: Store = { ...store, transaction: async (fn) => {
+      const result = await store.transaction(fn);
+      if (!cancelled && Array.isArray(result) && result.length === ALLOW.length && result.every((v) => v === true)) {
+        cancelled = true;
+        await cancelSubscription(store, SECRET, { id: opaqueId(SECRET, "sb", `email:${ALLOW[0]}`), confirmedAt: NOW.toISOString() }, later(1000));
+      }
+      return result;
+    } };
+    await expect(run(createBroadcastHandler(wrapped, config(fake.provider), () => later(1000), SECRET))).rejects.toBeInstanceOf(RetryLater);
+    expect(cancelled).toBe(true);
+    expect(fake.calls).toMatchObject({ create: 0, send: 0 });
+  });
   it("blocks a segment containing a locally cancelled subscriber even when every address is allowlisted", async () => {
     const { store, fake } = await harness();
     await store.transaction(async (tx) => {

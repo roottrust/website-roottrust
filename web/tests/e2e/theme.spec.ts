@@ -9,11 +9,12 @@ const PATH = "/privacidade";
 
 type Win = Window & { __storageWrites?: string[]; __themeAtBody?: string | null; __spa?: boolean; __nodes?: Record<string, Element | null> };
 
-const themeSelect = (page: Page): Locator => page.locator("header").getByLabel("Tema", { exact: true });
+const themeSelect = (page: Page): Locator => page.locator("header").getByRole("button", { name: /^Tema atual:/ });
 
-async function choose(page: Page, value: "system" | "light" | "dark") {
+async function choose(page: Page, value: "light" | "dark") {
   await expect(themeSelect(page)).toBeEnabled();
-  await themeSelect(page).selectOption(value);
+  const current = await themeSelect(page).getAttribute("aria-label");
+  if (!current?.startsWith(`Tema atual: ${value === "light" ? "claro" : "escuro"}.`)) await themeSelect(page).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme-pref", value);
 }
 
@@ -59,7 +60,7 @@ test.describe("tema: preferência do sistema", () => {
       await recordStorageWrites(page);
       await page.emulateMedia({ colorScheme: scheme });
       await page.goto(PATH);
-      await expect(themeSelect(page)).toHaveValue("system");
+      await expect(page.locator("html")).toHaveAttribute("data-theme-pref", "system");
       const state = await snapshot(page);
       expect(state.pref).toBe("system");
       expect(state.theme).toBeNull();
@@ -98,7 +99,7 @@ test.describe("tema: preferência do sistema", () => {
     await expect.poll(async () => isLight(await snapshot(page))).toBe(true);
     await page.emulateMedia({ colorScheme: "dark" });
     await expect.poll(async () => isDark(await snapshot(page))).toBe(true);
-    await expect(themeSelect(page)).toHaveValue("system");
+    await expect(page.locator("html")).toHaveAttribute("data-theme-pref", "system");
     expect(await writes(page)).toEqual([]);
   });
 });
@@ -119,8 +120,8 @@ test.describe("tema: escolha manual", () => {
       expect(isLight(await snapshot(page))).toBe(true);
       release();
       await expect(themeSelect(page)).toBeEnabled();
-      await expect(themeSelect(page)).toHaveValue("light");
-      await themeSelect(page).selectOption("dark");
+      await expect(themeSelect(page)).toHaveAccessibleName(/Tema atual: claro/);
+      await themeSelect(page).click();
       await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
       expect(await writes(page)).toEqual([`local.setItem:${KEY}=dark`]);
     } finally {
@@ -128,7 +129,7 @@ test.describe("tema: escolha manual", () => {
     }
   });
 
-  test("manual prevalece sobre o SO; só a preferência é gravada, e Sistema volta a seguir o SO", async ({ page }) => {
+  test("manual prevalece sobre o SO; só a preferência é gravada", async ({ page }) => {
     const issues = collectIssues(page);
     await recordStorageWrites(page);
     await page.emulateMedia({ colorScheme: "dark" });
@@ -149,14 +150,9 @@ test.describe("tema: escolha manual", () => {
     await page.emulateMedia({ colorScheme: "light" });
     expect(isDark(await snapshot(page))).toBe(true);
 
-    await choose(page, "system");
-    const system = await snapshot(page);
-    expect(system.theme).toBeNull();
-    expect(system.pref).toBe("system");
-    expect(isLight(system)).toBe(true);
     await page.emulateMedia({ colorScheme: "dark" });
-    await expect.poll(async () => isDark(await snapshot(page))).toBe(true);
-    expect(await page.evaluate(() => localStorage.getItem("rt-theme:v1"))).toBe("system");
+    expect(isDark(await snapshot(page))).toBe(true);
+    expect(await page.evaluate(() => localStorage.getItem("rt-theme:v1"))).toBe("dark");
     expect(await page.evaluate(() => ({ session: sessionStorage.length, cookie: document.cookie }))).toEqual({ session: 0, cookie: "" });
     expect(issues).toEqual([]);
   });
@@ -178,11 +174,11 @@ test.describe("tema: escolha manual", () => {
       await page.goto(path);
       await page.getByRole("heading", { level: 1 }).first().waitFor();
       expect(await page.evaluate(() => (window as Win).__themeAtBody)).toBe("light");
-      await expect(themeSelect(page)).toHaveValue("light");
+      await expect(themeSelect(page)).toHaveAccessibleName(/Tema atual: claro/);
       expect(isLight(await snapshot(page))).toBe(true);
     }
     await page.reload();
-    await expect(themeSelect(page)).toHaveValue("light");
+    await expect(themeSelect(page)).toHaveAccessibleName(/Tema atual: claro/);
     expect(isLight(await snapshot(page))).toBe(true);
     expect(issues).toEqual([]);
   });
@@ -194,7 +190,7 @@ test.describe("tema: escolha manual", () => {
     await choose(page, "light");
     await page.evaluate(() => {
       (window as Win).__spa = true;
-      (window as Win).__nodes = { header: document.querySelector("header"), select: document.querySelector("header select") };
+      (window as Win).__nodes = { header: document.querySelector("header"), select: document.querySelector("header button[aria-label^=\"Tema atual:\"]") };
     });
     await page.getByRole("link", { name: HOME_LINK, exact: true }).click();
     await expect(page).toHaveURL(/\/$/);
@@ -202,13 +198,13 @@ test.describe("tema: escolha manual", () => {
     expect(await page.evaluate(() => (window as Win).__spa)).toBe(true);
     expect(await page.evaluate(() => {
       const nodes = (window as Win).__nodes!;
-      return nodes.header === document.querySelector("header") && nodes.select === document.querySelector("header select");
+      return nodes.header === document.querySelector("header") && nodes.select === document.querySelector("header button[aria-label^=\"Tema atual:\"]");
     })).toBe(true);
-    await expect(themeSelect(page)).toHaveValue("light");
+    await expect(themeSelect(page)).toHaveAccessibleName(/Tema atual: claro/);
     expect(isLight(await snapshot(page))).toBe(true);
     await page.goBack();
     await expect(page).toHaveURL(new RegExp(`${PATH}$`));
-    await expect(themeSelect(page)).toHaveValue("light");
+    await expect(themeSelect(page)).toHaveAccessibleName(/Tema atual: claro/);
     expect(isLight(await snapshot(page))).toBe(true);
     expect(issues).toEqual([]);
   });
@@ -250,7 +246,7 @@ test.describe("tema: armazenamento indisponível ou inválido", () => {
       await recordStorageWrites(page, stored);
       await page.emulateMedia({ colorScheme: "light" });
       await page.goto(PATH);
-      await expect(themeSelect(page)).toHaveValue("system");
+      await expect(page.locator("html")).toHaveAttribute("data-theme-pref", "system");
       const state = await snapshot(page);
       expect(state.pref).toBe("system");
       expect(state.theme).toBeNull();
@@ -267,17 +263,17 @@ test.describe("tema: armazenamento indisponível ou inválido", () => {
     });
     await page.emulateMedia({ colorScheme: "light" });
     await page.goto(PATH);
-    await expect(themeSelect(page)).toHaveValue("system");
+    await expect(page.locator("html")).toHaveAttribute("data-theme-pref", "system");
     expect(isLight(await snapshot(page))).toBe(true);
     await choose(page, "dark");
     expect(isDark(await snapshot(page))).toBe(true);
     await page.getByRole("link", { name: HOME_LINK, exact: true }).click();
     await expect(page).toHaveURL(/\/$/);
     await page.getByRole("heading", { level: 1 }).first().waitFor();
-    await expect(themeSelect(page)).toHaveValue("dark");
+    await expect(themeSelect(page)).toHaveAccessibleName(/Tema atual: escuro/);
     expect(isDark(await snapshot(page))).toBe(true);
     await page.reload();
-    await expect(themeSelect(page)).toHaveValue("system");
+    await expect(page.locator("html")).toHaveAttribute("data-theme-pref", "system");
     expect(isLight(await snapshot(page))).toBe(true);
     expect(issues).toEqual([]);
   });
@@ -291,7 +287,7 @@ test.describe("tema: armazenamento indisponível ou inválido", () => {
     await page.goto(PATH);
     await choose(page, "dark");
     expect(isDark(await snapshot(page))).toBe(true);
-    await expect(themeSelect(page)).toHaveValue("dark");
+    await expect(themeSelect(page)).toHaveAccessibleName(/Tema atual: escuro/);
     expect(issues).toEqual([]);
   });
 });
@@ -329,13 +325,14 @@ test.describe("tema: shell, assinatura e acessibilidade", () => {
       expect(desktop.w / desktop.h).toBeCloseTo(1156.5 / 344.5, 1);
       expect(Math.round(desktop.bar)).toBe(76);
       expect(desktop.padding).toBe("96px");
-      await expect(page.locator("header").getByText("Tema", { exact: true })).toBeVisible();
+      await expect(page.locator("header").getByText("Tema", { exact: true })).toHaveCount(0);
+      await expect(themeSelect(page).locator("svg:visible")).toHaveCount(1);
 
       for (const width of [320, 390]) {
         await page.setViewportSize({ width, height: 700 });
         const mobile = await page.evaluate(() => {
           const rect = (selector: string) => { const box = document.querySelector(selector)!.getBoundingClientRect(); return { left: box.left, right: box.right, width: box.width, height: box.height }; };
-          return { logo: rect('header [role="img"]'), select: rect("header select"), toggle: rect('header button[aria-controls="mobile-navigation"]'), scroll: document.documentElement.scrollWidth, inner: innerWidth, padding: parseFloat(getComputedStyle(document.querySelector("header > div")!).paddingRight) };
+          return { logo: rect('header [role="img"]'), select: rect('header button[aria-label^="Tema atual:"]'), toggle: rect('header button[aria-controls="mobile-navigation"]'), scroll: document.documentElement.scrollWidth, inner: innerWidth, padding: parseFloat(getComputedStyle(document.querySelector("header > div")!).paddingRight) };
         });
         expect(mobile.scroll).toBeLessThanOrEqual(mobile.inner);
         expect(mobile.logo.left).toBeGreaterThanOrEqual(0);
@@ -344,7 +341,7 @@ test.describe("tema: shell, assinatura e acessibilidade", () => {
         expect(mobile.logo.right).toBeLessThanOrEqual(mobile.select.left);
         expect(mobile.select.right).toBeLessThanOrEqual(mobile.toggle.left);
         expect(mobile.toggle.right).toBeLessThanOrEqual(mobile.inner - mobile.padding + 0.5);
-        expect(await page.locator("header").getByText("Tema", { exact: true }).evaluate(el => el.getBoundingClientRect().width)).toBeLessThanOrEqual(1);
+        await expect(page.locator("header").getByText("Tema", { exact: true })).toHaveCount(0);
         await expect(themeSelect(page)).toBeVisible();
       }
     }
@@ -372,7 +369,10 @@ test.describe("tema: shell, assinatura e acessibilidade", () => {
     await page.goto(PATH);
     const select = themeSelect(page);
     await expect(select).toBeEnabled();
-    await expect(select.locator("option")).toHaveText(["Sistema", "Claro", "Escuro"]);
+    await expect(select).toHaveAccessibleName(/Tema atual: (claro|escuro)\. Mudar para (claro|escuro)/);
+    const box = await select.boundingBox();
+    expect(box!.width).toBeGreaterThanOrEqual(44);
+    expect(box!.height).toBeGreaterThanOrEqual(44);
     await page.getByRole("link", { name: HOME_LINK, exact: true }).focus();
     let reached = false;
     for (let step = 0; step < 6 && !reached; step++) {
@@ -398,17 +398,13 @@ test.describe("tema: shell, assinatura e acessibilidade", () => {
     }
   });
 
-  test("forced-colors mantém o seletor nativo e a assinatura sobre placa própria", async ({ page }) => {
+  test("forced-colors mantém a assinatura sobre placa própria", async ({ page }) => {
     await page.emulateMedia({ forcedColors: "active" });
     await page.goto(PATH);
     const state = await page.evaluate(() => {
-      const select = document.querySelector("header select")!;
-      const arrow = getComputedStyle(select.parentElement!, "::after");
       const logo = getComputedStyle(document.querySelector('header [role="img"]')!);
-      return { appearance: getComputedStyle(select).getPropertyValue("appearance"), arrow: arrow.display, adjust: logo.getPropertyValue("forced-color-adjust") };
+      return { adjust: logo.getPropertyValue("forced-color-adjust") };
     });
-    expect(state.appearance).toBe("auto");
-    expect(state.arrow).toBe("none");
     expect(state.adjust).toBe("none");
   });
 });

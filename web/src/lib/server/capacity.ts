@@ -1,6 +1,6 @@
 import type { Denied } from "./limits";
 import type { Store, Tx } from "./store";
-import { COLLECTIONS, type EmailQuotaRecord, type MarketingBaselineRecord, type QuotaReservation, type SubscriptionRecord } from "./types";
+import { COLLECTIONS, type ConsentEpochRecord, type EmailQuotaRecord, type MarketingBaselineRecord, type QuotaReservation, type SubscriptionRecord } from "./types";
 
 // Resend Free plan. The environment may only lower these ceilings, never raise them.
 export const RESEND_DAILY_LIMIT = 100;
@@ -61,18 +61,36 @@ export async function startAttempt(tx: Tx, held: QuotaReservation | undefined, a
     const wait = capacityWaitMs(counters, limits);
     return wait !== undefined ? { waitMs: wait } : takeSlot(tx, counters, "attempt");
   }
+  const plan = await planReservationMove(tx, held, counters, limits);
+  return plan.ok ? plan.apply(tx, "attempt") : { waitMs: plan.waitMs };
+}
+
+// Reads only. Moves a held unit to the current UTC buckets: same buckets keep it untouched (one slot, no recount); a rollover
+// needs room in the NEW buckets and, once applied, returns the old units. `apply` writes and must run after every other read.
+export async function planReservationMove(
+  tx: Tx,
+  held: QuotaReservation,
+  counters: Counters,
+  limits: EmailLimits,
+): Promise<{ ok: true; apply: (tx: Tx, kind: "admission" | "attempt") => QuotaReservation } | { ok: false; waitMs: number }> {
   const dayMoved = held.day !== counters.day;
   const monthMoved = held.month !== counters.month;
-  if (!dayMoved && !monthMoved) return { ...held, kind: "attempt" };
+  if (!dayMoved && !monthMoved) return { ok: true, apply: (_tx, kind) => ({ ...held, kind }) };
   const oldDay = await tx.get<EmailQuotaRecord>(COLLECTIONS.emailQuota, dayId(held.day));
   const oldMonth = monthMoved ? await tx.get<EmailQuotaRecord>(COLLECTIONS.emailQuota, monthId(held.month)) : undefined;
   const wait = capacityWaitMs(counters, limits, monthMoved ? "both" : "day");
-  if (wait !== undefined) return { waitMs: wait };
-  tx.set(COLLECTIONS.emailQuota, dayId(counters.day), { id: dayId(counters.day), used: counters.dayUsed + 1, expiresAt: new Date(nextDayStart(at) + DAY_MS).toISOString() } satisfies EmailQuotaRecord);
-  if (monthMoved) tx.set(COLLECTIONS.emailQuota, monthId(counters.month), { id: monthId(counters.month), used: counters.monthUsed + 1, expiresAt: new Date(nextMonthStart(at) + DAY_MS).toISOString() } satisfies EmailQuotaRecord);
-  if (oldDay) tx.set(COLLECTIONS.emailQuota, oldDay.id, { ...oldDay, used: Math.max(0, oldDay.used - 1) });
-  if (oldMonth) tx.set(COLLECTIONS.emailQuota, oldMonth.id, { ...oldMonth, used: Math.max(0, oldMonth.used - 1) });
-  return { day: counters.day, month: counters.month, kind: "attempt" };
+  if (wait !== undefined) return { ok: false, waitMs: wait };
+  return {
+    ok: true,
+    apply: (target, kind) => {
+      const { at } = counters;
+      target.set(COLLECTIONS.emailQuota, dayId(counters.day), { id: dayId(counters.day), used: counters.dayUsed + 1, expiresAt: new Date(nextDayStart(at) + DAY_MS).toISOString() } satisfies EmailQuotaRecord);
+      if (monthMoved) target.set(COLLECTIONS.emailQuota, monthId(counters.month), { id: monthId(counters.month), used: counters.monthUsed + 1, expiresAt: new Date(nextMonthStart(at) + DAY_MS).toISOString() } satisfies EmailQuotaRecord);
+      if (oldDay) target.set(COLLECTIONS.emailQuota, oldDay.id, { ...oldDay, used: Math.max(0, oldDay.used - 1) });
+      if (oldMonth) target.set(COLLECTIONS.emailQuota, oldMonth.id, { ...oldMonth, used: Math.max(0, oldMonth.used - 1) });
+      return { day: counters.day, month: counters.month, kind };
+    },
+  };
 }
 
 // Gives a unit back. Only valid with proof that nothing was sent (definite provider refusal, or an admission that never
@@ -109,12 +127,21 @@ export async function releaseUnstartedAdmission(store: Store, collection: typeof
 export const MARKETING_CONTACT_LIMIT = 1000;
 // Room left for contacts created outside this site; the site cannot control the account globally.
 export const MARKETING_MARGIN = 50;
-export const MARKETING_MAX_AGE_MS = 30 * 60_000;
-export const MARKETING_REFRESH_MS = 10 * 60_000;
+// At 950 local slots, six scans per day read about 5,700 documents; other operations and external changes still need monitoring.
+// A failed or missing refresh closes admission after eight hours.
+export const MARKETING_MAX_AGE_MS = 8 * 60 * 60_000;
+export const MARKETING_REFRESH_MS = 4 * 60 * 60_000;
 export const MARKETING_RETRY_AFTER_SEC = 300;
 const BASELINE_ID = "account";
 const SCAN_PAGE = 100;
 const MAX_SCAN_PAGES = 12;
+
+const CONSENT_ID = "consent";
+
+// Read before any write of the transaction; `bumpConsentEpoch` is then called with that value.
+export const readConsentEpoch = async (tx: Tx): Promise<number> => (await tx.get<ConsentEpochRecord>(COLLECTIONS.marketingBaseline, CONSENT_ID))?.version ?? 0;
+export const bumpConsentEpoch = (tx: Tx, current: number, at: string): void =>
+  tx.set(COLLECTIONS.marketingBaseline, CONSENT_ID, { id: CONSENT_ID, version: current + 1, updatedAt: at } satisfies ConsentEpochRecord);
 
 export const readBaseline = (tx: Tx) => tx.get<MarketingBaselineRecord>(COLLECTIONS.marketingBaseline, BASELINE_ID);
 
@@ -143,6 +170,21 @@ export const ACCOUNT_SCAN_MAX_PAGES = MAX_SCAN_PAGES;
 
 type Page = { ok: true; contacts: { id: string; email: string }[]; hasMore: boolean } | { ok: false; reason: string };
 
+// Provider boundary: anything that is not exactly a bounded list of {id, email} strings plus a boolean `has_more` is an
+// incomplete page (never read as "no more"), so a missing or malformed field cannot make the count look complete.
+export function parseContactsPage(data: unknown): Page {
+  if (typeof data !== "object" || data === null) return { ok: false, reason: "bad_page" };
+  const { data: list, has_more: hasMore } = data as { data?: unknown; has_more?: unknown };
+  if (!Array.isArray(list) || typeof hasMore !== "boolean" || list.length > SCAN_PAGE) return { ok: false, reason: "bad_page" };
+  const contacts: { id: string; email: string }[] = [];
+  for (const item of list) {
+    const { id, email } = (typeof item === "object" && item !== null ? item : {}) as { id?: unknown; email?: unknown };
+    if (typeof id !== "string" || id === "" || typeof email !== "string" || email.trim() === "") return { ok: false, reason: "bad_page" };
+    contacts.push({ id, email });
+  }
+  return { ok: true, contacts, hasMore };
+}
+
 // Complete, bounded, paginated listing: any error, repeated cursor, truncation or more contacts than the plan allows is
 // reported as incomplete so admission stays closed.
 export async function scanAccount(fetchPage: (after: string | undefined, signal: AbortSignal) => Promise<Page>, signal: AbortSignal): Promise<AccountScanResult> {
@@ -152,6 +194,7 @@ export async function scanAccount(fetchPage: (after: string | undefined, signal:
   for (let page = 0; page < MAX_SCAN_PAGES; page += 1) {
     const result = await fetchPage(after, signal);
     if (!result.ok) return { complete: false, reason: result.reason };
+    if (typeof result.hasMore !== "boolean" || !Array.isArray(result.contacts)) return { complete: false, reason: "bad_page" };
     for (const contact of result.contacts) emails.push(contact.email.trim().toLowerCase());
     if (emails.length > MARKETING_CONTACT_LIMIT) return { complete: false, reason: "over_limit" };
     if (!result.hasMore) return { complete: true, emails };
@@ -167,16 +210,23 @@ export type BaselineRefresh = "fresh" | "measured" | "closed";
 
 // Authenticated internal job path (never per submit). Remote contacts are the count; slots the site holds whose contact is
 // not (yet) visible remotely stay reserved. `seq` fences reservations made while the scan ran: they are added on top, which can
-// over-count briefly but never under-counts, and a measurement never overwrites a reservation.
+// over-count briefly but never under-counts, and a measurement never overwrites a reservation. `generation` fences the
+// measurements themselves: a scan publishes (or closes) only if no newer scan started since, and its age counts from its start.
 export async function refreshMarketingBaseline(store: Store, scan: AccountScan, now: () => Date, signal: AbortSignal, force = false): Promise<BaselineRefresh> {
-  const before = await store.transaction((tx) => readBaseline(tx));
   const started = now();
-  if (!force && before?.complete && started.getTime() - Date.parse(before.measuredAt) < MARKETING_REFRESH_MS) return "fresh";
-  const seq0 = before?.seq ?? 0;
+  const lease = await store.transaction(async (tx) => {
+    const current = await readBaseline(tx);
+    if (!force && current?.complete && started.getTime() - Date.parse(current.measuredAt) < MARKETING_REFRESH_MS) return undefined;
+    const generation = (current?.generation ?? 0) + 1;
+    tx.set(COLLECTIONS.marketingBaseline, BASELINE_ID, { id: BASELINE_ID, count: current?.count ?? 0, reserved: current?.reserved ?? 0, seq: current?.seq ?? 0, complete: current?.complete ?? false, measuredAt: current?.measuredAt ?? started.toISOString(), generation, ...(current?.reason ? { reason: current.reason } : {}) } satisfies MarketingBaselineRecord);
+    return { generation, seq0: current?.seq ?? 0 };
+  });
+  if (!lease) return "fresh";
   const close = async (reason: string): Promise<BaselineRefresh> => {
     await store.transaction(async (tx) => {
       const current = await readBaseline(tx);
-      tx.set(COLLECTIONS.marketingBaseline, BASELINE_ID, { id: BASELINE_ID, count: current?.count ?? 0, reserved: current?.reserved ?? 0, seq: current?.seq ?? 0, complete: false, measuredAt: now().toISOString(), reason } satisfies MarketingBaselineRecord);
+      if (current?.generation !== lease.generation) return;
+      tx.set(COLLECTIONS.marketingBaseline, BASELINE_ID, { ...current, complete: false, measuredAt: started.toISOString(), reason } satisfies MarketingBaselineRecord);
     });
     return "closed";
   };
@@ -188,18 +238,13 @@ export async function refreshMarketingBaseline(store: Store, scan: AccountScan, 
   }
   if (!result.complete) return close(result.reason);
   const remote = new Set(result.emails);
-  const holders = await store.query(COLLECTIONS.subscriptions, "marketingSlotAt", "9999", MARKETING_CONTACT_LIMIT + SCAN_PAGE);
+  const holders = await store.latest<SubscriptionRecord>(COLLECTIONS.subscriptions, "marketingSlotAt", MARKETING_CONTACT_LIMIT + 1);
   if (holders.length > MARKETING_CONTACT_LIMIT) return close("too_many_slots");
-  let pending = 0;
-  for (let index = 0; index < holders.length; index += SCAN_PAGE) {
-    const chunk = holders.slice(index, index + SCAN_PAGE);
-    const records = await store.transaction((tx) => Promise.all(chunk.map((id) => tx.get<SubscriptionRecord>(COLLECTIONS.subscriptions, id))));
-    pending += records.filter((record) => record?.marketingSlotAt && !remote.has(record.email.trim().toLowerCase())).length;
-  }
-  await store.transaction(async (tx) => {
+  const pending = holders.filter(({ data }) => data.marketingSlotAt && !remote.has(data.email.trim().toLowerCase())).length;
+  return store.transaction(async (tx) => {
     const current = await readBaseline(tx);
-    const seq = current?.seq ?? 0;
-    tx.set(COLLECTIONS.marketingBaseline, BASELINE_ID, { id: BASELINE_ID, complete: true, count: result.emails.length, reserved: pending + Math.max(0, seq - seq0), seq, measuredAt: now().toISOString() } satisfies MarketingBaselineRecord);
+    if (!current || current.generation !== lease.generation) return "closed" as const;
+    tx.set(COLLECTIONS.marketingBaseline, BASELINE_ID, { id: BASELINE_ID, complete: true, count: result.emails.length, reserved: pending + Math.max(0, current.seq - lease.seq0), seq: current.seq, measuredAt: started.toISOString(), generation: lease.generation } satisfies MarketingBaselineRecord);
+    return "measured" as const;
   });
-  return "measured";
 }

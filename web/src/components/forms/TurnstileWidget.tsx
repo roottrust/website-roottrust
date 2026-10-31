@@ -32,8 +32,7 @@ function loadScript(): Promise<TurnstileApi> {
 
 type WidgetTheme = "dark" | "light";
 
-// Cloudflare documents no in-place theme switch that keeps the token, so the theme is read once, when the widget is created
-// (band scopes and the page theme both set color-scheme), and the surrounding surface stays pinned to it while the widget lives.
+// Read the form outside the widget surface: bands can override the page color-scheme.
 const surfaceTheme = (element: HTMLElement): WidgetTheme => {
   const scheme = getComputedStyle(element).colorScheme;
   return scheme.includes("light") && !scheme.includes("dark") ? "light" : "dark";
@@ -49,36 +48,88 @@ export function TurnstileWidget({ siteKey, action, active, resetKey, statusId, o
   const onTokenRef = useRef(onToken);
   const [state, setState] = useState<ChallengeState>("idle");
   const [attempt, setAttempt] = useState(0);
+  const [size, setSize] = useState<"compact" | "flexible" | null>(null);
+  const sizeRef = useRef<typeof size>(null);
+  const generation = useRef(0);
+  const targetTheme = useRef<WidgetTheme | null>(null);
   const [widgetTheme, setWidgetTheme] = useState<WidgetTheme | null>(null);
   useEffect(() => { onTokenRef.current = onToken; });
 
   useEffect(() => {
-    if (!active) return;
+    const element = container.current;
+    if (!active || !element) return;
+    const measure = (width: number) => {
+      if (width <= 0) return;
+      const next = width >= 300 ? "flexible" : "compact";
+      if (sizeRef.current === next) return;
+      if (sizeRef.current !== null) {
+        generation.current += 1;
+        onTokenRef.current(null);
+        setState("idle");
+        // React can batch crossings back to the same size; the revision still recreates the invalidated widget.
+        setAttempt((current) => current + 1);
+      }
+      sizeRef.current = next;
+      setSize(next);
+    };
+    const observer = new ResizeObserver((entries) => measure(entries[0].contentRect.width));
+    observer.observe(element);
+    measure(element.clientWidth);
+    return () => observer.disconnect();
+  }, [active]);
+
+  useEffect(() => {
+    const form = container.current?.closest("form");
+    if (!active || !form) return;
+    const update = () => {
+      const next = surfaceTheme(form);
+      if (targetTheme.current === next) return;
+      if (targetTheme.current !== null) {
+        generation.current += 1;
+        onTokenRef.current(null);
+        setState("idle");
+        setAttempt((current) => current + 1);
+      }
+      targetTheme.current = next;
+    };
+    update();
+    const observer = new MutationObserver(update);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "data-theme-pref"] });
+    const media = window.matchMedia("(prefers-color-scheme: light)");
+    media.addEventListener("change", update);
+    return () => { observer.disconnect(); media.removeEventListener("change", update); };
+  }, [active]);
+
+  useEffect(() => {
+    if (!active || !size) return;
     let cancelled = false;
+    const currentGeneration = generation.current;
+    const live = () => !cancelled && generation.current === currentGeneration;
     loadScript().then((api) => {
-      if (cancelled || !container.current) return;
-      const theme = surfaceTheme(container.current);
+      if (!live() || !container.current) return;
+      const form = container.current.closest("form");
+      if (!form) return;
+      const theme = targetTheme.current ?? surfaceTheme(form);
       widgetId.current = api.render(container.current, {
         sitekey: siteKey,
         action,
         theme,
-        // Compact stays within reflow widths without recreating a solved widget on resize.
-        size: "compact",
+        size,
         language: "pt-br",
-        callback: (token: string) => { setState("solved"); onTokenRef.current(token); },
-        "expired-callback": () => { setState("expired"); onTokenRef.current(null); },
-        "timeout-callback": () => { setState("timeout"); onTokenRef.current(null); },
-        "error-callback": () => { setState("failed"); onTokenRef.current(null); },
+        callback: (token: string) => { if (!live()) return; setState("solved"); onTokenRef.current(token); },
+        "expired-callback": () => { if (!live()) return; setState("expired"); onTokenRef.current(null); },
+        "timeout-callback": () => { if (!live()) return; setState("timeout"); onTokenRef.current(null); },
+        "error-callback": () => { if (!live()) return; setState("failed"); onTokenRef.current(null); },
       });
       setWidgetTheme(theme);
       setState((current) => (current === "idle" ? "ready" : current));
-    }).catch(() => { if (!cancelled) setState("failed"); });
+    }).catch(() => { if (live()) setState("failed"); });
     return () => {
       cancelled = true;
       if (widgetId.current && window.turnstile) window.turnstile.remove(widgetId.current);
       widgetId.current = null;
     };
-  }, [siteKey, action, active, attempt]);
+  }, [siteKey, action, active, attempt, size]);
 
   useEffect(() => {
     if (resetKey > 0 && widgetId.current && window.turnstile) {

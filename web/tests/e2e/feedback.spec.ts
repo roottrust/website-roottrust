@@ -27,9 +27,9 @@ for (const theme of ["light", "dark"] as const) {
     await expect(live).toContainText("Nenhum dado foi enviado");
     await expect(live).toHaveCount(1);
     expect(await live.evaluate((node, initial) => node === initial, original)).toBe(true);
-    const selector = page.locator("header").getByLabel("Tema", { exact: true });
+    const selector = page.locator("header").getByRole("button", { name: /^Tema atual:/ });
     await expect(selector).toBeEnabled();
-    await selector.selectOption(theme === "light" ? "dark" : "light");
+    await selector.click();
     await expect(form.getByLabel("Empresa", { exact: true })).toHaveValue("Empresa demonstrativa");
     await expect(live).toContainText("Nenhum dado foi enviado");
     await form.getByLabel("Resultado da demonstração").selectOption("success");

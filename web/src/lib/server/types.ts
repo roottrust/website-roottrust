@@ -206,8 +206,20 @@ export interface MarketingBaselineRecord {
   count: number;
   reserved: number;
   seq: number;
+  // Start time of the scan that produced this measurement (its age counts from there, not from when it finished).
   measuredAt: string;
+  // Bumped when a scan starts; only the scan holding the latest generation may publish, so an older one that ends late
+  // can never replace (or close) a newer measurement.
+  generation?: number;
   reason?: string;
+}
+
+// Shared consent/reconciliation version (id "consent", same collection as the baseline). Every transaction that confirms, cancels
+// or reconciles a subscription bumps it, so a Broadcast authorization can prove nothing changed since its inspection.
+export interface ConsentEpochRecord {
+  id: string;
+  version: number;
+  updatedAt: string;
 }
 
 // Newsletter editions. `edition_revisions` is private (full body) and immutable: a revision is written once, never

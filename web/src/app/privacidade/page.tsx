@@ -33,7 +33,7 @@ export default function Page() {
             <h2 id="versao">O que esta versão faz</h2>
             <ul>
               {isPublic
-                ? <li>O pedido de diagnóstico pode estar habilitado para o público, com verificação anti-abuso e limites de tentativas. Pedidos de newsletter e de relatório por e-mail continuam indisponíveis para novos endereços até que os controles de capacidade e consentimento estejam em operação.</li>
+                ? <li>Os formulários habilitados para o público usam verificação anti-abuso e limites de tentativas. Pedidos de newsletter e relatório dependem também da disponibilidade e da capacidade dos serviços de envio.</li>
                 : <li>Esta versão é destinada a avaliação interna e piloto restrito.</li>}
               {isPublic ? <>
                 <li>O recebimento de um pedido não confirma inscrição, entrega de e-mail nem atendimento; a confirmação da newsletter e o cancelamento seguem fluxos próprios.</li>
@@ -86,17 +86,17 @@ export default function Page() {
 
           <section aria-labelledby="aparencia" className={styles.block}>
             <h2 id="aparencia">Preferência de aparência</h2>
-            <p>O seletor “Tema” oferece Sistema, Claro e Escuro. Ao fazer uma escolha, a preferência fica no armazenamento local do navegador, se ele permitir. Ela serve só para lembrar a aparência e não é enviada a nenhum servidor nem associada a formulários.</p>
+            <p>O site acompanha o tema do sistema até sua primeira escolha manual. O botão de Sol ou Lua no header alterna entre Claro e Escuro e mostra o tema atual. Ao fazer uma escolha, a preferência fica no armazenamento local do navegador, se ele permitir. Ela serve só para lembrar a aparência e não é enviada a nenhum servidor nem associada a formulários.</p>
           </section>
 
           <section aria-labelledby="contato" className={styles.block}>
             <h2 id="contato">Contato e seus direitos</h2>
-            <p>Renato é o responsável operacional por estes dados no piloto. Para pedir acesso, correção, exclusão, retirada do consentimento comercial ou tirar dúvidas, escreva para <a href="mailto:contato@roottrust.com.br">contato@roottrust.com.br</a>. Podemos pedir confirmação de identidade para proteger seus dados. Para falar sobre serviços, use o mesmo e-mail ou <a href="tel:+5511940084692">11 94008-4692</a>. Não há prazo de resposta formalmente definido nesta versão provisória.</p>
+            <p>{isPublic ? "Para pedir acesso" : "Renato é o responsável operacional por estes dados no piloto. Para pedir acesso"}, correção, exclusão, retirada do consentimento comercial ou tirar dúvidas, escreva para <a href="mailto:contato@roottrust.com.br">contato@roottrust.com.br</a>. Podemos pedir confirmação de identidade para proteger seus dados. Para falar sobre serviços, use o mesmo e-mail ou <a href="tel:+5511940084692">11 94008-4692</a>. Não há prazo de resposta formalmente definido nesta versão provisória.</p>
           </section>
 
           <section aria-labelledby="futuro" className={styles.block}>
             <h2 id="futuro">O que ainda não está definido</h2>
-            <p>Antes da publicação aberta, esta página precisa de revisão jurídica e operacional. Ainda não constam aqui a razão social, o endereço, as bases legais, os prazos de atendimento, os países de processamento e a política de cópias externas.</p>
+            <p>Esta página precisa de revisão jurídica e operacional. Ainda não constam aqui a razão social, o endereço, as bases legais, os prazos de atendimento, os países de processamento e a política de cópias externas.</p>
           </section>
 
           <p className={styles.back}><Link className="button" href="/" prefetch={false}>Voltar à Home</Link></p>

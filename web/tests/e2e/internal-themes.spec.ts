@@ -81,9 +81,10 @@ async function bodyBackground(page: Page) {
 async function visit(page: Page, path: string, scheme: Scheme) {
   await page.emulateMedia({ colorScheme: scheme, reducedMotion: "reduce" });
   await page.goto(path);
-  const theme = page.locator("header").getByLabel("Tema", { exact: true });
+  const theme = page.locator("header").getByRole("button", { name: /^Tema atual:/ });
   await expect(theme).toBeEnabled();
-  await theme.selectOption(scheme);
+  await theme.click();
+  await theme.click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", scheme);
   expect(await bodyBackground(page)).toBe(PAGE_BG[scheme]);
 }
@@ -131,7 +132,6 @@ test.describe("temas internos: claro e escuro", () => {
       await expectControl(select);
       const { backgroundImage } = await sample(select);
       expect(backgroundImage).toContain(scheme === "light" ? "%23003428" : "%23F5F5F2");
-      await page.locator("header").getByLabel("Tema", { exact: true }).selectOption("system");
       await page.emulateMedia({ forcedColors: "active" });
       expect(await select.first().evaluate(el => ({ appearance: getComputedStyle(el).appearance, image: getComputedStyle(el).backgroundImage }))).toEqual({ appearance: "auto", image: "none" });
       await page.emulateMedia({ forcedColors: "none" });
