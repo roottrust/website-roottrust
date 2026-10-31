@@ -7,7 +7,7 @@ import { newsletterAvailability } from "@/app/api/newsletter/inscricao/availabil
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: { absolute: "Newsletter — Root Trust" },
-  description: "Análise sobre cibersegurança, nuvem e software em dias úteis. Leia prévias públicas e receba as edições completas por e-mail.",
+  description: "Análises sobre cibersegurança, nuvem e software preparadas em dias úteis. Leia prévias públicas e receba as edições completas por e-mail.",
   robots: { index: false, follow: false },
 };
 

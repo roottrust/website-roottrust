@@ -66,10 +66,10 @@ export function ToolPage({ tool, mode, children }: { tool: ToolContent; mode: Fo
               <p className={styles.badge}>
                 <span aria-hidden="true" />
                 {reportConfig.mode === "demo"
-                  ? "Protótipo — cálculos locais; o pedido de relatório é uma demonstração local e nenhum dado é enviado."
+                  ? "Versão de avaliação — cálculos locais; o pedido de relatório é uma demonstração local e nenhum dado é enviado."
                   : reportConfig.mode === "pilot"
-                    ? "Protótipo — cálculos locais; apenas o pedido de relatório (e-mail e ferramenta) é enviado, sem respostas ou resultados."
-                    : "Protótipo — cálculos locais; envio do pedido de relatório indisponível."}
+                    ? "Versão de avaliação — cálculos locais; o pedido de relatório envia seu e-mail, a ferramenta escolhida e a opção de contato comercial, sem respostas ou resultados."
+                    : "Versão de avaliação — cálculos locais; envio do pedido de relatório indisponível."}
               </p>
             </div>
             <div className={styles.art}><PillarArt kind={tool.kind} /></div>

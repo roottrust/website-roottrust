@@ -29,6 +29,8 @@ for (const route of routes) {
     await page.goto(route.path);
     await expect(page.getByRole("heading", { level: 1 })).toContainText(route.h1);
     await expect(page.locator("main")).toContainText(route.method);
+    await expect(page.locator("main")).toContainText("Versão de avaliação — cálculos locais;");
+    await expect(page.locator("main")).not.toContainText("Protótipo");
     await expect(page.getByRole("form", { name: route.form })).toBeVisible();
     await expect(page.locator("main").getByRole("link", { name: "Solicitar diagnóstico" })).toHaveAttribute("href", "/#contato");
     await expect(page.getByRole("navigation", { name: "Trilha de navegação" }).getByRole("link", { name: "Ferramentas" })).toHaveAttribute("href", "/#ferramentas");

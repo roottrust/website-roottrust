@@ -4,7 +4,7 @@ import { FrameCanvas } from "@/features/graphics/FrameCanvas";
 import { PillarArt } from "@/features/graphics/PillarArt";
 import { SymbolAscii } from "@/features/graphics/SymbolAscii";
 import { contactAvailability } from "@/app/api/diagnostico/availability";
-import { stageNote, stages, type ServiceContent } from "./content";
+import type { ServiceContent } from "./content";
 import styles from "./services.module.css";
 
 function Eyebrow({ children, accentRule = false }: { children: string; accentRule?: boolean }) {
@@ -41,7 +41,6 @@ function Check() {
 }
 
 export function ServicePage({ service }: { service: ServiceContent }) {
-  const { detail } = service;
   return (
     <main id="conteudo" data-graphics-root className={styles.root}>
       <FrameCanvas />
@@ -98,7 +97,6 @@ export function ServicePage({ service }: { service: ServiceContent }) {
                 <li key={frente.title} className={styles.frente}>
                   <div className={styles.frenteTop}>
                     <span aria-hidden="true" className={styles.frenteNumber}>{String(index + 1).padStart(2, "0")}</span>
-                    {frente.badge && detail ? <a className={styles.badge} href={`#${detail.id}`}>{frente.badge}</a> : null}
                   </div>
                   <h3>{frente.title}</h3>
                   <p>{frente.text}</p>
@@ -115,48 +113,48 @@ export function ServicePage({ service }: { service: ServiceContent }) {
                       </ul>
                     </div>
                   ) : null}
+                  {frente.detail ? (
+                    <details id={frente.detail.id} className={styles.detail}>
+                      <summary>
+                        {frente.detail.summary}
+                        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 5v14" /><path d="M5 12h14" /></svg>
+                      </summary>
+                      <div className={styles.detailBody}>
+                        <h4>{frente.detail.title}</h4>
+                        <p>{frente.detail.text}</p>
+                        <div className={styles.detailBlock}>
+                          <h5 className={styles.label}>{frente.detail.listLabel}</h5>
+                          <ol className={styles.detailList}>
+                            {frente.detail.items.map((item, itemIndex) => (
+                              <li key={item}>
+                                <span aria-hidden="true" className={styles.detailNumber}>{String(itemIndex + 1).padStart(2, "0")}</span>
+                                {item}
+                              </li>
+                            ))}
+                          </ol>
+                        </div>
+                        {frente.detail.complements ? (
+                          <div className={styles.detailBlock}>
+                            <h5 className={styles.label}>{frente.detail.complementLabel}</h5>
+                            <ul className={styles.complements}>
+                              {frente.detail.complements.map((item) => (
+                                <li key={item.title}><strong>{item.title}.</strong> {item.text}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        ) : null}
+                        <div className={styles.detailNotes}>
+                          {frente.detail.notes.map((note) => (
+                            <p key={note.text} className={note.muted ? styles.muted : undefined}>{note.text}</p>
+                          ))}
+                        </div>
+                      </div>
+                    </details>
+                  ) : null}
                 </li>
               ))}
             </ul>
           </div>
-
-          {detail ? (
-            <div id={detail.id} className={styles.panel}>
-              <div className={styles.panelMain}>
-                <Eyebrow accentRule>{detail.label}</Eyebrow>
-                <h3>{detail.title}</h3>
-                <p>{detail.text}</p>
-              </div>
-              <div className={styles.panelSide}>
-                <div className={styles.panelBlock}>
-                  <h4 className={styles.label}>{detail.listLabel}</h4>
-                  <ol className={styles.panelList}>
-                    {detail.items.map((item, index) => (
-                      <li key={item}>
-                        <span aria-hidden="true" className={styles.panelNumber}>{String(index + 1).padStart(2, "0")}</span>
-                        {item}
-                      </li>
-                    ))}
-                  </ol>
-                </div>
-                {detail.complements ? (
-                  <div className={styles.panelBlock}>
-                    <h4 className={styles.label}>{detail.complementLabel}</h4>
-                    <ul className={styles.complements}>
-                      {detail.complements.map((item) => (
-                        <li key={item.title}><strong>{item.title}.</strong> {item.text}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : null}
-                <div className={styles.panelNotes}>
-                  {detail.notes.map((note) => (
-                    <p key={note.text} className={note.muted ? styles.muted : undefined}>{note.text}</p>
-                  ))}
-                </div>
-              </div>
-            </div>
-          ) : null}
 
           {service.concepts ? (
             <div className={styles.concepts}>
@@ -180,22 +178,22 @@ export function ServicePage({ service }: { service: ServiceContent }) {
             <Title lines={service.methodTitle} id="metodo" />
             <ol className={styles.steps}>
               {service.steps.map((step, index) => (
-                <li key={step}>
+                <li key={step.title}>
                   <div aria-hidden="true" className={styles.stepRule}>
                     <span>√</span>
                     <span />
                   </div>
                   <h3>
                     <span aria-hidden="true" className={styles.stepNumber}>{String(index + 1).padStart(2, "0")}</span>
-                    {stages[index]}
+                    {step.title}
                   </h3>
-                  <p>{step}</p>
+                  <p>{step.text}</p>
                 </li>
               ))}
             </ol>
             <div className={styles.closingBlock}>
               <p className={styles.closing}>{service.closing}</p>
-              <Pill>{stageNote}</Pill>
+              <Pill>{service.stageNote}</Pill>
             </div>
           </div>
         </div>

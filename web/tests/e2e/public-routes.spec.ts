@@ -3,7 +3,7 @@ import { sortedEdicoes } from "../../src/features/newsletter/catalog";
 
 const ROUTES: [string, string][] = [
   ["/", "Root Trust — Confiabilidade com profundidade"],
-  ["/servicos/ciberseguranca", "Cibersegurança e Pentest · Root Trust"],
+  ["/servicos/ciberseguranca", "Cibersegurança para proteger o seu negócio · Root Trust"],
   ["/servicos/infraestrutura-em-nuvem", "Infraestrutura em nuvem · Root Trust"],
   ["/servicos/desenvolvimento-de-software", "Software e desenvolvimento sob medida · Root Trust"],
   ["/ferramentas/rosi", "ROSI: retorno de uma proteção adicional · Root Trust"],

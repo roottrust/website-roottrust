@@ -1,9 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
 
 const routes = [
-  { path: "/servicos/ciberseguranca", h1: "Pentest e cibersegurança", text: ["Reteste após as correções conforme escopo e contrato.", "Gestão de vulnerabilidades", "Red Team", "Apoio a normas e compliance", "A conversa gratuita não inclui"] },
-  { path: "/servicos/infraestrutura-em-nuvem", h1: "Continuidade e custos", text: ["As entregas dependem do escopo e do contrato.", "Não há percentual de economia prometido."] },
-  { path: "/servicos/desenvolvimento-de-software", h1: "Software sob medida", text: ["As entregas dependem do escopo e do contrato.", "Integração", "Automação"] },
+  { path: "/servicos/ciberseguranca", h1: ["Cibersegurança", "para proteger o seu negócio."], steps: ["Entender contexto e definir limites", "Avaliar riscos e controles", "Priorizar e executar ações contratadas", "Acompanhar e revisar prioridades"], text: ["Reteste após as correções conforme escopo e contrato.", "Gestão de vulnerabilidades", "Red Team", "Apoio a normas e compliance", "A conversa gratuita não inclui", "Sobre o Pentest"] },
+  { path: "/servicos/infraestrutura-em-nuvem", h1: ["Infraestrutura", "preparada para a sua operação."], steps: ["Levantar ambientes e dependências", "Desenhar arquitetura e plano", "Implantar ou migrar com validação", "Acompanhar e otimizar"], text: ["As entregas dependem do escopo e do contrato.", "Não há percentual de economia prometido."] },
+  { path: "/servicos/desenvolvimento-de-software", h1: ["Software sob medida", "para conectar e evoluir sua operação."], steps: ["Entender problema e sistemas", "Priorizar e planejar solução", "Desenvolver e validar incrementalmente", "Colocar em uso e evoluir"], text: ["As entregas dependem do escopo e do contrato.", "Integração", "Automação"] },
 ] as const;
 
 function collectErrors(page: Page) {
@@ -17,17 +17,21 @@ for (const route of routes) {
   test(`${route.path}: SSR content, 6 sections, FAQ and contract text`, async ({ page, request }) => {
     const errors = collectErrors(page);
     const html = await (await request.get(route.path)).text();
-    expect(html).toContain(route.h1);
+    expect(html).toContain(route.h1[0]);
     for (const text of route.text) expect(html).toContain(text.replace(/&/g, "&amp;"));
 
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto(route.path);
-    await expect(page.getByRole("heading", { level: 1 })).toContainText(route.h1);
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(`${route.h1[0]} ${route.h1[1]}`);
+    const steps = page.locator("#como ol > li h3");
+    await expect(steps).toHaveCount(4);
+    for (const [index, title] of route.steps.entries()) await expect(steps.nth(index)).toContainText(title);
+    await expect(page.getByText("Destaque", { exact: true })).toHaveCount(0);
     await expect(page.locator("main > section, main > div > section")).toHaveCount(6);
     await expect(page.locator("main").getByRole("link", { name: "Solicitar diagnóstico" })).toHaveAttribute("href", "#contato");
     for (const text of route.text) await expect(page.locator("main")).toContainText(text);
 
-    const first = page.locator("details").first();
+    const first = page.locator("#faq details").first();
     await first.locator("summary").focus();
     await expect(first).not.toHaveAttribute("open", "");
     await page.keyboard.press("Enter");
@@ -143,4 +147,18 @@ test.describe("service graphics: frame and symbol", () => {
     await expect(page.locator('canvas[data-graphic="frame"]')).toHaveAttribute("data-graphic-status", "ready");
     expect(errors).toEqual([]);
   });
+});
+
+test("cibersegurança: Pentest é um detalhe neutro e recolhível dentro da frente 1", async ({ page }) => {
+  await page.goto("/servicos/ciberseguranca");
+  const detail = page.locator("#frentes > div ul > li").first().locator("details#pentest");
+  await expect(detail).toHaveCount(1);
+  await expect(detail).not.toHaveAttribute("open", "");
+  await detail.locator("summary").focus();
+  await page.keyboard.press("Enter");
+  await expect(detail).toHaveAttribute("open", "");
+  await expect(detail).toContainText("Antes de qualquer teste de segurança, definimos escopo e autorização.");
+  await expect(detail.getByRole("heading", { level: 5 })).not.toHaveCount(0);
+  await page.keyboard.press("Space");
+  await expect(detail).not.toHaveAttribute("open", "");
 });

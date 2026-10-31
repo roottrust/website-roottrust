@@ -4,14 +4,14 @@ import type { PillarKind } from "@/features/graphics/PillarArt";
 export type Frente = {
   title: string;
   text: string;
-  badge?: string;
   lines?: readonly string[];
   deliveries?: readonly string[];
+  detail?: Detail;
 };
 
 export type Detail = {
   id: string;
-  label: string;
+  summary: string;
   title: string;
   text: string;
   listLabel: string;
@@ -20,6 +20,8 @@ export type Detail = {
   complements?: readonly { title: string; text: string }[];
   notes: readonly { text: string; muted?: boolean }[];
 };
+
+export type Step = { title: string; text: string };
 
 export type ServiceContent = {
   slug: "ciberseguranca" | "infraestrutura-em-nuvem" | "desenvolvimento-de-software";
@@ -36,29 +38,28 @@ export type ServiceContent = {
   frentesNote?: string;
   concepts?: readonly { term: string; text: string }[];
   conceptsNote?: string;
-  detail?: Detail;
   methodTitle: readonly [string, string];
-  steps: readonly string[];
+  steps: readonly Step[];
+  stageNote: string;
   closing: string;
   faq: readonly { q: string; a: string }[];
   ctaTitle: readonly [string, string];
   ctaText: string;
 };
 
-export const stages = ["Diagnóstico", "Estratégia", "Implementação", "Operação", "Evolução"] as const;
-export const stageNote = "As etapas podem variar conforme o escopo do projeto.";
+const stageNote = "As etapas podem variar conforme o escopo do projeto.";
 
 export const services: readonly ServiceContent[] = [
   {
     slug: "ciberseguranca",
     kind: "chave",
     label: "Cibersegurança",
-    metaTitle: "Cibersegurança e Pentest",
+    metaTitle: "Cibersegurança para proteger o seu negócio",
     metaDescription:
-      "Pentest, avaliação de riscos, identidade e acesso, monitoramento e resposta a incidentes conforme o contexto da sua operação.",
-    h1: ["Pentest e cibersegurança", "para a sua operação."],
+      "Avaliação de riscos, testes de segurança, identidade e acesso, monitoramento e resposta a incidentes, conforme o escopo contratado.",
+    h1: ["Cibersegurança", "para proteger o seu negócio."],
     intro:
-      "Entenda os riscos dos seus sistemas, organize acessos e prepare sua operação para detectar e responder a incidentes. O Pentest ajuda a identificar vulnerabilidades e orientar prioridades com evidências e impacto de negócio.",
+      "Identifique riscos, fortaleça seus sistemas e esteja preparado para enfrentar ameaças digitais. Com soluções de cibersegurança alinhadas à sua operação, ajudamos sua empresa a reduzir vulnerabilidades, proteger seus ativos digitais e elevar sua maturidade em segurança.",
     situationsTitle: ["Conhecer os riscos para decidir", "o próximo passo."],
     situations: [
       { title: "Validar aplicações e ambientes", text: "Entender vulnerabilidades antes de mudanças relevantes ou dentro de uma avaliação planejada." },
@@ -68,45 +69,48 @@ export const services: readonly ServiceContent[] = [
     ],
     frentesTitle: ["Proteção conectada", "ao contexto da operação."],
     frentes: [
-      { title: "Diagnóstico de riscos", badge: "Destaque · Pentest", text: "Avaliamos riscos e vulnerabilidades dentro de um escopo definido, com Pentest como frente de destaque. Os achados orientam prioridades técnicas e decisões de negócio." },
+      {
+        title: "Riscos e testes de segurança",
+        text: "Avaliamos riscos e vulnerabilidades dentro de um escopo definido, inclusive com testes de segurança autorizados (Pentest). Os achados orientam prioridades técnicas e decisões de negócio.",
+        detail: {
+          id: "pentest",
+          summary: "Sobre o Pentest",
+          title: "Teste de segurança autorizado, com escopo definido.",
+          text: "Pentest é um teste de segurança autorizado, com escopo definido. Avaliamos aplicações web, APIs, redes, infraestrutura e aplicações mobile, com objetivos e limites acordados antes da execução. Antes de qualquer teste de segurança, definimos escopo e autorização.",
+          listLabel: "Entregas do Pentest contratado",
+          items: [
+            "Relatório técnico com evidências e impacto dos achados.",
+            "Resumo executivo para apoiar decisões.",
+            "Recomendações priorizadas de correção.",
+          ],
+          complementLabel: "Capacidades complementares, conforme escopo contratado",
+          complements: [
+            { title: "Gestão de vulnerabilidades", text: "Complementa o diagnóstico e a priorização de correções." },
+            { title: "Red Team", text: "Capacidade complementar, com objetivo e escopo próprios; não é sinônimo de Pentest." },
+            { title: "Apoio a normas e compliance", text: "Apoio à adequação conforme a contratação; não garante certificação." },
+          ],
+          notes: [
+            { text: "Reteste após as correções conforme escopo e contrato." },
+            { text: "A conversa gratuita não inclui a execução do Pentest ou esses relatórios.", muted: true },
+          ],
+        },
+      },
       { title: "Identidade e acesso", text: "Apoiamos a organização de identidades, permissões e controles de acesso considerando aplicações, infraestrutura e responsabilidades da operação." },
-      { title: "Monitoramento contínuo", text: "Acompanhamos sinais relevantes nos ambientes contratados. O monitoramento automático pode ser 24×7 conforme contrato; cobertura humana e resposta são definidas separadamente." },
+      { title: "Monitoramento", text: "Acompanhamos sinais relevantes nos ambientes contratados. O monitoramento automático pode ser 24×7 conforme contrato; cobertura humana e resposta são definidas separadamente." },
       { title: "Resposta a incidentes", text: "Apoiamos o tratamento de incidentes conforme o escopo acordado e as condições da operação, conectando análise, prioridades e ações necessárias." },
     ],
-    detail: {
-      id: "pentest",
-      label: "Destaque · Pentest",
-      title: "Teste de segurança autorizado, com escopo definido.",
-      text: "Pentest é um teste de segurança autorizado, com escopo definido. Avaliamos aplicações web, APIs, redes, infraestrutura e aplicações mobile, com objetivos e limites acordados antes da execução.",
-      listLabel: "Entregas do Pentest contratado",
-      items: [
-        "Relatório técnico com evidências e impacto dos achados.",
-        "Resumo executivo para apoiar decisões.",
-        "Recomendações priorizadas de correção.",
-      ],
-      complementLabel: "Capacidades complementares, conforme escopo contratado",
-      complements: [
-        { title: "Gestão de vulnerabilidades", text: "Complementa o diagnóstico e a priorização de correções." },
-        { title: "Red Team", text: "Capacidade complementar, com objetivo e escopo próprios; não é sinônimo de Pentest." },
-        { title: "Apoio a normas e compliance", text: "Apoio à adequação conforme a contratação; não garante certificação." },
-      ],
-      notes: [
-        { text: "Reteste após as correções conforme escopo e contrato." },
-        { text: "A conversa gratuita não inclui a execução do Pentest ou esses relatórios.", muted: true },
-      ],
-    },
     methodTitle: ["Do entendimento do risco", "às prioridades de ação."],
     steps: [
-      "Entendemos o contexto e definimos o que será avaliado.",
-      "Relacionamos riscos, objetivos e prioridades ao escopo.",
-      "Executamos o trabalho técnico e as ações contratadas.",
-      "Acompanhamos os controles e ambientes incluídos na contratação.",
-      "Revisitamos prioridades conforme mudanças e novos desafios.",
+      { title: "Entender contexto e definir limites", text: "Entendemos o negócio, os sistemas e o que está dentro e fora do trabalho. Escopo e autorização vêm antes de qualquer teste." },
+      { title: "Avaliar riscos e controles", text: "Analisamos riscos, acessos e controles incluídos no escopo e, quando contratado, executamos testes de segurança." },
+      { title: "Priorizar e executar ações contratadas", text: "Ordenamos as correções por impacto e esforço e executamos as ações que estiverem no contrato." },
+      { title: "Acompanhar e revisar prioridades", text: "Acompanhamos o que estiver contratado e revisamos prioridades quando o contexto muda. Reteste, monitoramento e suporte dependem do contrato." },
     ],
+    stageNote,
     closing:
       "Segurança considera as aplicações que movem o negócio e a infraestrutura que as sustenta. Essa visão integrada orienta o trabalho sem exigir a contratação das três frentes.",
     faq: [
-      { q: "Solicitar diagnóstico já inclui um Pentest?", a: "Não. O primeiro passo é uma conversa gratuita de qualificação. O Pentest é um serviço técnico com escopo, autorização e contratação definidos." },
+      { q: "Solicitar diagnóstico inclui testes de segurança?", a: "Não. O primeiro passo é uma conversa gratuita de qualificação. O Pentest é um serviço técnico com escopo, autorização e contratação definidos." },
       { q: "Quais ambientes podem ser avaliados?", a: "Aplicações web, APIs, redes, infraestrutura e aplicações mobile. Os alvos e limites são acordados para cada trabalho." },
       { q: "O que recebemos de um Pentest?", a: "Relatório técnico com evidências e impacto dos achados, resumo executivo e recomendações priorizadas de correção." },
       { q: "O reteste está incluído?", a: "Sua realização após as correções depende do escopo e do contrato." },
@@ -124,7 +128,7 @@ export const services: readonly ServiceContent[] = [
     metaTitle: "Infraestrutura em nuvem",
     metaDescription:
       "Ambientes locais, nuvem, redes, backup e capacidade com atenção à continuidade e aos custos da sua operação.",
-    h1: ["Continuidade e custos", "sob controle na sua infraestrutura."],
+    h1: ["Infraestrutura", "preparada para a sua operação."],
     intro:
       "Planejamos e evoluímos ambientes locais, em nuvem e híbridos, conectando capacidade, redes, recuperação e visibilidade de custos às necessidades da sua operação.",
     situationsTitle: ["Uma base preparada", "para o que a operação exige."],
@@ -139,17 +143,17 @@ export const services: readonly ServiceContent[] = [
       { title: "Arquitetura e migração", text: "Entendemos dependências e requisitos para planejar a arquitetura e, quando fizer sentido, a migração. A atuação contempla ambientes locais, em nuvem, híbridos e redes corporativas.", deliveries: ["Arquitetura documentada"] },
       { title: "Ambientes escaláveis", text: "Relacionamos capacidade à demanda e às condições da solução, considerando desempenho e continuidade. Monitoramento e suporte acompanham os ambientes conforme contrato.", deliveries: ["Ambientes e redes configurados"] },
       { title: "Backup e continuidade", text: "Organizamos rotinas de backup e procedimentos de recuperação conforme o escopo, com testes para verificar o caminho de retomada acordado.", deliveries: ["Rotinas de backup e testes de recuperação"] },
-      { title: "Custos sob controle", text: "Tornamos gastos e consumo mais claros, identificamos recursos ociosos e recomendamos ajustes de capacidade à demanda sem ignorar desempenho e continuidade.", lines: ["Entender o gasto.", "Identificar ociosidade.", "Ajustar capacidade."], deliveries: ["Recomendações e ajustes de custos e capacidade"] },
+      { title: "Visibilidade de custos", text: "Tornamos gastos e consumo mais claros, identificamos recursos ociosos e recomendamos ajustes de capacidade à demanda sem ignorar desempenho e continuidade.", lines: ["Entender o gasto.", "Identificar ociosidade.", "Ajustar capacidade."], deliveries: ["Recomendações e ajustes de custos e capacidade"] },
     ],
     frentesNote: "As entregas dependem do escopo e do contrato.",
     methodTitle: ["Entender a base", "para escolher o caminho."],
     steps: [
-      "Entendemos ambientes, dependências, consumo e necessidades da operação.",
-      "Definimos prioridades de arquitetura, continuidade, capacidade e custos.",
-      "Configuramos os ambientes e executamos as mudanças contratadas.",
-      "Acompanhamos os ambientes incluídos no contrato.",
-      "Revisitamos capacidade, custos e necessidades conforme o contexto muda.",
+      { title: "Levantar ambientes e dependências", text: "Mapeamos ambientes, redes, dependências, consumo e necessidades da operação." },
+      { title: "Desenhar arquitetura e plano", text: "Definimos arquitetura, continuidade, capacidade e custos, com um plano por etapas." },
+      { title: "Implantar ou migrar com validação", text: "Configuramos ou migramos os ambientes contratados e validamos cada mudança antes de colocá-la em uso." },
+      { title: "Acompanhar e otimizar", text: "Acompanhamos os ambientes incluídos no contrato e ajustamos capacidade e custos quando o contexto muda." },
     ],
+    stageNote,
     closing:
       "A infraestrutura sustenta aplicações e precisa considerar os controles de segurança. As decisões conectam essas dependências sem exigir contratar os três serviços.",
     faq: [
@@ -196,12 +200,12 @@ export const services: readonly ServiceContent[] = [
     frentesNote: "As entregas dependem do escopo e do contrato. Suporte e evolução posteriores são definidos na contratação.",
     methodTitle: ["Do desafio da operação", "à solução que faz sentido."],
     steps: [
-      "Entendemos processos, sistemas existentes e necessidades da equipe.",
-      "Definimos prioridades e o escopo da solução.",
-      "Desenvolvemos aplicações, integrações e automações contratadas.",
-      "Orientamos a operação e acompanhamos o que estiver no contrato.",
-      "Ajustamos a solução e a base existente conforme novas necessidades.",
+      { title: "Entender problema e sistemas", text: "Entendemos processos, sistemas existentes e as necessidades da equipe." },
+      { title: "Priorizar e planejar solução", text: "Definimos prioridades, escopo e uma primeira versão a construir." },
+      { title: "Desenvolver e validar incrementalmente", text: "Desenvolvemos aplicações, integrações e automações contratadas em partes, validando cada parte com você." },
+      { title: "Colocar em uso e evoluir", text: "Orientamos a entrada em uso e, quando contratado, acompanhamos e evoluímos a solução." },
     ],
+    stageNote,
     closing:
       "Aplicações dependem da infraestrutura em que operam e dos controles que protegem seus dados. Consideramos essas conexões desde a concepção, sem exigir a contratação dos três serviços.",
     faq: [

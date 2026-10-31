@@ -20,7 +20,7 @@ const ETAPAS = [
 ] as const;
 
 const FAQ = [
-  ["Com que frequência recebo?", "Em dias úteis."],
+  ["Com que frequência recebo?", "A newsletter é preparada em dias úteis, com um tema central ligado à cibersegurança, à infraestrutura em nuvem ou ao software. Cada edição reúne a análise da Root Trust, impactos práticos e fontes para aprofundar a leitura. Os envios dependem da publicação da edição; não há horário fixo garantido."],
   ["Posso ler tudo no site?", "O site apresenta o primeiro parágrafo de cada edição. O conteúdo completo é enviado por e-mail após confirmação do endereço."],
   ["O que recebo ao me inscrever por esta página?", "A edição aprovada mais recente, quando disponível, e os próximos envios."],
   ["Posso pedir uma edição anterior?", "Sim. Abra a prévia desejada e solicite aquela edição pelo formulário. Quem já assina também pode usar esse caminho."],
@@ -43,7 +43,7 @@ export function LandingPage({ config, recente, indisponivel = false }: { config:
                   config={config}
                   variant="inline"
                   cta="Receber edições completas"
-                  support="Se ainda não assina, confirme seu endereço pelo link enviado por e-mail. Depois você recebe a edição mais recente e os próximos envios em dias úteis. Você pode cancelar os próximos envios."
+                  support="Depois da confirmação, você recebe a edição mais recente e os próximos envios, quando houver publicação. Você pode cancelar os próximos envios."
                 />
               </div>
             </div>
@@ -60,7 +60,7 @@ export function LandingPage({ config, recente, indisponivel = false }: { config:
             <div className={styles.intro}>
               <Eyebrow>Edição recente</Eyebrow>
               <h2 id="amostra" className={styles.title}>Conheça uma edição.</h2>
-              <p className={styles.body}>Conheça o assunto pela abertura de cada edição. Receba o conteúdo completo por e-mail, após confirmar seu endereço, e os próximos envios em dias úteis.</p>
+              <p className={styles.body}>Conheça o assunto pela abertura de cada edição. Receba o conteúdo completo por e-mail, após confirmar seu endereço, e os próximos envios, quando houver publicação.</p>
             </div>
             {recente ? <EdicaoCard edicao={recente} /> : <p className={styles.panel}>{indisponivel ? "Não foi possível carregar as edições agora. Tente novamente em instantes." : "Ainda não há edições publicadas."}</p>}
           </div>

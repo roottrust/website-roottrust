@@ -446,11 +446,23 @@ Início T3.1 em30/10 após aceite explícito gate A. Dry-run16 arquivos, inspeç
 
 Renato respondeu “Aguardar a renovação e retomar com Sonnet (recomendado)” e informou “Sessão do Claude renovada”. Retomada autorizada às18h31 Brasília: raiz/main/HEAD `c8d3d93` e árvore revalidados, somente PLAN alterado; dry-run/diff-check sem gerados ou segredos. Mesmo assunto T3.1, mesmos limites; novo checkpoint local do registro antes de continuar a sessão da ponte. Nenhum fallback ou mudança global.
 
-- [ ] Todas as superfícies da matriz 4.3 com tema/feedback/copy corretos, incluindo tabelas/selects/foco.
-- [ ] Etapas estruturadas por serviço, sem stages[index] global nas internas; Home mantém cinco etapas.
-- [ ] Hero literal e Pentest sem badge/hierarquia superior; catálogo e escopos verdadeiros.
-- [ ] Fórmulas/negativos/desconhecidos/cálculo local intactos; nenhum resultado em payload/storage/log/URL.
-- [ ] Arquivo/prévia preservam largura/paginação e corpo privado; slug inexistente continua HTTP 404 real.
+Checkpoint da retomada `2237d4f650ec6667ac71aa66cbd5302c2b7dc244` (`wip: pre-claude T3.1 resume`), hash registrado antes de `claude-reply` da mesma tarefa. WIP anterior continua referência de código idêntico; nenhum arquivo de aplicação mudou na interrupção.
+
+Entrega retomada da mesma sessão `ba8b44c4-5b9a-4f72-bc8c-71edcca2ae7a`: `succeeded`, modelo observado `claude-sonnet-5-5`,527s. Sonnet implementou content/ServicePage/estilos de serviços, CSS/ToolPage, CSS/copy newsletter/metadata, Privacidade e404;636 unitários/tipos/lint focado executados por ele, sem build/E2E. Codex revisou o diff e integrou scopes button/graphic da faixa verde, forced-colors/SO do seletor, H1 no helper QA, testes de tema mobile/manual e Privacidade revisável também em demo com descrição condicionada. Incluiu uso de IP na segurança e distinguiu exclusão leads6meses inatividade de assinaturas canceladas6meses cancelamento, em lotes, sem promessa para confirmados ativos/cópias externas. Fatos confirmados por GPT independente em leitura de server/types/defense/retention/jobs/http/development; revisão final da fonte por esse GPT falhou por limite de uso (sem parecer final alegado, sem upgrade ou troca silenciosa). Codex permanece revisor independente do executor; consulta de diff da ponte aberta em `3c165c77-5982-4a31-bd1b-64568c34bf68`.
+
+Gates Codex após integração: lint/typecheck,38 arquivos/636 unitários e build passaram. E2E focado de temas/serviços em execução, antes da rodada completa obrigatória. Patch saneado `references/audits/website-revision/t31-review.diff`, logs `t31-*`. Sem efeitos externos/envios/instalação/deploy; Home/shell/gráficos/modelos/edições intactos. Ainda não marcar T3.1 concluída nem gateB aprovado.
+
+Validação/revisão integradora T3.1:48 E2E focados passaram (37,6s) nos dois projetos. Capturas locais de sete rotas em1440/390 claro/escuro:28 completas+8recortes Cyber, status esperados200/404, zero pageerrors/POST/overflow; amostras de frentes/método claros e prévia mobile escura inspecionadas por Codex, sem bloqueante visual concreto. GPT independente retomou revisão após a janela de cota, examinou o patch real e concluiu sem P1/P2, somente leitura. Consulta Sonnet `3c165c77-5982-4a31-bd1b-64568c34bf68` inicial foi limitada à fonte porque a geração do diff falhou temporariamente por encoding; arquivo UTF8 corrigido e confirmado antes do follow-up. No follow-up `succeeded`, ponte confirmou leitura do diff real e ausência de P1/P2. Foram tratados pontos concretos: Privacidade usa availability dos três fluxos, condiciona processadores/retenção a envios habilitados e ajusta concordância; teste torna selects obrigatórios, mede foco e forced-colors em Sistema. Após esses ajustes: lint/typecheck/636unit/build e20 E2E de temas finais passaram (20,6s); capturas de Privacidade serão atualizadas isoladamente. Fontes das demais capturas não mudaram, sem recaptura redundante. Foco na borda externa foi amostrado, leitor/hardware real não certificados. Rodada E2E completa ainda pendente de término.
+
+Capturas finais de Privacidade atualizadas nos quatro cenários,200/zero erros/POST/overflow. Primeira rodada E2E completa teve364 passes/6 skips/2 falhas: única expectativa antiga do título de Cibersegurança em public-routes.spec.ts, repetida desktop/mobile. Corrigida para o título aprovado, sem mudar produção nem afrouxar asserção; busca das antigas strings nos testes/src não encontrou outra expectativa desatualizada. Lint/typecheck passaram após ajuste de teste. Rodada completa final em execução; não alegar passe antes do término. Evidência atual `t31-e2e-final.log`, anterior `t31-e2e.log` preservada.
+
+**T3.1 concluída tecnicamente:** lint/typecheck,38 arquivos/636 unitários, build e E2E completo366 passes/6 skips/zero retries (6,9min). Logs `t31-{lint,typecheck,unit,build}.log` e `t31-e2e-final.log`; rodada anterior com expectativa antiga preservada. Gates/revisões/contraste/capturas descritos acima; sem P1/P2 conhecido. `next-env.d.ts` gerado inspecionado e restaurado antes do próximo WIP. Nenhum commit final/push/deploy. A Privacidade continua provisória até gate B e ativação continua bloqueada.
+
+- [x] Todas as superfícies da matriz 4.3 com tema/feedback/copy corretos, incluindo tabelas/selects/foco.
+- [x] Etapas estruturadas por serviço, sem stages[index] global nas internas; Home mantém cinco etapas.
+- [x] Hero literal e Pentest sem badge/hierarquia superior; catálogo e escopos verdadeiros.
+- [x] Fórmulas/negativos/desconhecidos/cálculo local intactos; nenhum resultado em payload/storage/log/URL.
+- [x] Arquivo/prévia preservam largura/paginação e corpo privado; slug inexistente continua HTTP 404 real.
 
 #### T3.2 [claude:escreve] Alinhar confirmar/cancelar e estados excepcionais — Sonnet
 
@@ -609,7 +621,7 @@ Rollback de interface usa versão compatível/conferida, não snapshot antigo pr
 | Aprovação do plano | Aprovada em 30/10/2026 | Renato escolheu “Aprovar o plano; implementar na nova conversa”. Não iniciar nesta sessão. |
 | Fase1 | Local concluída; comparação remota pendente | T1.2/T1.3 concluídas; preflight Sonnet5.5 passou. Lacuna Vercel403 em T1.1 deve ser resolvida em T4.3 antes do rollout. |
 | Fase2/gate A | Concluída e aceita em30/10/2026 | Renato aprovou o gate A e o avanço às internas;629 unitários e344 E2E/6 skips. |
-| Fase3/gate B | T3.1 iniciada e interrompida por cota | Sonnet sem entrega/código; reset indicado18h10, retomada depende da consulta a Renato. Gate B pendente. |
+| Fase3/gate B | T3.1 técnica concluída |636 unitários/build e366 E2E/6 skips, revisões e capturas concluídos; T3.2 e gate B pendentes. |
 | Fase4 | Não iniciada | Public, capacidade e elegibilidade testados. |
 | Fase5 | Não iniciada | Gates, deployment, ensaio, aceite e arquivo. |
 

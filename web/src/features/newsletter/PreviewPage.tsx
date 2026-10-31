@@ -43,7 +43,7 @@ export function PreviewPage({ edicao, config }: { edicao: EdicaoPublica; config:
           <div className={styles.reading}>
             <div className={styles.requestCard}>
               <h2 id="receba" className={styles.requestTitle}>Receba esta <span className={styles.accent}>edição completa.</span></h2>
-              <p className={styles.body}>Receba esta edição completa e as próximas análises em dias úteis. Se ainda não assina, confirme seu endereço pelo link enviado por e-mail.</p>
+              <p className={styles.body}>Receba esta edição completa e as próximas análises, quando houver publicação. Se ainda não assina, confirme seu endereço pelo link enviado por e-mail.</p>
               <p className={styles.requested}>Edição solicitada: {edicao.titulo}</p>
               <NewsletterForm
                 config={config}

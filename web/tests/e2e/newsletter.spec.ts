@@ -33,7 +33,8 @@ test("landing: SSR content, single email field and shared opening with links", a
   await expect(form.locator("input")).toHaveCount(1);
   await expect(form.getByLabel("Seu e-mail", { exact: true })).toBeVisible();
   await expect(form.getByRole("button", { name: "Receber edições completas" })).toBeEnabled();
-  await expect(form).toContainText("Se ainda não assina, confirme seu endereço pelo link enviado por e-mail. Depois você recebe a edição mais recente e os próximos envios em dias úteis. Você pode cancelar os próximos envios.");
+  await expect(form).toContainText("Depois da confirmação, você recebe a edição mais recente e os próximos envios, quando houver publicação. Você pode cancelar os próximos envios.");
+  await expect(form).not.toContainText("em dias úteis");
 
   const card = page.locator("article").first();
   await expect(card).toContainText(recente.titulo);
@@ -43,6 +44,9 @@ test("landing: SSR content, single email field and shared opening with links", a
   await expect(card.getByRole("link", { name: /Ler prévia/ })).toHaveAttribute("href", `/newsletter/edicoes/${recente.slug}`);
   await expect(page.getByRole("link", { name: "Ver prévias anteriores" })).toHaveAttribute("href", "/newsletter/edicoes");
   await expect(page.locator("details")).toHaveCount(5);
+  const frequency = page.locator("details", { has: page.getByText("Com que frequência recebo?") });
+  await expect(frequency).toContainText("Os envios dependem da publicação da edição; não há horário fixo garantido.");
+  await expect(page.locator("main")).not.toContainText(/entrega garantida|sempre às/i);
   expect(w.problems).toEqual([]);
 });
 
