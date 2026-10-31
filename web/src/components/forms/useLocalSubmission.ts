@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { normalizeRetryAfter, submitDiagnostic, submitLocalForm, submitNewsletter, submitReport, type ContactMode, type DemoOutcome, type FormMode, type FormRequest, type SubmissionResult } from "@/lib/forms";
+import { isRealMode, normalizeRetryAfter, submitDiagnostic, submitLocalForm, submitNewsletter, submitReport, type ContactMode, type DemoOutcome, type FormMode, type FormRequest, type SubmissionResult } from "@/lib/forms";
 
 const subscribe = () => () => {};
 const clientSnapshot = () => true;
@@ -18,7 +18,7 @@ export function useLocalSubmission(mode: ContactMode) {
   const active = useRef<AbortController | null>(null);
   useEffect(() => () => active.current?.abort(), []);
 
-  // `token` is only used by the real (pilot) transports; demo/unavailable never touch the network.
+  // `token` is only used by the real (pilot or public) transports; demo/unavailable never touch the network.
   async function submit(request: FormRequest, token?: string) {
     if (active.current) return;
     const controller = new AbortController();
@@ -27,7 +27,7 @@ export function useLocalSubmission(mode: ContactMode) {
     setReference(undefined);
     setRetryAfter(undefined);
     try {
-      if (mode === "pilot") {
+      if (isRealMode(mode)) {
         if (!token) throw new Error("Missing challenge token");
         const result = request.kind === "contact"
           ? await submitDiagnostic(request.values, token, controller.signal)

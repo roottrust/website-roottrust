@@ -83,6 +83,7 @@ export function loadReportConfig(env: Record<string, string | undefined>): Repor
 }
 
 // Same contract as the contact form: FORM_MODE=demo wins; real mode needs the complete pilot plus the public site key.
+// Public admission of new addresses stays closed (unavailable) until capacity and consent controls exist: only "pilot" qualifies.
 export function resolveReportAvailability(env: Record<string, string | undefined>): ContactFormConfig {
   if (resolveFormMode(env.FORM_MODE) === "demo") return { mode: "demo" };
   const siteKey = env.TURNSTILE_SITE_KEY?.trim();

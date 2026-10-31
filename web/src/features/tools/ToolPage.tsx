@@ -5,7 +5,7 @@ import { FrameCanvas } from "@/features/graphics/FrameCanvas";
 import { PillarArt } from "@/features/graphics/PillarArt";
 import svc from "@/features/services/services.module.css";
 import { reportAvailability } from "@/app/api/relatorios/availability";
-import type { ContactFormConfig, FormMode } from "@/lib/forms";
+import { isRealMode, type ContactFormConfig, type FormMode } from "@/lib/forms";
 import type { ToolContent } from "./content";
 import { MethodSlot } from "./method-slot";
 import { ToolSession } from "./ToolSession";
@@ -67,7 +67,7 @@ export function ToolPage({ tool, mode, children }: { tool: ToolContent; mode: Fo
                 <span aria-hidden="true" />
                 {reportConfig.mode === "demo"
                   ? "Versão de avaliação — cálculos locais; o pedido de relatório é uma demonstração local e nenhum dado é enviado."
-                  : reportConfig.mode === "pilot"
+                  : isRealMode(reportConfig.mode)
                     ? "Versão de avaliação — cálculos locais; o pedido de relatório envia seu e-mail, a ferramenta escolhida e a opção de contato comercial, sem respostas ou resultados."
                     : "Versão de avaliação — cálculos locais; envio do pedido de relatório indisponível."}
               </p>

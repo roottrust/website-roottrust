@@ -10,6 +10,8 @@ import { COLLECTIONS, type DiagnosticRecord } from "./types";
 const SEND_TIMEOUT_MS = 10_000;
 
 export interface DiagnosticConfig {
+  // Absent means the restricted pilot: only a config explicitly built for "public" waives the recipient list.
+  mode?: "public";
   webhookUrl: string;
   allowlist: readonly string[];
   fetch?: typeof fetch;
@@ -29,8 +31,12 @@ export function isDiscordWebhookUrl(value: string | undefined): value is string 
 // Fail closed: the diagnostic endpoint is operational only with a valid private webhook, the explicit statement that the
 // team answers requests on the next business day, and the explicit statement that something triggers the job runner
 // (JOBS_TRIGGER_CONFIRMED). This flag is an operator attestation; the scheduler itself is not provisioned by this code.
-export function loadDiagnosticConfig(env: Record<string, string | undefined>): DiagnosticConfig | undefined {
+export function loadDiagnosticConfig(env: Record<string, string | undefined>, mode: "pilot" | "public" = "pilot"): DiagnosticConfig | undefined {
   const url = env.DISCORD_DIAGNOSTIC_WEBHOOK_URL?.trim();
+  if (mode === "public") {
+    if (env.DIAGNOSTIC_FOLLOWUP_CONFIRMED !== "true" || env.JOBS_TRIGGER_CONFIRMED !== "true" || !isDiscordWebhookUrl(url)) return undefined;
+    return { mode: "public", webhookUrl: url, allowlist: [] };
+  }
   const phones = (env.DIAGNOSTIC_PILOT_ALLOWLIST ?? "").split(",").map((item) => item.trim()).filter(Boolean);
   if (!phones.length || phones.length > 100 || phones.some((phone) => !/^[1-9]{2}9\d{8}$/.test(phone))) return undefined;
   if (env.DIAGNOSTIC_FOLLOWUP_CONFIRMED !== "true" || env.JOBS_TRIGGER_CONFIRMED !== "true" || !isDiscordWebhookUrl(url)) return undefined;
@@ -38,17 +44,19 @@ export function loadDiagnosticConfig(env: Record<string, string | undefined>): D
 }
 
 // What the page may offer. Only { mode, siteKey } (public) leaves this function; every other check stays server-side.
-// FORM_MODE=demo wins so a demo build can never send. Real mode needs the complete pilot: defense config, ID secret,
-// jobs key, diagnostic destination/follow-up/trigger attestations and the public Turnstile site key.
+// FORM_MODE=demo wins so a demo build can never send. Real mode (pilot or public) needs defense config, ID secret,
+// jobs key, diagnostic destination/follow-up/trigger attestations and the public Turnstile site key; only the pilot
+// also needs the private recipient list.
 export function resolveContactAvailability(env: Record<string, string | undefined>): ContactFormConfig {
   if (resolveFormMode(env.FORM_MODE) === "demo") return { mode: "demo" };
   const siteKey = env.TURNSTILE_SITE_KEY?.trim();
-  const ready = resolveBackendMode(env.BACKEND_MODE) === "pilot"
-    && loadDefenseConfig(env).config !== undefined
+  const mode = resolveBackendMode(env.BACKEND_MODE);
+  if (mode !== "pilot" && mode !== "public") return { mode: "unavailable" };
+  const ready = loadDefenseConfig(env).config !== undefined
     && hasIdSecret(env.DATA_ID_SECRET)
     && Boolean(loadInternalKeys(env)?.jobs?.length)
-    && loadDiagnosticConfig(env) !== undefined;
-  return ready && siteKey ? { mode: "pilot", siteKey } : { mode: "unavailable" };
+    && loadDiagnosticConfig(env, mode) !== undefined;
+  return ready && siteKey ? { mode, siteKey } : { mode: "unavailable" };
 }
 
 // Contact data only goes to the private team channel; it is flattened, truncated and markdown/mention-neutralised.
@@ -86,7 +94,7 @@ export function createDiagnosticHandler(store: Store, config: DiagnosticConfig, 
     const record = await store.transaction((tx) => tx.get<DiagnosticRecord>(COLLECTIONS.diagnostics, requestId));
     if (!record) throw new PermanentFailure("request_not_found");
     if (record.notifiedAt) return;
-    if (!config.allowlist.includes(record.whatsapp)) throw new PermanentFailure("pilot_recipient_not_allowed");
+    if (config.mode !== "public" && !config.allowlist.includes(record.whatsapp)) throw new PermanentFailure("pilot_recipient_not_allowed");
 
     let response: Response;
     try {

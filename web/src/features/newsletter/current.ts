@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { resolveBackendMode } from "../../lib/server/mode";
+import { isOperationalMode, resolveBackendMode } from "../../lib/server/mode";
 import { loadFirestoreStore } from "../../lib/server/store";
 import { loadEdicao, loadEdicoes, loadLatestEdicao } from "./source";
 
@@ -9,4 +9,4 @@ const source = () => ({ mode: resolveBackendMode(process.env.BACKEND_MODE), getS
 export const getEdicoes = cache(() => loadEdicoes(source()));
 export const getLatestEdicao = cache(() => loadLatestEdicao(source()));
 export const getEdicao = cache((slug: string) => loadEdicao(slug, source()));
-export const isDemoCatalog = () => resolveBackendMode(process.env.BACKEND_MODE) !== "pilot";
+export const isDemoCatalog = () => !isOperationalMode(resolveBackendMode(process.env.BACKEND_MODE));

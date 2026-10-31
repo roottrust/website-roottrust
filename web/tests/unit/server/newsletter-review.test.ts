@@ -68,8 +68,8 @@ function signedPost(path: string, scope: InternalScope, key: string, body: unkno
   });
 }
 
-function review() {
-  const base = setup();
+function review(mode: Deps["mode"] = "pilot") {
+  const base = setup({ mode });
   let messageSeq = 0;
   const discord = vi.fn<typeof fetch>(async () => Response.json({ id: String(800000000000000000n + BigInt(++messageSeq)) }));
   const newsletter: NewsletterConfig = { botToken: BOT_TOKEN, ...IDS, publicKey: PUBLIC_HEX, fetch: discord };
@@ -103,6 +103,23 @@ async function posted(ctx: ReturnType<typeof review>, body: unknown = edition())
   expect(bound).toBeDefined();
   return { ...saved, messageId: (bound as { messageId: string }).messageId };
 }
+
+describe("public editorial authentication", () => {
+  it("keeps draft scopes, replay protection, Discord proof and idempotent approval in public", async () => {
+    const ctx = review("public");
+    expect((await handleNewsletterDraft(signedPost(DRAFT_PATH, "draft", KEY_PUBLISH, edition()), ctx.deps)).status).toBe(401);
+    const saved = await posted(ctx);
+    const body = { action: "approve", draftId: saved.draftId, revision: 1, messageId: saved.messageId };
+    expect((await ctx.decide(body, { proof: false })).status).toBe(400);
+    expect((await handleNewsletterDecision(signedPost(DECISION_PATH, "publish", KEY_DRAFT, { ...IDS, ...body }), ctx.deps)).status).toBe(401);
+    expect(await (await ctx.decide(body)).json()).toEqual({ result: "approved" });
+    expect(await (await ctx.decide(body)).json()).toEqual({ result: "already_approved" });
+    expect(ctx.jobs().filter(job => job.kind === JOB_KINDS.newsletterPublish)).toHaveLength(1);
+    expect(ctx.store.dump(COLLECTIONS.editionsPublic)).toEqual({});
+    expect((await ctx.postDraft(edition({ slug: "outro-public" }), { nonce: "public-nonce-0000001" })).status).toBe(202);
+    expect((await ctx.postDraft(edition({ slug: "replay-public" }), { nonce: "public-nonce-0000001" })).status).toBe(401);
+  });
+});
 
 describe("newsletter draft endpoint", () => {
   it("stores an immutable revision and its Discord job together, and publishes nothing", async () => {

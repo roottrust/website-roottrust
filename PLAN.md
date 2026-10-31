@@ -504,15 +504,27 @@ Material para revisão em `http://127.0.0.1:3100/privacidade` e galeria local `h
 **Depende:** T1.3. Implementação local pode anteceder gate B; ativação não.
 **Arquivos:** mode/http/configs, forms/hook/formulários, newsletter source/current, webhook, ToolPage e testes.
 
-- [ ] Public explícito; desconhecido/off fecha; demo não faz rede; piloto conserva allowlists/segment guard.
-- [ ] Public mantém todas as defesas/configurações e escopos; nenhum fallthrough pula Turnstile/HMAC.
-- [ ] Readiness independente por serviço e cancelamento funcional; só modo/site key expostos.
-- [ ] Catálogo real/projeção correta em public, não demonstrações; jobs/webhook/decisões operacionais.
-- [ ] Testes de modos/configs/identidades/API/catálogo/ações atualizados com contratos novos, sem apagar proteção anterior.
+Início em31/10/2026 após gate B. Preflight raiz/main, dry-run13 arquivos, inspeção de segredos/gerados e diff-check sem achados. Checkpoint WIP LOCAL autorizado `33b573f9e0b8d3109d4d7106aa4950eb4eff7fe6` (`wip: pre-claude T4.1`), hash registrado antes da chamada. Revisão independente GPT mapeou todos os guardas HTTP/configs/jobs/webhook/catálogo/cliente: public não pode cair fora do bloco de defesas; cancelamento exige origem/segredo/prova/armazenamento, não remetente/cota. Como estado intermediário local, Broadcast e sincronização public que possa reativar contato ficam bloqueados antes de efeitos, preservando jobs para T4.2; admissão de e-mails externos não será alegada operacional antes dos controles de capacidade. Não introduzir flag global de bypass. Gate B não preenche pendências legais; qualquer copy dependente do modo deve preservar esses limites. Sem ativação, deployment ou destinatários externos. Sonnet escreve escopo delimitado; Codex revisa e roda todos os gates após entrega.
+
+Entrega Sonnet `55ca8399-9ea3-4ed3-b46f-3fb177657683`, modelo observado `claude-sonnet-5-5`, `succeeded`,616s. Implementou public explícito, defesa operacional comum, diagnóstico público sem Resend, catálogo real/projeção, cliente real/CAPTCHA, jobs/editorial/webhook autenticados; novos e-mails public seguem503 e readiness indisponível atéT4.2. Handlers Broadcast/contact-sync public têm hold antes do provedor. Codex corrigiu cancelamento para carregar origens independentemente de Turnstile/remetente, modo desconhecido injetado para fechar antes do corpo e fila mista para adiar tipos suspensos em vez de excluí-los da consulta limitada. Teste três Broadcasts anteriores+diagnóstico produz4 claims/3 adiamentos/1 conclusão, zero mortes e sem gastar tentativas nos suspensos. GPT independente encontrou esse P2 de fila e confirmou correção sem bloqueantes residuais; não executou gates.
+
+Consulta obrigatória Sonnet somente leitura `e8197746-ce36-4417-9714-50ee03079adf`, `succeeded`,181s, modelo5.5. Nenhum bypass/P1; apontou comoP2 cancelamento local sem sync e linguagem residual piloto. Triagem Codex: a independência do cancelamento também no piloto é mudança intencional deT1.3/T4.1, não alegar “piloto inteiro inalterado”; ausência de Broadcast não prova opt-out remoto e já possui teste explícito sem sync. Reconciliação pendente e bloqueio de segmento são obrigaçõesT4.2, não resolvidas por essa entrega. Ajuste das frases dependentes do modo/contato operacional deve acompanhar a abertura dos e-mails emT4.2, mantendo as pendências do gateB sem inventar papel jurídico. Frases condicionais “quando habilitados” continuam verdadeiras; nenhuma versão public está ativada. Backlog adiado pode elevar latência; validade24h não foi estendida e jobs incertos não autorizam reenvio. Teste de webhook com tag inválida também já existe e preserva assinatura/correlação.
+
+Gates locais integrados em execução: lint/typecheck e42 arquivos/695 unitários passaram; build passou sem mudança posterior na aplicação (só teste editorial public acrescentado). Esse teste preserva HMAC/escopo/replay/prova Discord e aprovação idempotente; sua primeira expectativa incorreta403 para prova ausente foi corrigida para400 conforme parser existente, sem mudar API. E2E completo em execução, sem resultado final alegado; logs `t41-{lint,typecheck,test,build,e2e}.log`. Sem segredos, efeitos externos, instalações ou publicação.
+
+**T4.1 concluída tecnicamente como etapa intermediária local:** lint/typecheck,42 arquivos/695 unitários, build e E2E completo414 passes/6 skips/zero retries (7,1min). Os seis skips continuam sendo os opt-in/limitações já registrados, não passes. Next-env gerado inspecionado/restaurado. Nenhuma fonte da aplicação mudou depois do build; só o teste editorial public foi acrescentado e lint/tipos/unit revalidados. Revisões independentes e consulta da ponte registradas acima; capacidade/consentimento e revisão das frases public permanecemT4.2, elegibilidade/configT4.3. Não equivale a public apto para rollout.
+
+- [x] Public explícito; desconhecido/off fecha; demo não faz rede; piloto conserva allowlists/segment guard.
+- [x] Public mantém todas as defesas/configurações e escopos; nenhum fallthrough pula Turnstile/HMAC.
+- [x] Readiness independente por serviço e cancelamento funcional; só modo/site key expostos.
+- [x] Catálogo real/projeção correta em public, não demonstrações; jobs/webhook/decisões operacionais.
+- [x] Testes de modos/configs/identidades/API/catálogo/ações atualizados com contratos novos, sem apagar proteção anterior.
 
 #### T4.2 [claude:escreve] Controlar capacidade Free e consentimento público — Sonnet
 
 **Depende:** T4.1. **Arquivos:** newsletter-email/broadcast, repository/types quando indispensável, report/limits e testes.
+
+Preparação Codex em31/10: revisão independente GPT dos arquivos estáveis repository/types/store/jobs definiu riscos concretos de reserva após dedup, retorno Denied sem rollback, confirmação substituída em voo, mudança de bucket UTC e limpeza de confirmação/counter com reserva ou resultado incerto. Contador local zero não comprova ocupação da conta; baseline remoto completo/inconclusivo deve fechar admissão de marketing, sem varredura por submit. Cancelamento grava pendência de reconciliação mesmo sem config de Broadcast; não devolve vaga remota presumida. Documentação oficial Resend revalidada em31/10: [paginação](https://resend.com/docs/api-reference/pagination) por limit/after/has_more e máximo100 por página; [update-contact](https://resend.com/docs/api-reference/contacts/update-contact) define unsubscribed global. SDK instalado contém esses contratos em `resend/dist/index.d.mts`; sem atualização de dependência. Tetos locais do plano permanecem100/dia UTC/3000mês e marketing1000, sem teste real de esgotamento ou garantia de total da conta.
 
 - [ ] Identidades válidas fora da antiga lista aceitas em public; limites IP/identidade e validação intactos.
 - [ ] Sem novos pedidos impossíveis por quota nem 202 enganoso; sem upgrade/reset ou descarte de pedidos aceitos.
@@ -638,7 +650,7 @@ Rollback de interface usa versão compatível/conferida, não snapshot antigo pr
 | Fase1 | Local concluída; comparação remota pendente | T1.2/T1.3 concluídas; preflight Sonnet5.5 passou. Lacuna Vercel403 em T1.1 deve ser resolvida em T4.3 antes do rollout. |
 | Fase2/gate A | Concluída e aceita em30/10/2026 | Renato aprovou o gate A e o avanço às internas;629 unitários e344 E2E/6 skips. |
 | Fase3/gate B | Concluída; gate B aceito em31/10/2026 com limites |650 unitários/build e414 E2E/6 skips; Renato aprovou o texto operacional e registro das pendências. |
-| Fase4 | Não iniciada | Public, capacidade e elegibilidade testados. |
+| Fase4 | T4.1 em execução local | Preparação de public/readiness; capacidade/consentimento e elegibilidade pendentes, sem ativação. |
 | Fase5 | Não iniciada | Gates, deployment, ensaio, aceite e arquivo. |
 
 Registrar por tarefa: responsável, arquivos, comandos/resultados, revisão e limitações; nunca segredos, lista de contatos ou corpos editoriais privados. Estado remoto citado é 30/10/2026 e deve ser revalidado antes de atuar.

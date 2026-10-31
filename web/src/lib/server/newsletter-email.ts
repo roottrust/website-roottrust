@@ -1,7 +1,7 @@
 import { Resend } from "resend";
 import { cancellationToken, confirmationToken } from "./ids";
 import { PermanentFailure, RetryLater, type JobHandler } from "./jobs";
-import { buildBroadcastMessage, loadBroadcastConfig, type BroadcastConfig } from "./newsletter-broadcast";
+import { buildBroadcastMessage, holdPublicEffects, loadBroadcastConfig, type BroadcastConfig } from "./newsletter-broadcast";
 import { IDEMPOTENCY_WINDOW_MS, RESEND_DAILY_LIMIT, RESEND_MONTHLY_LIMIT } from "./report";
 import { logEvent, safeErrorCode } from "./safe";
 import type { Store, Tx } from "./store";
@@ -60,6 +60,7 @@ export function loadNewsletterEmailConfig(env: Record<string, string | undefined
   return { apiKey, from, replyTo, siteOrigin, allowlist: [...new Set(emails as string[])], dailyLimit: clamp(env.REPORT_EMAIL_DAILY_LIMIT, RESEND_DAILY_LIMIT), monthlyLimit: clamp(env.REPORT_EMAIL_MONTHLY_LIMIT, RESEND_MONTHLY_LIMIT) };
 }
 
+// Public admission of new addresses stays closed (unavailable) until capacity and consent controls exist: only "pilot" qualifies.
 export function resolveNewsletterAvailability(env: Record<string, string | undefined>): ContactFormConfig {
   if (resolveFormMode(env.FORM_MODE) === "demo") return { mode: "demo" };
   const siteKey = env.TURNSTILE_SITE_KEY?.trim();
@@ -264,7 +265,9 @@ function resendContactSync(config: BroadcastConfig): ContactSync {
   };
 }
 
-export function createContactSyncHandler(store: Store, config: BroadcastConfig, sync: ContactSync = resendContactSync(config)): JobHandler {
+export function createContactSyncHandler(store: Store, config: BroadcastConfig, sync?: ContactSync): JobHandler {
+  if (config.mode === "public") return holdPublicEffects;
+  const syncContact = sync ?? resendContactSync(config);
   return async (job, { signal }) => {
     const id = job.payload.subscriptionId;
     if (!id) throw new PermanentFailure("missing_subscription");
@@ -274,7 +277,7 @@ export function createContactSyncHandler(store: Store, config: BroadcastConfig, 
         const subscription = await store.transaction((tx) => tx.get<SubscriptionRecord>(COLLECTIONS.subscriptions, id));
         if (!subscription || !config.allowlist.includes(subscription.email)) throw new PermanentFailure("contact_not_in_pilot_allowlist");
         const active = subscription.status === "confirmed";
-        await sync(subscription.email, active, guard);
+        await syncContact(subscription.email, active, guard);
         const current = await store.transaction((tx) => tx.get<SubscriptionRecord>(COLLECTIONS.subscriptions, id));
         if (current?.status === subscription.status && current.confirmedAt === subscription.confirmedAt && current.canceledAt === subscription.canceledAt) return;
       }

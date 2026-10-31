@@ -8,9 +8,11 @@ export type FormRequest =
   | { kind: "report"; email: string; toolId: string; commercialConsent?: boolean };
 export type SubmissionResult = "accepted" | "error" | "unavailable" | "invalid" | "rate_limited" | "challenge" | "forbidden";
 
-// "pilot" is the only mode that talks to the backend.
-export type ContactMode = FormMode | "pilot";
+// "pilot" and "public" are the modes that talk to the backend; demo never does.
+export type ContactMode = FormMode | "pilot" | "public";
 export type ContactFormConfig = { mode: ContactMode; siteKey?: string };
+
+export const isRealMode = (mode: ContactMode): mode is "pilot" | "public" => mode === "pilot" || mode === "public";
 
 export function resolveFormMode(value: string | undefined): FormMode {
   return value === "demo" ? "demo" : "unavailable";

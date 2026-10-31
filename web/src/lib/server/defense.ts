@@ -24,6 +24,17 @@ export interface DefenseConfig {
 const list = (value: string | undefined): string[] =>
   (value ?? "").split(",").map((item) => item.trim()).filter(Boolean);
 
+// Cancellation needs the origin guard even when new submissions or Turnstile are unavailable.
+export function loadTrustedOrigins(env: Record<string, string | undefined>): string[] | undefined {
+  const values = list(env.TRUSTED_ORIGINS);
+  try {
+    const origins = values.map(value => new URL(value).origin);
+    return origins.length ? origins : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 // Every setting is required: pilot never runs half-protected. `missing` names variables only, never values.
 export function loadDefenseConfig(
   env: Record<string, string | undefined> = process.env,
@@ -34,19 +45,13 @@ export function loadDefenseConfig(
   if (!turnstileSecret) missing.push("TURNSTILE_SECRET_KEY");
   const turnstileHostnames = list(env.TURNSTILE_HOSTNAMES).map((host) => host.toLowerCase());
   if (!turnstileHostnames.length) missing.push("TURNSTILE_HOSTNAMES");
-  const trustedOrigins = list(env.TRUSTED_ORIGINS).flatMap((origin) => {
-    try {
-      return [new URL(origin).origin];
-    } catch {
-      return [];
-    }
-  });
-  if (!trustedOrigins.length || trustedOrigins.length !== list(env.TRUSTED_ORIGINS).length) missing.push("TRUSTED_ORIGINS");
+  const trustedOrigins = loadTrustedOrigins(env);
+  if (!trustedOrigins) missing.push("TRUSTED_ORIGINS");
   const ipHeader = env.TRUSTED_IP_HEADER?.trim().toLowerCase();
   if (!ipHeader || !/^[a-z0-9-]{1,64}$/.test(ipHeader)) missing.push("TRUSTED_IP_HEADER");
   const limits = parseLimitOverrides(env.RATE_LIMITS_JSON);
   if (!limits) missing.push("RATE_LIMITS_JSON");
-  if (missing.length || !turnstileSecret || !ipHeader || !limits) return { missing };
+  if (missing.length || !turnstileSecret || !trustedOrigins || !ipHeader || !limits) return { missing };
   return { missing, config: { turnstileSecret, turnstileHostnames, trustedOrigins, ipHeader, limits, fetch: fetchFn, turnstileTimeoutMs: 3000 } };
 }
 

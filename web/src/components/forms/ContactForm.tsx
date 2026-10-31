@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
-import { validateContact, type ContactErrors, type ContactFormConfig, type ContactValues } from "@/lib/forms";
+import { isRealMode, validateContact, type ContactErrors, type ContactFormConfig, type ContactValues } from "@/lib/forms";
 import { DemoControls, FormStatus } from "./FormStatus";
 import { challengeGroupId } from "./challenge-state";
 import { TurnstileWidget } from "./TurnstileWidget";
@@ -25,7 +25,7 @@ export function ContactForm({ config, variant }: { config: ContactFormConfig; va
   const [near, setNear] = useState(false);
   const submission = useLocalSubmission(mode);
   const busy = submission.status === "submitting";
-  const pilot = mode === "pilot" && Boolean(siteKey);
+  const pilot = isRealMode(mode) && Boolean(siteKey);
   const challengeStatusId = `${id}-challenge`;
 
   useEffect(() => {

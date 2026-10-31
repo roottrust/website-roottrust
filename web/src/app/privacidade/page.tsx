@@ -14,7 +14,9 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default function Page() {
-  const pilot = [contactAvailability(), newsletterAvailability(), reportAvailability()].some(config => config.mode === "pilot");
+  const modes = [contactAvailability(), newsletterAvailability(), reportAvailability()].map(config => config.mode);
+  const isPublic = modes.includes("public");
+  const pilot = !isPublic && modes.includes("pilot");
   return (
     <main id="conteudo" data-graphics-root className={styles.root}>
       <FrameCanvas />
@@ -23,13 +25,19 @@ export default function Page() {
           <div className={styles.eyebrowRow}><span className={styles.eyebrow}>Privacidade</span><span className={styles.rule} aria-hidden="true" /></div>
           <h1 className={styles.h1}>Privacidade e uso de dados.</h1>
           <p className={styles.lead}>Quais dados coletamos, para quê, por quanto tempo e como falar com a gente.</p>
-          <p className={styles.status} role="note"><strong>Informações provisórias para o piloto restrito.</strong> A política de privacidade completa ainda exige revisão antes de publicação aberta.</p>
+          <p className={styles.status} role="note">{isPublic
+            ? <><strong>Informações provisórias.</strong> A política de privacidade completa ainda exige revisão jurídica e operacional; esta página não a substitui.</>
+            : <><strong>Informações provisórias para o piloto restrito.</strong> A política de privacidade completa ainda exige revisão antes de publicação aberta.</>}</p>
 
           <section aria-labelledby="versao" className={styles.block}>
             <h2 id="versao">O que esta versão faz</h2>
             <ul>
-              <li>Esta versão é destinada a avaliação interna e piloto restrito.</li>
-              {pilot ? <>
+              {isPublic
+                ? <li>O pedido de diagnóstico pode estar habilitado para o público, com verificação anti-abuso e limites de tentativas. Pedidos de newsletter e de relatório por e-mail continuam indisponíveis para novos endereços até que os controles de capacidade e consentimento estejam em operação.</li>
+                : <li>Esta versão é destinada a avaliação interna e piloto restrito.</li>}
+              {isPublic ? <>
+                <li>O recebimento de um pedido não confirma inscrição, entrega de e-mail nem atendimento; a confirmação da newsletter e o cancelamento seguem fluxos próprios.</li>
+              </> : pilot ? <>
                 <li>Os formulários habilitados só funcionam para identidades previamente autorizadas no piloto e passam por verificação anti-abuso.</li>
               </> : <>
                 <li>Os formulários estão indisponíveis ou em demonstração local; pedidos demonstrativos não enviam nem guardam dados.</li>

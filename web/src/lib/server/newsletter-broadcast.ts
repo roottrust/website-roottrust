@@ -59,6 +59,9 @@ export interface BroadcastMessage {
 }
 
 export interface BroadcastConfig {
+  // Absent means the restricted pilot. "public" is an interim state: no provider call happens until the capacity and consent
+  // controls exist, so every effect handler holds its job instead of running.
+  mode?: "public";
   apiKey: string;
   from: string;
   replyTo: string;
@@ -72,13 +75,14 @@ const senderAddress = (value: string): string | undefined => checkEmail(/<([^<>]
 // Fail closed. Real sending needs: the API key, sender and reply-to, a dedicated segment, a server-side allowlist (1..100
 // addresses) AND the operator statements that the sending domain is verified, that the jobs runner is triggered and that the
 // segment is the dedicated pilot one. The statements are not provisioned or verified by this code.
-export function loadBroadcastConfig(env: Record<string, string | undefined>): BroadcastConfig | undefined {
+export function loadBroadcastConfig(env: Record<string, string | undefined>, mode: "pilot" | "public" = "pilot"): BroadcastConfig | undefined {
   const apiKey = env.RESEND_API_KEY?.trim();
   const from = env.NEWSLETTER_EMAIL_FROM?.trim();
   const replyTo = checkEmail(env.NEWSLETTER_EMAIL_REPLY_TO?.trim());
   const segmentId = env.RESEND_NEWSLETTER_SEGMENT_ID?.trim();
   if (!apiKey || !from || !senderAddress(from) || !replyTo || !segmentId || !/^[A-Za-z0-9_-]{8,64}$/.test(segmentId)) return undefined;
   if (env.RESEND_DOMAIN_CONFIRMED !== "true" || env.JOBS_TRIGGER_CONFIRMED !== "true" || env.NEWSLETTER_PILOT_SEGMENT_CONFIRMED !== "true") return undefined;
+  if (mode === "public") return { mode: "public", apiKey, from, replyTo, segmentId, allowlist: [] };
   const items = (env.NEWSLETTER_PILOT_ALLOWLIST ?? "").split(",").map((item) => item.trim()).filter(Boolean);
   const checked = items.map((item) => checkEmail(item));
   if (!items.length || items.length > MAX_ALLOWLIST || checked.some((item) => !item)) return undefined;
@@ -255,7 +259,16 @@ export function createPublishHandler(store: Store, idSecret: string, now: () => 
 
 type Safety = "ok" | "unavailable" | "unsafe";
 
+const PUBLIC_HOLD_MS = 60 * 60_000;
+
+// Temporary block: the job stays pending (a deferral does not spend an attempt) and no provider is touched.
+export const holdPublicEffects: JobHandler = async () => {
+  logEvent("warn", "public_effects_held", {});
+  throw new RetryLater(PUBLIC_HOLD_MS, { deferral: true });
+};
+
 export function createBroadcastHandler(store: Store, config: BroadcastConfig, now: () => Date, idSecret?: string): JobHandler {
+  if (config.mode === "public") return holdPublicEffects;
   const provider = config.provider ?? resendProvider(config.apiKey);
   const allowed = new Set(config.allowlist);
 

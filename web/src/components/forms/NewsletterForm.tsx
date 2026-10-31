@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
-import { validateEmail, type ContactFormConfig } from "@/lib/forms";
+import { isRealMode, validateEmail, type ContactFormConfig } from "@/lib/forms";
 import { DemoControls, FormStatus } from "./FormStatus";
 import { challengeGroupId } from "./challenge-state";
 import { TurnstileWidget } from "./TurnstileWidget";
@@ -21,7 +21,7 @@ export function NewsletterForm({ config, editionSlug, variant, cta, support, hel
   const formRef = useRef<HTMLFormElement>(null);
   const submission = useLocalSubmission(mode);
   const busy = submission.status === "submitting";
-  const pilot = mode === "pilot" && Boolean(siteKey);
+  const pilot = isRealMode(mode) && Boolean(siteKey);
   const challengeStatusId = `${id}-challenge`;
   const label = cta ?? (editionSlug ? "Receber esta edição completa" : "Assinar");
   useEffect(() => {

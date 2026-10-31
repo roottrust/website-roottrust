@@ -10,6 +10,9 @@ const MAX_WEBHOOK_BYTES = 64 * 1024;
 const REPLAY_MS = 24 * 60 * 60_000;
 
 export interface ResendWebhookConfig {
+  // Absent means the restricted pilot (allowlist). "public" waives only the recipient list: signature, replay and
+  // correlation by provider ID/tag still apply.
+  mode?: "public";
   apiKey: string;
   webhookSecret: string;
   idSecret: string;
@@ -60,7 +63,7 @@ export async function handleResendWebhook(request: Request, config: ResendWebhoo
   const senderAddress = (value: string) => checkEmail(/<([^<>]+)>\s*$/.exec(value)?.[1] ?? value);
   const email = event.type === "contact.updated" && event.data.unsubscribed ? checkEmail(event.data.email)
     : state && "to" in event.data && "from" in event.data && senderAddress(event.data.from) === senderAddress(config.newsletterFrom) && event.data.to.length === 1 ? checkEmail(event.data.to[0]) : undefined;
-  const allowed = email && config.allowlist.includes(email);
+  const allowed = email && (config.mode === "public" || config.allowlist.includes(email));
   const emailId = state && "email_id" in event.data ? event.data.email_id : undefined;
   const taggedId = state && "tags" in event.data ? event.data.tags?.rt_delivery_id : undefined;
   const taggedConfirmation = taggedId && /^cf_[0-9a-f]{32}$/.test(taggedId) ? taggedId : undefined;
@@ -104,4 +107,12 @@ export async function handleResendWebhook(request: Request, config: ResendWebhoo
     return new Response(null, { status: 503 });
   }
   return new Response(null, { status: 204 });
+}
+
+// Public webhooks need only the provider key and the newsletter sender; the pilot recipient list is not required.
+export function loadPublicWebhookSender(env: Record<string, string | undefined>): { apiKey: string; newsletterFrom: string } | undefined {
+  const apiKey = env.RESEND_API_KEY?.trim();
+  const newsletterFrom = env.NEWSLETTER_EMAIL_FROM?.trim();
+  if (!apiKey || !newsletterFrom || !checkEmail(/<([^<>]+)>\s*$/.exec(newsletterFrom)?.[1] ?? newsletterFrom)) return undefined;
+  return { apiKey, newsletterFrom };
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
-import { validateEmail, type ContactFormConfig } from "@/lib/forms";
+import { isRealMode, validateEmail, type ContactFormConfig } from "@/lib/forms";
 import { DemoControls, FormStatus } from "./FormStatus";
 import { challengeGroupId } from "./challenge-state";
 import { TurnstileWidget } from "./TurnstileWidget";
@@ -16,7 +16,7 @@ export function ReportForm({ config, toolId, topic, variant }: { config: Contact
   const [error, setError] = useState<string>();
   const submission = useLocalSubmission(mode);
   const busy = submission.status === "submitting";
-  const pilot = mode === "pilot" && Boolean(siteKey);
+  const pilot = isRealMode(mode) && Boolean(siteKey);
   const [commercial, setCommercial] = useState(false);
   const [token, setToken] = useState<string | null>(null);
   const [challengeRound, setChallengeRound] = useState(0);

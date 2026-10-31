@@ -1,11 +1,11 @@
-import { clientIpKey, hasIdSecret, isTrustedOrigin, loadDefenseConfig, verifyTurnstile, type DefenseConfig } from "./defense";
+import { clientIpKey, hasIdSecret, isTrustedOrigin, loadDefenseConfig, loadTrustedOrigins, verifyTurnstile, type DefenseConfig } from "./defense";
 import { createDiagnosticHandler, loadDiagnosticConfig, type DiagnosticConfig } from "./diagnostic";
 import { verifyDiscordProof } from "./discord-proof";
 import { opaqueId, verifyCancellationToken, verifyConfirmationToken } from "./ids";
 import { authenticateInternal, loadInternalKeys, type InternalKeys } from "./internal-auth";
 import { enqueueJob, processJobs, purgeExpired, type JobHandlers } from "./jobs";
 import { createNewsletterHandler, loadNewsletterConfig, type NewsletterConfig } from "./newsletter";
-import { createBroadcastHandler, createPublishHandler, loadBroadcastConfig, type BroadcastConfig } from "./newsletter-broadcast";
+import { createBroadcastHandler, createPublishHandler, holdPublicEffects, loadBroadcastConfig, type BroadcastConfig } from "./newsletter-broadcast";
 import { createConfirmationHandler, createContactSyncHandler, createEditionDeliveryHandler, loadNewsletterEmailConfig, type NewsletterEmailConfig } from "./newsletter-email";
 import { MAX_PROOF_BODY_BYTES, PROOF_TOLERANCE_S } from "./newsletter-protocol";
 import {
@@ -19,7 +19,7 @@ import {
   type Gate,
   type Limits,
 } from "./limits";
-import { resolveBackendMode, type BackendMode } from "./mode";
+import { isOperationalMode, resolveBackendMode, type BackendMode } from "./mode";
 import { createReportHandler, loadReportConfig, type ReportConfig } from "./report";
 import { purgeInactiveLeads } from "./retention";
 import { cancelSubscription, confirmSubscription, decideEditionRevision, recordDiagnostic, recordReportRequest, requestSubscriptionConfirmation, saveEditionRevision } from "./repository";
@@ -35,8 +35,9 @@ export interface Deps {
   idSecret: string | undefined;
   getStore(): Promise<Store>;
   now(): Date;
-  // Pilot needs all of these; when absent the pilot fails closed (503) instead of accepting unprotected requests.
+  // Pilot and public need all of these; when absent they fail closed (503) instead of accepting unprotected requests.
   defense?: DefenseConfig;
+  trustedOrigins?: readonly string[];
   internalKeys?: InternalKeys;
   jobHandlers?: JobHandlers;
   // Diagnostic receipt is operational only with a private webhook and the follow-up statement; absent => 503.
@@ -58,19 +59,23 @@ let firestoreStore: Store | undefined;
 export function defaultDeps(env: Record<string, string | undefined> = process.env): Deps {
   const getStore = async () => (firestoreStore ??= loadFirestoreStore());
   const now = () => new Date();
-  const diagnostic = loadDiagnosticConfig(env);
+  const mode = resolveBackendMode(env.BACKEND_MODE);
+  // Only the diagnostic and the (held) Broadcast configs become public; report and e-mail keep the pilot recipient list for jobs already accepted.
+  const operation = mode === "public" ? "public" : "pilot";
+  const diagnostic = loadDiagnosticConfig(env, operation);
   const report = loadReportConfig(env);
   const newsletter = loadNewsletterConfig(env);
-  const broadcast = loadBroadcastConfig(env);
+  const broadcast = loadBroadcastConfig(env, operation);
   const newsletterEmail = loadNewsletterEmailConfig(env);
   const resendWebhookReady = Boolean(env.RESEND_WEBHOOK_SECRET?.trim());
   const idSecret = env.DATA_ID_SECRET;
   return {
-    mode: resolveBackendMode(env.BACKEND_MODE),
+    mode,
     idSecret,
     getStore,
     now,
     defense: loadDefenseConfig(env).config,
+    trustedOrigins: loadTrustedOrigins(env),
     internalKeys: loadInternalKeys(env),
     diagnostic,
     report,
@@ -142,7 +147,7 @@ async function readJson(request: Request): Promise<{ ok: true; body: unknown } |
 }
 
 interface Operation<T> {
-  requires?: (deps: Deps) => boolean; // pilot only: false => 503 "not_operational" before anything is read
+  requires?: (deps: Deps) => boolean; // pilot and public: false => 503 "not_operational" before anything is read
   action: string; // Turnstile action the widget must have been rendered with
   parse: (body: unknown) => Parsed<T>;
   allowed?: (value: T) => boolean;
@@ -154,13 +159,13 @@ interface Operation<T> {
 // Turnstile (or by a storage/provider failure) still count against the IP ceilings; identity limits count only
 // requests that passed Turnstile and are not consumed when the identity gate denies.
 // off: 503, body never read. demo: validates only, then 503 (never a fictitious success).
-// pilot, in order: config (503) → origin (403) → body/validation (400) → pilot identity (403) → trusted IP (503) → IP limits (429) →
+// pilot and public share the same block, in order: config (503) → origin (403) → requires (503) → body/validation (400) → identity allowlist (403) → trusted IP (503) → IP limits (429) →
 // Turnstile (403/503) → identity limits + persistence in one transaction (429/202). 202 only after commit.
 async function handle<T>(request: Request, deps: Deps, operation: Operation<T>): Promise<Response> {
-  if (deps.mode === "off") return unavailable("unavailable");
-  if (deps.mode === "pilot") {
+  if (!isOperationalMode(deps.mode) && deps.mode !== "demo") return unavailable("unavailable");
+  if (isOperationalMode(deps.mode)) {
     if (!deps.defense || !hasIdSecret(deps.idSecret)) {
-      logEvent("error", "pilot_misconfigured", { action: operation.action });
+      logEvent("error", "pilot_misconfigured", { action: operation.action, mode: deps.mode });
       return unavailable("misconfigured");
     }
     if (!isTrustedOrigin(request, deps.defense.trustedOrigins)) return json(403, { code: "forbidden_origin" });
@@ -215,7 +220,8 @@ export const handleDiagnostic = (request: Request, deps: Deps = defaultDeps()) =
     requires: (current) => current.diagnostic !== undefined && Boolean(current.internalKeys?.jobs?.length),
     action: "diagnostico",
     parse: parseDiagnostic,
-    allowed: (value) => deps.diagnostic?.allowlist.includes(value.whatsapp) === true,
+    allowed: (value) => deps.diagnostic !== undefined
+      && ((deps.mode === "public" && deps.diagnostic.mode === "public") || deps.diagnostic.allowlist.includes(value.whatsapp)),
     limits: (value, limits) => diagnosticLimitSpecs(value.whatsapp, limits),
     persist: recordDiagnostic,
   });
@@ -223,7 +229,8 @@ export const handleDiagnostic = (request: Request, deps: Deps = defaultDeps()) =
 // Same body for new, pending, confirmed and cancelled addresses (anti-enumeration).
 export const handleSubscription = (request: Request, deps: Deps = defaultDeps()) =>
   handle(request, deps, {
-    requires: (current) => current.newsletterEmail !== undefined && current.broadcast !== undefined && current.resendWebhookReady === true && Boolean(current.internalKeys?.jobs?.length),
+    // Public admission of new addresses stays closed until the capacity and consent controls exist.
+    requires: (current) => current.mode === "pilot" && current.newsletterEmail !== undefined && current.broadcast !== undefined && current.resendWebhookReady === true && Boolean(current.internalKeys?.jobs?.length),
     action: "newsletter-inscricao",
     parse: parseSubscription,
     limits: subscriptionLimitSpecs,
@@ -237,6 +244,7 @@ export const handleSubscription = (request: Request, deps: Deps = defaultDeps())
 
 // A confirmation link opens a page first; only an explicit POST consumes its token. Mail scanners may follow GET links.
 export async function handleNewsletterConfirmation(request: Request, deps: Deps = defaultDeps()): Promise<Response> {
+  if (deps.mode === "public") return unavailable("not_operational");
   if (deps.mode !== "pilot") return unavailable("unavailable");
   if (!deps.defense || !hasIdSecret(deps.idSecret) || !deps.newsletterEmail || !deps.broadcast || !deps.resendWebhookReady || !deps.internalKeys?.jobs?.length) return unavailable("not_operational");
   if (!isTrustedOrigin(request, deps.defense.trustedOrigins)) return json(403, { code: "forbidden_origin" });
@@ -257,10 +265,12 @@ export async function handleNewsletterConfirmation(request: Request, deps: Deps 
   }
 }
 
+// Cancellation is a right: its readiness is only trusted origin + ID secret + signed proof + storage, never senders, Turnstile or quotas.
 export async function handleNewsletterCancellation(request: Request, deps: Deps = defaultDeps()): Promise<Response> {
-  if (deps.mode !== "pilot") return unavailable("unavailable");
-  if (!deps.defense || !hasIdSecret(deps.idSecret) || !deps.newsletterEmail) return unavailable("not_operational");
-  if (!isTrustedOrigin(request, deps.defense.trustedOrigins)) return json(403, { code: "forbidden_origin" });
+  if (!isOperationalMode(deps.mode)) return unavailable("unavailable");
+  const trustedOrigins = deps.trustedOrigins ?? deps.defense?.trustedOrigins;
+  if (!trustedOrigins?.length || !hasIdSecret(deps.idSecret)) return unavailable("not_operational");
+  if (!isTrustedOrigin(request, trustedOrigins)) return json(403, { code: "forbidden_origin" });
   const read = await readJson(request);
   if (!read.ok || !read.body || typeof read.body !== "object" || Array.isArray(read.body)) return json(400, { code: "invalid_link" });
   const body = read.body as Record<string, unknown>;
@@ -278,7 +288,7 @@ export async function handleNewsletterCancellation(request: Request, deps: Deps 
 
 export const handleReport = (request: Request, deps: Deps = defaultDeps()) =>
   handle(request, deps, {
-    requires: (current) => current.report !== undefined && Boolean(current.internalKeys?.jobs?.length),
+    requires: (current) => current.mode === "pilot" && current.report !== undefined && Boolean(current.internalKeys?.jobs?.length),
     action: "relatorio",
     parse: parseReport,
     allowed: (value) => deps.report?.allowlist.includes(value.email) === true,
@@ -289,7 +299,7 @@ export const handleReport = (request: Request, deps: Deps = defaultDeps()) =>
 // Internal, scope "jobs": claims a small batch of due jobs and sweeps expired counters and six-month-inactive leads. No body is expected.
 // Authentication failures share one generic 401 so callers learn nothing about which check failed.
 export async function handleJobsProcess(request: Request, deps: Deps = defaultDeps()): Promise<Response> {
-  if (deps.mode !== "pilot") return unavailable("unavailable");
+  if (!isOperationalMode(deps.mode)) return unavailable("unavailable");
   if (!hasIdSecret(deps.idSecret) || !deps.internalKeys?.jobs?.length) {
     logEvent("error", "pilot_misconfigured", { action: "jobs" });
     return unavailable("misconfigured");
@@ -310,7 +320,7 @@ export async function handleJobsProcess(request: Request, deps: Deps = defaultDe
       logEvent("warn", "internal_auth_failed", { scope: "jobs", reason: auth.reason });
       return auth.status === 401 ? json(401, { code: "unauthorized" }) : json(auth.status, { code: auth.reason });
     }
-    const summary = await processJobs(store, deps.jobHandlers ?? {}, {
+    const summary = await processJobs(store, effectiveHandlers(deps), {
       now: deps.now,
       limit: JOBS_BATCH,
       leaseMs: JOBS_LEASE_MS,
@@ -330,6 +340,16 @@ export async function handleJobsProcess(request: Request, deps: Deps = defaultDe
   }
 }
 
+// Defer held kinds instead of omitting them: due jobs must not permanently crowd eligible work out of the bounded queue scan.
+function effectiveHandlers(deps: Deps): JobHandlers {
+  const handlers = { ...deps.jobHandlers };
+  if (deps.mode === "public") {
+    handlers[JOB_KINDS.newsletterBroadcast] = holdPublicEffects;
+    handlers[JOB_KINDS.newsletterContactSync] = holdPublicEffects;
+  }
+  return handlers;
+}
+
 const DRAFT_MAX_BODY_BYTES = MAX_EDITION_BYTES + 4096; // the edition itself is capped at 64 KiB; the rest is JSON framing
 const DECISION_MAX_BODY_BYTES = 2 * MAX_PROOF_BODY_BYTES + 2048; // the raw Discord interaction travels JSON-escaped inside `proof`
 const DRAFT_DAILY_LIMIT = 8;
@@ -340,7 +360,7 @@ type NewsletterAuth = { ok: true; store: Store; body: Uint8Array; config: Newsle
 // Authentication first, then the body: the signature already covers the exact bytes. A draft key can never decide and a
 // publish key can never post drafts (scopes are separate credentials).
 async function authenticateNewsletter(request: Request, deps: Deps, scope: "draft" | "publish", maxBodyBytes: number): Promise<NewsletterAuth> {
-  if (deps.mode !== "pilot") return { ok: false, response: unavailable("unavailable") };
+  if (!isOperationalMode(deps.mode)) return { ok: false, response: unavailable("unavailable") };
   const secret = deps.idSecret;
   if (!hasIdSecret(secret) || !deps.internalKeys?.[scope]?.length) {
     logEvent("error", "pilot_misconfigured", { action: `newsletter-${scope}` });

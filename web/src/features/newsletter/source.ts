@@ -1,5 +1,5 @@
 import { logEvent } from "../../lib/server/safe";
-import type { BackendMode } from "../../lib/server/mode";
+import { isOperationalMode, type BackendMode } from "../../lib/server/mode";
 import type { Store } from "../../lib/server/store";
 import { COLLECTIONS, type EditionPublicRecord } from "../../lib/server/types";
 import { checkHttpsUrl, isEditionSlug, isIsoDate } from "../../lib/server/validation";
@@ -33,12 +33,12 @@ interface Source {
   getStore(): Promise<Store>;
 }
 
-// Outside `pilot` the site shows the three labelled demo samples; in `pilot` only approved, published editions (never the
+// Outside `pilot` and `public` the site shows the three labelled demo samples; in those modes only approved, published editions (never the
 // samples). A store failure throws: an unreadable catalog must not look like an empty archive or a missing edition.
 // Pilot archive: one non-transactional snapshot query (newest first, up to MAX_EDITIONS), so it never holds locks that could
 // delay a publication. Read cost per archive view and quota at scale are measured in T6.2.
 export async function loadEdicoes({ mode, getStore }: Source): Promise<EdicaoPublica[]> {
-  if (mode !== "pilot") return [...EDICOES_PUBLICAS];
+  if (!isOperationalMode(mode)) return [...EDICOES_PUBLICAS];
   const store = await getStore();
   const documents = await store.latest<EditionPublicRecord>(COLLECTIONS.editionsPublic, "data", MAX_EDITIONS);
   return documents.flatMap(({ id, data }) => {
@@ -50,7 +50,7 @@ export async function loadEdicoes({ mode, getStore }: Source): Promise<EdicaoPub
 
 export async function loadEdicao(slug: string, { mode, getStore }: Source): Promise<EdicaoPublica | undefined> {
   if (!isEditionSlug(slug)) return undefined;
-  if (mode !== "pilot") return EDICOES_PUBLICAS.find((edicao) => edicao.slug === slug);
+  if (!isOperationalMode(mode)) return EDICOES_PUBLICAS.find((edicao) => edicao.slug === slug);
   const store = await getStore();
   return toEdicaoPublica(await store.transaction((tx) => tx.get<EditionPublicRecord>(COLLECTIONS.editionsPublic, slug)), slug);
 }
@@ -58,7 +58,7 @@ export async function loadEdicao(slug: string, { mode, getStore }: Source): Prom
 // Landing only needs the newest edition: in pilot a single-document snapshot (limit 1) instead of the whole archive.
 // If that newest record is malformed nothing is shown (never an older one in its place), and the failure is logged.
 export async function loadLatestEdicao({ mode, getStore }: Source): Promise<EdicaoPublica | undefined> {
-  if (mode !== "pilot") return latestEdicao(EDICOES_PUBLICAS);
+  if (!isOperationalMode(mode)) return latestEdicao(EDICOES_PUBLICAS);
   const store = await getStore();
   const [document] = await store.latest<EditionPublicRecord>(COLLECTIONS.editionsPublic, "data", 1);
   if (!document) return undefined;

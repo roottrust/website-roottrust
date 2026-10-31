@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { retryAfterLabel, type ContactMode, type DemoOutcome, type SubmissionResult } from "@/lib/forms";
+import { isRealMode, retryAfterLabel, type ContactMode, type DemoOutcome, type SubmissionResult } from "@/lib/forms";
 import styles from "./forms.module.css";
 
 type FormKind = "contact" | "newsletter" | "report";
@@ -32,8 +32,8 @@ function rateLimited(retryAfter: number | undefined, fallback: string): string {
     : `Muitas tentativas em pouco tempo. Tente novamente em ${retryAfterLabel(retryAfter)}; seus dados foram mantidos.`;
 }
 
-// Real (pilot) contact feedback. "accepted" means the request was stored and queued for the team; the next-business-day
-// promise is stated only here because pilot mode requires the operational follow-up to be confirmed.
+// Real (pilot or public) contact feedback. "accepted" means the request was stored and queued for the team; the next-business-day
+// promise is stated only here because real modes require the operational follow-up to be confirmed.
 // "error" (network failure or 5xx) is an unknown outcome: it never claims rejection and does not invite a blind resend.
 export function pilotMessage(status: "submitting" | SubmissionResult, reference?: string, retryAfter?: number): string {
   switch (status) {
@@ -48,7 +48,7 @@ export function pilotMessage(status: "submitting" | SubmissionResult, reference?
   }
 }
 
-// Real (pilot) report feedback. "accepted" means the request is stored and the e-mail is queued, not that it was sent or delivered.
+// Real (pilot or public) report feedback. "accepted" means the request is stored and the e-mail is queued, not that it was sent or delivered.
 function pilotReportMessage(status: "submitting" | SubmissionResult, retryAfter?: number): string {
   switch (status) {
     case "submitting": return "Solicitando relatório…";
@@ -88,7 +88,7 @@ const PILOT_PRESENTATION: Record<"submitting" | SubmissionResult, { tone: Tone; 
 
 function feedbackFor(mode: ContactMode, kind: FormKind, status: FormStatusValue, reference?: string, retryAfter?: number): Feedback | null {
   if (status === "idle") return null;
-  if (mode === "pilot") {
+  if (isRealMode(mode)) {
     const message = kind === "contact" ? pilotMessage(status, reference, retryAfter) : kind === "report" ? pilotReportMessage(status, retryAfter) : pilotNewsletterMessage(status, retryAfter);
     const presentation = PILOT_PRESENTATION[status];
     return { ...presentation, title: status === "accepted" && kind === "contact" ? "Recebido" : presentation.title, message };
@@ -140,7 +140,7 @@ export function FormStatus({ mode, status, kind, reference, retryAfter, reviewId
   return (
     <>
       {mode === "demo" ? <p className={styles.notice}>Demonstração local — nenhum dado é enviado ou guardado.</p> : null}
-      <noscript><p>{mode === "pilot" ? "Ative JavaScript para enviar a solicitação, ou use os canais de contato." : "Ative JavaScript para validar este formulário local, ou use os canais de contato."}</p></noscript>
+      <noscript><p>{isRealMode(mode) ? "Ative JavaScript para enviar a solicitação, ou use os canais de contato." : "Ative JavaScript para validar este formulário local, ou use os canais de contato."}</p></noscript>
       <FeedbackPanel feedback={feedback} reviewId={reviewId} challengeId={challengeId} />
     </>
   );
