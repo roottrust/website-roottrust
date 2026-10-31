@@ -16,6 +16,7 @@ export const COLLECTIONS = {
   editionsPublic: "editions_public",
   slugReservations: "slug_reservations",
   editionBroadcasts: "edition_broadcasts",
+  marketingBaseline: "marketing_baseline",
 } as const;
 export type Collection = (typeof COLLECTIONS)[keyof typeof COLLECTIONS];
 
@@ -51,6 +52,14 @@ export interface LeadEventRecord {
   at: string;
 }
 
+// Quota reservation of one e-mail. "admission" was taken when the request was accepted (nothing was sent yet); "attempt" (or
+// absent, legacy records) means the send was already started and the unit is consumed or uncertain.
+export interface QuotaReservation {
+  day: string;
+  month: string;
+  kind?: "admission" | "attempt";
+}
+
 export type SubscriptionStatus = "pending" | "confirmed" | "cancelled";
 export interface SubscriptionRecord {
   id: string;
@@ -62,6 +71,15 @@ export interface SubscriptionRecord {
   pendingConfirmationId?: string;
   confirmedAt?: string;
   canceledAt?: string;
+  // Last revocation instant; survives re-confirmation so a reactivation needs a confirmation strictly newer than it.
+  revokedAt?: string;
+  // Public mode: instant the marketing-account slot was reserved. One slot per account contact; cancellation never frees it.
+  marketingSlotAt?: string;
+  // Provider contact still to be reconciled ("pending") or chronology unknown / race that cannot be settled ("blocked").
+  // While any record carries this, Broadcast is refused. Flat fields so the store can enumerate them with `query`.
+  contactSyncState?: "pending" | "blocked";
+  contactSyncSince?: string;
+  contactSyncReason?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -78,7 +96,7 @@ export interface SubscriptionConfirmationRecord {
   expiresAt: string;
   consumedAt?: string;
   attemptStartedAt?: string;
-  reservation?: { day: string; month: string };
+  reservation?: QuotaReservation;
   sentAt?: string;
   resendId?: string;
   deliveryState?: "delivered" | "failed";
@@ -92,7 +110,7 @@ export interface NewsletterDeliveryRecord {
   subscriptionId: string;
   editionSlug: string;
   attemptStartedAt?: string;
-  reservation?: { day: string; month: string };
+  reservation?: QuotaReservation;
   sentAt?: string;
   resendId?: string;
   deliveryState?: "delivered" | "failed";
@@ -166,7 +184,7 @@ export interface ReportDeliveryRecord {
   toolId: ToolId;
   createdAt: string;
   attemptStartedAt?: string;
-  reservation?: { day: string; month: string };
+  reservation?: QuotaReservation;
   sentAt?: string;
   resendId?: string;
   reconcile?: boolean;
@@ -177,6 +195,19 @@ export interface EmailQuotaRecord {
   id: string;
   used: number;
   expiresAt: string;
+}
+
+// Single document (id "account") with the last complete count of contacts stored in the whole Resend ACCOUNT, plus the
+// slots reserved by the site since then. `seq` changes with every reservation so a measurement racing a reservation is
+// discarded instead of overwriting it. `complete: false` (truncated, repeated cursor, error, >limit) keeps admission closed.
+export interface MarketingBaselineRecord {
+  id: string;
+  complete: boolean;
+  count: number;
+  reserved: number;
+  seq: number;
+  measuredAt: string;
+  reason?: string;
 }
 
 // Newsletter editions. `edition_revisions` is private (full body) and immutable: a revision is written once, never

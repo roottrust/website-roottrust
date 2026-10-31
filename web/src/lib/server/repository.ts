@@ -3,11 +3,13 @@ import { newConfirmationId, opaqueId, verifyConfirmationToken } from "./ids";
 import { MAX_REGENERATIONS_PER_DAY, type DecisionAction, type DecisionResult } from "./newsletter-protocol";
 import { checkEmail, extractOpening, type EditionInput } from "./validation";
 import { enqueueJob } from "./jobs";
+import { RESEND_DAILY_LIMIT, RESEND_MONTHLY_LIMIT, capacityWaitMs, emailCapacityDenied, marketingClosedReason, marketingDenied, readBaseline, readCounters, reserveMarketingSlot, takeSlot, type EmailLimits } from "./capacity";
 import type { Denied, Gate } from "./limits";
 import type { Store, Tx } from "./store";
-import { COLLECTIONS, JOB_KINDS, type DiagnosticRecord, type EditionBroadcastRecord, type EditionDraftRecord, type EditionPublicRecord, type EditionRevisionRecord, type JobRecord, type LeadEventRecord, type LeadRecord, type ReplayRecord, type ReportDeliveryRecord, type SlugReservationRecord, type SubscriptionConfirmationRecord, type SubscriptionRecord, type SubscriptionStatus, type ToolId } from "./types";
+import { COLLECTIONS, JOB_KINDS, type DiagnosticRecord, type EditionBroadcastRecord, type EditionDraftRecord, type EditionPublicRecord, type EditionRevisionRecord, type JobRecord, type LeadEventRecord, type LeadRecord, type NewsletterDeliveryRecord, type ReplayRecord, type ReportDeliveryRecord, type SlugReservationRecord, type SubscriptionConfirmationRecord, type SubscriptionRecord, type SubscriptionStatus, type ToolId } from "./types";
 
 const REPORT_MAX_ATTEMPTS = 8;
+const DEFAULT_EMAIL_LIMITS: EmailLimits = { dailyLimit: RESEND_DAILY_LIMIT, monthlyLimit: RESEND_MONTHLY_LIMIT };
 
 async function touchLead(
   tx: Tx,
@@ -92,6 +94,7 @@ export async function recordReportRequest(
   value: { email: string; toolId: ToolId; commercialConsent: boolean },
   now: Date,
   gate?: Gate,
+  limits: EmailLimits = DEFAULT_EMAIL_LIMITS,
 ): Promise<{ ok: true } | Denied> {
   const id = opaqueId(secret, "ld", `email:${value.email}`);
   const at = now.toISOString();
@@ -104,9 +107,15 @@ export async function recordReportRequest(
     if (existing && !existing.sentAt && (!job || job.status === "dead")) {
       return { ok: false as const, retryAfterSec: Math.ceil((Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1) - now.getTime()) / 1000) };
     }
+    // A repeat reuses the reservation of the first request. A new delivery needs a free unit BEFORE any write: a refusal
+    // returned after `tx.set` would not roll the write back.
+    const counters = existing ? undefined : await readCounters(tx, now);
+    const wait = counters ? capacityWaitMs(counters, limits) : undefined;
+    if (wait !== undefined) return emailCapacityDenied(wait);
     await touchLead(tx, id, { email: value.email }, `relatorio:${value.toolId}`, at, value.commercialConsent, deliveryId);
-    if (existing) return { ok: true as const };
-    const delivery: ReportDeliveryRecord = { id: deliveryId, leadId: id, email: value.email, toolId: value.toolId, createdAt: at };
+    if (existing || !counters) return { ok: true as const };
+    const reservation = takeSlot(tx, counters, "admission");
+    const delivery: ReportDeliveryRecord = { id: deliveryId, leadId: id, email: value.email, toolId: value.toolId, createdAt: at, reservation };
     tx.set(COLLECTIONS.reportDeliveries, deliveryId, delivery);
     await enqueueJob(tx, secret, { kind: JOB_KINDS.reportEmail, key: deliveryId, payload: { requestId: deliveryId }, maxAttempts: REPORT_MAX_ATTEMPTS }, now);
     return { ok: true as const };
@@ -173,13 +182,23 @@ async function latestPublicSlug(store: Store): Promise<string | undefined> {
 }
 
 // One delivery job per subscription + edition + UTC day (same idempotency window as report e-mails).
+const deliveryKey = (subscriptionId: string, editionSlug: string, now: Date) => `${subscriptionId}:${editionSlug}:${now.toISOString().slice(0, 10)}`;
+const deliveryJobId = (secret: string, subscriptionId: string, editionSlug: string, now: Date) =>
+  opaqueId(secret, "jb", `${JOB_KINDS.newsletterDelivery}:${deliveryKey(subscriptionId, editionSlug, now)}`);
+
 function enqueueDelivery(tx: Tx, secret: string, subscriptionId: string, editionSlug: string, now: Date): Promise<string> {
   return enqueueJob(
     tx,
     secret,
-    { kind: JOB_KINDS.newsletterDelivery, key: `${subscriptionId}:${editionSlug}:${now.toISOString().slice(0, 10)}`, payload: { subscriptionId, editionSlug }, maxAttempts: NEWSLETTER_JOB_ATTEMPTS },
+    { kind: JOB_KINDS.newsletterDelivery, key: deliveryKey(subscriptionId, editionSlug, now), payload: { subscriptionId, editionSlug }, maxAttempts: NEWSLETTER_JOB_ATTEMPTS },
     now,
   );
+}
+
+export interface AdmissionOptions {
+  limits?: EmailLimits;
+  // Public mode: a new contact in the Resend ACCOUNT needs a free slot (one per account contact, never freed locally).
+  marketing?: boolean;
 }
 
 // Subscription request (replaces the token-less requestSubscription for the route). Never sends anything: it stores the
@@ -194,9 +213,11 @@ export async function requestSubscriptionConfirmation(
   value: { email: string; editionSlug?: string },
   now: Date,
   gate?: Gate,
+  options: AdmissionOptions = {},
 ): Promise<SubscriptionRequestOutcome | Denied> {
   const id = opaqueId(secret, "sb", `email:${value.email}`);
   const at = now.toISOString();
+  const limits = options.limits ?? DEFAULT_EMAIL_LIMITS;
   const generalSlug = value.editionSlug ? undefined : await latestPublicSlug(store);
   return store.transaction(async (tx) => {
     const denied = await gate?.(tx);
@@ -205,16 +226,43 @@ export async function requestSubscriptionConfirmation(
     if (current?.status === "confirmed") {
       const slug = value.editionSlug ?? generalSlug;
       if (!slug || !(await tx.get(COLLECTIONS.editionsPublic, slug))) return { ok: true as const, action: "none" as const };
-      const jobId = await enqueueDelivery(tx, secret, id, slug, now);
       // shortcut: a dead send needs provider reconciliation before any retry; never create a second same-day send blindly.
-      if ((await tx.get<JobRecord>(COLLECTIONS.jobs, jobId))?.status === "dead") return { ok: true as const, action: "none" as const };
+      // An existing job (pending, done or dead) already owns its slot: dedup creates no new obligation.
+      const jobId = deliveryJobId(secret, id, slug, now);
+      const existingJob = await tx.get<JobRecord>(COLLECTIONS.jobs, jobId);
+      if (existingJob) return existingJob.status === "dead" ? { ok: true as const, action: "none" as const } : { ok: true as const, action: "delivery_queued" as const, editionSlug: slug };
+      const counters = await readCounters(tx, now);
+      const wait = capacityWaitMs(counters, limits);
+      if (wait !== undefined) return emailCapacityDenied(wait);
+      const delivery: NewsletterDeliveryRecord = { id: jobId, subscriptionId: id, editionSlug: slug, reservation: takeSlot(tx, counters, "admission") };
+      tx.set(COLLECTIONS.newsletterDeliveries, jobId, delivery);
+      await enqueueDelivery(tx, secret, id, slug, now);
       return { ok: true as const, action: "delivery_queued" as const, editionSlug: slug };
     }
+    // Every check precedes the first write: a returned refusal does not undo buffered writes.
+    const previous = current?.pendingConfirmationId ? await tx.get<SubscriptionConfirmationRecord>(COLLECTIONS.subscriptionConfirmations, current.pendingConfirmationId) : undefined;
+    const inherited = previous?.reservation?.kind === "admission" && !previous.attemptStartedAt && !previous.sentAt && !previous.consumedAt ? previous : undefined;
+    const counters = inherited ? undefined : await readCounters(tx, now);
+    const wait = counters ? capacityWaitMs(counters, limits) : undefined;
+    if (wait !== undefined) return emailCapacityDenied(wait);
+    const needsSlot = options.marketing === true && !current?.marketingSlotAt;
+    const baseline = needsSlot ? await readBaseline(tx) : undefined;
+    if (needsSlot) {
+      if (!baseline || marketingClosedReason(baseline, now) !== undefined) return marketingDenied();
+      reserveMarketingSlot(tx, baseline);
+    }
     const confirmationId = newConfirmationId();
+    const reservation = inherited?.reservation ?? (counters ? takeSlot(tx, counters, "admission") : undefined);
+    if (inherited) {
+      const moved: SubscriptionConfirmationRecord = { ...inherited };
+      delete moved.reservation;
+      tx.set(COLLECTIONS.subscriptionConfirmations, inherited.id, moved);
+    }
     const confirmation: SubscriptionConfirmationRecord = {
       id: confirmationId,
       subscriptionId: id,
       ...(value.editionSlug ? { editionSlug: value.editionSlug } : {}),
+      ...(reservation ? { reservation } : {}),
       createdAt: at,
       expiresAt: new Date(now.getTime() + CONFIRMATION_TTL_MS).toISOString(),
     };
@@ -224,6 +272,7 @@ export async function requestSubscriptionConfirmation(
       email: value.email,
       status: current?.status ?? "pending",
       pendingConfirmationId: confirmationId,
+      ...(needsSlot ? { marketingSlotAt: at } : {}),
       createdAt: current?.createdAt ?? at,
       updatedAt: at,
     };
@@ -236,16 +285,19 @@ export async function requestSubscriptionConfirmation(
 
 export type ConfirmationOutcome =
   | { status: "confirmed"; editionSlug?: string; selectedEditionUnavailable?: true }
-  | { status: "invalid" | "expired" | "already_used" | "superseded" };
+  | { status: "invalid" | "expired" | "already_used" | "superseded" }
+  // No e-mail unit (or marketing slot) free: nothing was written, the token stays usable.
+  | { status: "capacity"; retryAfterSec: number; reason: "email_capacity" | "marketing_capacity" };
 
 // Consumes a token in ONE transaction: of N concurrent callers exactly one gets "confirmed"; the rest (and any later replay)
 // get "already_used" and change nothing. Invalid covers forged, unknown, superseded and cancelled-since links alike.
 // A general request resolves to the latest public edition NOW (confirmation time); a preview request keeps its slug. If
 // that edition is not public the address is still confirmed, with no delivery job and no `editionSlug`.
-export async function confirmSubscription(store: Store, secret: string, token: unknown, now: Date, syncContacts = false): Promise<ConfirmationOutcome> {
+export async function confirmSubscription(store: Store, secret: string, token: unknown, now: Date, syncContacts = false, options: AdmissionOptions = {}): Promise<ConfirmationOutcome> {
   const confirmationId = verifyConfirmationToken(secret, token);
   if (!confirmationId) return { status: "invalid" };
   const at = now.toISOString();
+  const limits = options.limits ?? DEFAULT_EMAIL_LIMITS;
   const generalSlug = await latestPublicSlug(store);
   return store.transaction(async (tx) => {
     const confirmation = await tx.get<SubscriptionConfirmationRecord>(COLLECTIONS.subscriptionConfirmations, confirmationId);
@@ -257,45 +309,67 @@ export async function confirmSubscription(store: Store, secret: string, token: u
     if (subscription.pendingConfirmationId !== confirmation.id) return { status: subscription.status === "cancelled" ? "invalid" as const : "superseded" as const };
     const slug = confirmation.editionSlug ?? generalSlug;
     const edition = slug ? await tx.get<EditionPublicRecord>(COLLECTIONS.editionsPublic, slug) : undefined;
+    // Capacity first, token second: without room nothing is written and the same link keeps working.
+    const deliverySlug = slug && edition ? slug : undefined;
+    const jobId = deliverySlug ? deliveryJobId(secret, subscription.id, deliverySlug, now) : undefined;
+    const needsDelivery = jobId !== undefined && !(await tx.get<JobRecord>(COLLECTIONS.jobs, jobId));
+    const counters = needsDelivery ? await readCounters(tx, now) : undefined;
+    const wait = counters ? capacityWaitMs(counters, limits) : undefined;
+    if (wait !== undefined) return { status: "capacity" as const, retryAfterSec: Math.max(1, Math.ceil(wait / 1000)), reason: "email_capacity" as const };
+    const needsSlot = options.marketing === true && syncContacts && !subscription.marketingSlotAt;
+    const baseline = needsSlot ? await readBaseline(tx) : undefined;
+    if (needsSlot && (!baseline || marketingClosedReason(baseline, now) !== undefined)) {
+      return { status: "capacity" as const, retryAfterSec: marketingDenied().retryAfterSec, reason: "marketing_capacity" as const };
+    }
+    if (needsSlot && baseline) reserveMarketingSlot(tx, baseline);
     const confirmed: SubscriptionRecord = { ...subscription, status: "confirmed", confirmedAt: at, updatedAt: at };
     delete confirmed.pendingConfirmationId;
     delete confirmed.canceledAt;
+    if (needsSlot) confirmed.marketingSlotAt = at;
+    if (syncContacts) Object.assign(confirmed, { contactSyncState: "pending", contactSyncSince: at, contactSyncReason: "confirmed" });
     tx.set(COLLECTIONS.subscriptionConfirmations, confirmation.id, { ...confirmation, consumedAt: at });
     tx.set(COLLECTIONS.subscriptions, subscription.id, confirmed);
     if (syncContacts) await enqueueJob(tx, secret, { kind: JOB_KINDS.newsletterContactSync, key: `${subscription.id}:${at}`, payload: { subscriptionId: subscription.id }, maxAttempts: NEWSLETTER_JOB_ATTEMPTS }, now);
-    if (!slug || !edition) return confirmation.editionSlug ? { status: "confirmed" as const, selectedEditionUnavailable: true as const } : { status: "confirmed" as const };
-    await enqueueDelivery(tx, secret, subscription.id, slug, now);
-    return { status: "confirmed" as const, editionSlug: slug };
+    if (!deliverySlug || !jobId) return confirmation.editionSlug ? { status: "confirmed" as const, selectedEditionUnavailable: true as const } : { status: "confirmed" as const };
+    if (counters && needsDelivery) {
+      const delivery: NewsletterDeliveryRecord = { id: jobId, subscriptionId: subscription.id, editionSlug: deliverySlug, reservation: takeSlot(tx, counters, "admission") };
+      tx.set(COLLECTIONS.newsletterDeliveries, jobId, delivery);
+    }
+    await enqueueDelivery(tx, secret, subscription.id, deliverySlug, now);
+    return { status: "confirmed" as const, editionSlug: deliverySlug };
   });
 }
 
 export type CancelOutcome = "cancelled" | "already_cancelled" | "invalid";
 
-async function cancelSubscriptionTx(tx: Tx, secret: string, subscription: SubscriptionRecord | undefined, now: Date, syncContacts: boolean): Promise<CancelOutcome> {
+export async function cancelSubscriptionTx(tx: Tx, secret: string, subscription: SubscriptionRecord | undefined, now: Date): Promise<CancelOutcome> {
   if (!subscription) return "invalid";
   if (subscription.status === "cancelled") return "already_cancelled";
   if (subscription.status !== "confirmed") return "invalid";
-  const canceled: SubscriptionRecord = { ...subscription, status: "cancelled", canceledAt: now.toISOString(), updatedAt: now.toISOString() };
+  const at = now.toISOString();
+  // The provider contact must be reconciled even when no provider is configured now: the pending marker keeps Broadcast
+  // closed and the job waits for a handler instead of being skipped.
+  const canceled: SubscriptionRecord = { ...subscription, status: "cancelled", canceledAt: at, revokedAt: at, contactSyncState: "pending", contactSyncSince: at, contactSyncReason: "cancelled", updatedAt: at };
   delete canceled.pendingConfirmationId;
   tx.set(COLLECTIONS.subscriptions, subscription.id, canceled);
-  if (syncContacts) await enqueueJob(tx, secret, { kind: JOB_KINDS.newsletterContactSync, key: `${subscription.id}:${canceled.canceledAt}`, payload: { subscriptionId: subscription.id }, maxAttempts: NEWSLETTER_JOB_ATTEMPTS }, now);
+  await enqueueJob(tx, secret, { kind: JOB_KINDS.newsletterContactSync, key: `${subscription.id}:${at}`, payload: { subscriptionId: subscription.id }, maxAttempts: NEWSLETTER_JOB_ATTEMPTS }, now);
   return "cancelled";
 }
 
-export async function cancelSubscription(store: Store, secret: string, proof: { id: string; confirmedAt: string }, now: Date, syncContacts = false): Promise<CancelOutcome> {
+export async function cancelSubscription(store: Store, secret: string, proof: { id: string; confirmedAt: string }, now: Date): Promise<CancelOutcome> {
   return store.transaction(async (tx) => {
     const subscription = await tx.get<SubscriptionRecord>(COLLECTIONS.subscriptions, proof.id);
     if (!subscription || subscription.confirmedAt !== proof.confirmedAt) return "invalid";
-    return cancelSubscriptionTx(tx, secret, subscription, now, syncContacts);
+    return cancelSubscriptionTx(tx, secret, subscription, now);
   });
 }
 
-export async function cancelSubscriptionFromProvider(store: Store, secret: string, email: string, occurredAt: Date, syncContacts = false): Promise<CancelOutcome> {
+export async function cancelSubscriptionFromProvider(store: Store, secret: string, email: string, occurredAt: Date): Promise<CancelOutcome> {
   const id = opaqueId(secret, "sb", `email:${email}`);
   return store.transaction(async (tx) => {
     const subscription = await tx.get<SubscriptionRecord>(COLLECTIONS.subscriptions, id);
     if (!subscription || !subscription.confirmedAt || subscription.confirmedAt > occurredAt.toISOString()) return "invalid";
-    return cancelSubscriptionTx(tx, secret, subscription, occurredAt, syncContacts);
+    return cancelSubscriptionTx(tx, secret, subscription, occurredAt);
   });
 }
 

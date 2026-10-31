@@ -1,9 +1,9 @@
 import { Resend, type WebhookEventPayload } from "resend";
 import { opaqueId } from "./ids";
-import { enqueueJob } from "./jobs";
+import { cancelSubscriptionTx } from "./repository";
 import { logEvent, safeErrorCode } from "./safe";
 import type { Store } from "./store";
-import { COLLECTIONS, JOB_KINDS, type NewsletterDeliveryRecord, type SubscriptionConfirmationRecord, type SubscriptionRecord } from "./types";
+import { COLLECTIONS, type NewsletterDeliveryRecord, type SubscriptionConfirmationRecord, type SubscriptionRecord } from "./types";
 import { checkEmail } from "./validation";
 
 const MAX_WEBHOOK_BYTES = 64 * 1024;
@@ -82,12 +82,9 @@ export async function handleResendWebhook(request: Request, config: ResendWebhoo
       const subscription = subscriptionId ? await tx.get<SubscriptionRecord>(COLLECTIONS.subscriptions, subscriptionId) : undefined;
       const at = occurredAt.toISOString();
       const shouldCancel = Boolean(allowed && (contactUnsubscribed || suppress) && subscription?.status === "confirmed" && subscription.confirmedAt && subscription.confirmedAt <= at);
-      if (shouldCancel && subscription) {
-        const updated: SubscriptionRecord = { ...subscription, status: "cancelled", canceledAt: at, updatedAt: at };
-        delete updated.pendingConfirmationId;
-        tx.set(COLLECTIONS.subscriptions, subscription.id, updated);
-        await enqueueJob(tx, config.idSecret, { kind: JOB_KINDS.newsletterContactSync, key: `${subscription.id}:${at}`, payload: { subscriptionId: subscription.id } }, config.now());
-      }
+      // Revokes locally and leaves the contact sync pending (Broadcast closed until reconciled). A late event for an
+      // already cancelled or later-confirmed subscription never undoes anything.
+      if (shouldCancel && subscription) await cancelSubscriptionTx(tx, config.idSecret, subscription, occurredAt);
       if (state) {
         for (const record of confirmations) if (record && allowed && (!record.resendId || record.resendId === emailId) && (record.resendId === emailId || record.id === taggedConfirmation) && record.attemptStartedAt && Date.parse(at) + 1000 >= Date.parse(record.attemptStartedAt) && (!record.deliveryStateAt || record.deliveryStateAt <= at)) {
           const subscriber = await tx.get<SubscriptionRecord>(COLLECTIONS.subscriptions, record.subscriptionId);

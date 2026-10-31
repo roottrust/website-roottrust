@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { releaseReservation } from "./capacity";
 import { opaqueId } from "./ids";
 import { leadRetentionCutoff } from "./retention";
 import { logEvent, safeErrorCode } from "./safe";
@@ -260,12 +261,17 @@ export async function purgeExpired(store: Store, now: Date, limit: number, shoul
       });
     }
   }
+  const cutoff = leadRetentionCutoff(now).toISOString();
   for (const id of await store.query(COLLECTIONS.subscriptionConfirmations, "expiresAt", at, limit)) {
     if (shouldStop()) return purged;
     purged += await store.transaction(async (tx) => {
       const confirmation = await tx.get<SubscriptionConfirmationRecord>(COLLECTIONS.subscriptionConfirmations, id);
       if (!confirmation || confirmation.expiresAt > at) return 0;
+      // An attempt that may have sent keeps its record (and the unit counted for it) until the long retention horizon: the
+      // 24 h token window says nothing about whether the provider delivered.
+      if (confirmation.attemptStartedAt && !confirmation.sentAt && confirmation.expiresAt > cutoff) return 0;
       const subscription = await tx.get<SubscriptionRecord>(COLLECTIONS.subscriptions, confirmation.subscriptionId);
+      if (confirmation.reservation?.kind === "admission" && !confirmation.attemptStartedAt && !confirmation.sentAt) await releaseReservation(tx, confirmation.reservation);
       if (subscription?.pendingConfirmationId === id) {
         if (subscription.status === "pending") tx.delete(COLLECTIONS.subscriptions, subscription.id);
         else {
@@ -278,14 +284,16 @@ export async function purgeExpired(store: Store, now: Date, limit: number, shoul
       return 1;
     });
   }
-  const cutoff = leadRetentionCutoff(now).toISOString();
   for (const id of await store.query(COLLECTIONS.subscriptions, "canceledAt", cutoff, limit)) {
     if (shouldStop()) return purged;
     const children = await store.queryEquals(COLLECTIONS.newsletterDeliveries, "subscriptionId", id, limit);
     purged += await store.transaction(async (tx) => {
       const subscription = await tx.get<SubscriptionRecord>(COLLECTIONS.subscriptions, id);
       if (!subscription || subscription.status !== "cancelled" || !subscription.canceledAt || subscription.canceledAt > cutoff || subscription.pendingConfirmationId) return 0;
+      // A revocation whose provider sync is unresolved is evidence that Broadcast must stay closed.
+      if (subscription.contactSyncState || subscription.contactSyncSince) return 0;
       const records = await Promise.all(children.map((child) => tx.get<NewsletterDeliveryRecord>(COLLECTIONS.newsletterDeliveries, child)));
+      if (records.some((record) => record?.attemptStartedAt && !record.sentAt)) return 0;
       records.forEach((record, index) => { if (record?.subscriptionId === id) tx.delete(COLLECTIONS.newsletterDeliveries, children[index]); });
       if (children.length < limit) tx.delete(COLLECTIONS.subscriptions, id);
       return records.filter((record) => record?.subscriptionId === id).length + (children.length < limit ? 1 : 0);

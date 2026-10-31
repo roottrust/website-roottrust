@@ -52,7 +52,7 @@ export interface LimitSpec {
   windowMs: number;
 }
 
-export type Denied = { ok: false; retryAfterSec: number };
+export type Denied = { ok: false; retryAfterSec: number; capacity?: "email" | "marketing" };
 export type Gate = (tx: Tx) => Promise<Denied | undefined>;
 
 export const ipLimitSpecs = (ipKey: string, limits: Limits): LimitSpec[] => [

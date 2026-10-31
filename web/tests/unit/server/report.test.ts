@@ -35,6 +35,19 @@ function runner(env: Env, at: () => Date, report: ReportConfig = env.report) {
 }
 
 const fixed = () => NOW;
+const usedUnits = (store: Env["store"]) => Object.values(quota(store)).map((record) => record.used);
+
+// Simulates deliveries accepted before the admission reservation existed: nothing held, nothing counted.
+async function asLegacy(env: Env) {
+  await env.store.transaction(async (tx) => {
+    for (const delivery of deliveries(env.store)) {
+      const rest: Partial<ReportDeliveryRecord> = { ...delivery };
+      delete rest.reservation;
+      tx.set("report_deliveries", delivery.id, rest as ReportDeliveryRecord);
+    }
+    for (const id of Object.keys(quota(env.store))) tx.delete("email_quota", id);
+  });
+}
 
 describe("report request", () => {
   it("stores one delivery and one job per request, holding no answers or results", async () => {
@@ -84,8 +97,9 @@ describe("report e-mail job", () => {
     expect(await runner(env, fixed, report)()).toMatchObject({ dead: 1 });
     expect(readPdf).not.toHaveBeenCalled();
     expect(env.mailer).not.toHaveBeenCalled();
-    expect(quota(env.store)).toEqual({});
+    expect(usedUnits(env.store).every((used) => used === 0)).toBe(true);
     expect(deliveries(env.store)[0].sentAt).toBeUndefined();
+    expect(deliveries(env.store)[0].reservation).toBeUndefined();
   });
 
   it("sends the right PDF per tool with sender, reply-to and a generic body, then never again", async () => {
@@ -132,15 +146,80 @@ describe("report e-mail job", () => {
       process.chdir(cwd);
     }
     expect(env.mailer).not.toHaveBeenCalled();
-    expect(quota(env.store)).toEqual({});
+    expect(usedUnits(env.store).every((used) => used === 0)).toBe(true);
   });
 });
 
 describe("Resend quota", () => {
+  it("admission holds the unit at request time: the ceiling is enforced before a 202, shared across requests", async () => {
+    const env = setup();
+    const deps = { ...env.deps, report: { ...env.report, dailyLimit: 2 } };
+    await request(deps, { email: "p0@example.com", toolId: "rosi" });
+    await request(deps, { email: "p1@example.com", toolId: "rosi" });
+    expect(quota(env.store)["qt_day_2026-10-12"].used).toBe(2);
+    const refused = await handleReport(postReport({ email: "p2@example.com", toolId: "rosi" }), deps);
+    expect(refused.status).toBe(429);
+    expect(Number(refused.headers.get("retry-after"))).toBeGreaterThan(0);
+    expect(deliveries(env.store)).toHaveLength(2);
+    expect(jobs(env.store)).toHaveLength(2);
+    expect(Object.values(env.store.dump("leads")).length).toBe(2);
+    expect(await runner(env, fixed, deps.report)()).toMatchObject({ claimed: 2, done: 2 });
+    expect(quota(env.store)["qt_day_2026-10-12"].used).toBe(2);
+  });
+
+  it("a repeated request inside the idempotency window reuses its reservation", async () => {
+    const env = setup({ limits: { reportToolDaily: 5, reportEmailDaily: 5 } });
+    await request(env.deps);
+    await request(env.deps);
+    expect(deliveries(env.store)).toHaveLength(1);
+    expect(quota(env.store)["qt_day_2026-10-12"].used).toBe(1);
+  });
+
+  it("at full capacity an already-accepted request is deduplicated instead of refused", async () => {
+    const env = setup({ limits: { reportToolDaily: 5, reportEmailDaily: 5 } });
+    const deps = { ...env.deps, report: { ...env.report, dailyLimit: 1 } };
+    await request(deps);
+    expect((await handleReport(postReport({ email: EMAIL, toolId: "rosi" }), deps)).status).toBe(202);
+    expect(deliveries(env.store)).toHaveLength(1);
+    expect(quota(env.store)["qt_day_2026-10-12"].used).toBe(1);
+  });
+
+  it("the last slot goes to exactly one of two concurrent requests, with no partial record for the loser", async () => {
+    const store = createFirestoreStore(createFakeFirestore() as never);
+    const env = setup();
+    const deps = { ...env.deps, getStore: async () => store, report: { ...env.report, dailyLimit: 1 } };
+    const results = await Promise.all(["a", "b"].map((name) => handleReport(postReport({ email: `${name}@example.com`, toolId: "rosi" }), deps)));
+    expect(results.map((response) => response.status).sort()).toEqual([202, 429]);
+    const stored = await store.transaction(async (tx) => tx.get<EmailQuotaRecord>("email_quota", "qt_day_2026-10-12"));
+    expect(stored?.used).toBe(1);
+  });
+
+  it("a reservation made on one UTC day is transferred before its first attempt on the next", async () => {
+    const env = setup();
+    await request(env.deps);
+    const tomorrow = new Date("2026-10-13T00:05:00.000Z");
+    expect(await runner(env, () => tomorrow)()).toMatchObject({ claimed: 1, done: 1 });
+    expect(quota(env.store)["qt_day_2026-10-12"].used).toBe(0);
+    expect(quota(env.store)["qt_day_2026-10-13"].used).toBe(1);
+    expect(quota(env.store)["qt_month_2026-10"].used).toBe(1);
+  });
+
+  it("a rollover into a full period keeps the accepted request pending instead of dropping it", async () => {
+    const env = setup();
+    await request(env.deps);
+    const tomorrow = new Date("2026-10-13T00:05:00.000Z");
+    await env.store.transaction(async (tx) => tx.set("email_quota", "qt_day_2026-10-13", { id: "qt_day_2026-10-13", used: 100, expiresAt: "2099-01-01T00:00:00.000Z" } satisfies EmailQuotaRecord));
+    expect(await runner(env, () => tomorrow)()).toMatchObject({ claimed: 1, retried: 1 });
+    expect(env.mailer).not.toHaveBeenCalled();
+    expect(jobs(env.store)[0]).toMatchObject({ status: "pending", attempts: 0 });
+    expect(quota(env.store)["qt_day_2026-10-12"].used).toBe(1);
+  });
+
   it("holds the queue at the daily limit without a false success or a spent attempt, then resumes the next UTC day", async () => {
     const env = setup();
     const report: ReportConfig = { ...env.report, dailyLimit: 2 };
     for (let i = 0; i < 3; i += 1) await request(env.deps, { email: `p${i}@example.com`, toolId: "rosi" });
+    await asLegacy(env);
     expect(await runner(env, fixed, report)()).toMatchObject({ claimed: 3, done: 2, retried: 1 });
     expect(env.mailer).toHaveBeenCalledTimes(2);
     const waiting = jobs(env.store).find((job) => job.status === "pending") as JobRecord;
@@ -158,6 +237,7 @@ describe("Resend quota", () => {
     const report: ReportConfig = { ...env.report, monthlyLimit: 1 };
     await request(env.deps, { email: "a@example.com", toolId: "rosi" });
     await request(env.deps, { email: "b@example.com", toolId: "rosi" });
+    await asLegacy(env);
     expect(await runner(env, fixed, report)()).toMatchObject({ claimed: 2, done: 1, retried: 1 });
     expect(env.mailer).toHaveBeenCalledTimes(1);
     const nextMonth = new Date("2026-11-01T00:05:00.000Z");
@@ -168,6 +248,7 @@ describe("Resend quota", () => {
     const env = setup();
     const report: ReportConfig = { ...env.report, dailyLimit: 3 };
     for (let i = 0; i < 6; i += 1) await request(env.deps, { email: `c${i}@example.com`, toolId: "rosi" });
+    await asLegacy(env);
     const handler = createReportHandler(env.store, report, fixed);
     const results = await Promise.allSettled(
       jobs(env.store).map((job) => handler(job, { signal: new AbortController().signal })),

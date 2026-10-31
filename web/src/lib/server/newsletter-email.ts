@@ -1,11 +1,12 @@
 import { Resend } from "resend";
 import { cancellationToken, confirmationToken } from "./ids";
 import { PermanentFailure, RetryLater, type JobHandler } from "./jobs";
-import { buildBroadcastMessage, holdPublicEffects, loadBroadcastConfig, type BroadcastConfig } from "./newsletter-broadcast";
-import { IDEMPOTENCY_WINDOW_MS, RESEND_DAILY_LIMIT, RESEND_MONTHLY_LIMIT } from "./report";
+import { RESEND_DAILY_LIMIT, RESEND_MONTHLY_LIMIT, releaseReservation, releaseUnstartedAdmission, startAttempt } from "./capacity";
+import { buildBroadcastMessage, loadBroadcastConfig, type BroadcastConfig } from "./newsletter-broadcast";
+import { IDEMPOTENCY_WINDOW_MS } from "./report";
 import { logEvent, safeErrorCode } from "./safe";
 import type { Store, Tx } from "./store";
-import { COLLECTIONS, type EditionDraftRecord, type EditionPublicRecord, type EditionRevisionRecord, type EmailQuotaRecord, type NewsletterDeliveryRecord, type SubscriptionConfirmationRecord, type SubscriptionRecord } from "./types";
+import { COLLECTIONS, type EditionDraftRecord, type EditionPublicRecord, type EditionRevisionRecord, type NewsletterDeliveryRecord, type QuotaReservation, type SubscriptionConfirmationRecord, type SubscriptionRecord } from "./types";
 import { checkEmail } from "./validation";
 import { loadDefenseConfig } from "./defense";
 import { hasIdSecret } from "./defense";
@@ -14,7 +15,6 @@ import { resolveBackendMode } from "./mode";
 import { resolveFormMode, type ContactFormConfig } from "../forms";
 
 const SEND_TIMEOUT_MS = 15_000;
-const DAY_MS = 86_400_000;
 
 export interface NewsletterEmail {
   to: string;
@@ -31,7 +31,9 @@ export interface NewsletterEmailConfig {
   from: string;
   replyTo: string;
   siteOrigin: string;
+  // Empty in public mode, where `mode: "public"` is the explicit marker: a missing allowlist never means "open".
   allowlist: readonly string[];
+  mode?: "public";
   dailyLimit: number;
   monthlyLimit: number;
   mailer?: NewsletterMailer;
@@ -44,7 +46,7 @@ const clamp = (raw: string | undefined, max: number) => {
 const senderAddress = (value: string) => checkEmail(/<([^<>]+)>\s*$/.exec(value)?.[1] ?? value);
 
 // Separate from Broadcast config: transactional confirmation can be prepared before a marketing segment exists.
-export function loadNewsletterEmailConfig(env: Record<string, string | undefined>): NewsletterEmailConfig | undefined {
+export function loadNewsletterEmailConfig(env: Record<string, string | undefined>, mode?: "public"): NewsletterEmailConfig | undefined {
   const apiKey = env.RESEND_API_KEY?.trim();
   const from = env.NEWSLETTER_EMAIL_FROM?.trim();
   const replyTo = checkEmail(env.NEWSLETTER_EMAIL_REPLY_TO?.trim());
@@ -55,23 +57,28 @@ export function loadNewsletterEmailConfig(env: Record<string, string | undefined
   } catch { /* missing configuration */ }
   const items = (env.NEWSLETTER_PILOT_ALLOWLIST ?? "").split(",").map((item) => item.trim()).filter(Boolean);
   const emails = items.map(checkEmail);
-  if (!apiKey || !from || !senderAddress(from) || !replyTo || !siteOrigin || !items.length || items.length > 100 || emails.some((email) => !email)) return undefined;
+  if (!apiKey || !from || !senderAddress(from) || !replyTo || !siteOrigin) return undefined;
+  if (mode !== "public" && (!items.length || items.length > 100 || emails.some((email) => !email))) return undefined;
   if (env.RESEND_DOMAIN_CONFIRMED !== "true" || env.JOBS_TRIGGER_CONFIRMED !== "true") return undefined;
-  return { apiKey, from, replyTo, siteOrigin, allowlist: [...new Set(emails as string[])], dailyLimit: clamp(env.REPORT_EMAIL_DAILY_LIMIT, RESEND_DAILY_LIMIT), monthlyLimit: clamp(env.REPORT_EMAIL_MONTHLY_LIMIT, RESEND_MONTHLY_LIMIT) };
+  const allowlist = mode === "public" ? [] : [...new Set(emails as string[])];
+  return { apiKey, from, replyTo, siteOrigin, allowlist, ...(mode === "public" ? { mode } : {}), dailyLimit: clamp(env.REPORT_EMAIL_DAILY_LIMIT, RESEND_DAILY_LIMIT), monthlyLimit: clamp(env.REPORT_EMAIL_MONTHLY_LIMIT, RESEND_MONTHLY_LIMIT) };
 }
 
-// Public admission of new addresses stays closed (unavailable) until capacity and consent controls exist: only "pilot" qualifies.
+// Readiness is per flow and env-only: pilot needs the allowlist and the pilot segment; public needs the complete public
+// configuration (no allowlist, explicit marker). The marketing baseline and e-mail capacity are checked at admission time.
 export function resolveNewsletterAvailability(env: Record<string, string | undefined>): ContactFormConfig {
   if (resolveFormMode(env.FORM_MODE) === "demo") return { mode: "demo" };
   const siteKey = env.TURNSTILE_SITE_KEY?.trim();
-  const ready = resolveBackendMode(env.BACKEND_MODE) === "pilot"
-    && loadDefenseConfig(env).config !== undefined
+  const backend = resolveBackendMode(env.BACKEND_MODE);
+  if (backend !== "pilot" && backend !== "public") return { mode: "unavailable" };
+  const operation = backend === "public" ? "public" : undefined;
+  const ready = loadDefenseConfig(env).config !== undefined
     && hasIdSecret(env.DATA_ID_SECRET)
     && Boolean(loadInternalKeys(env)?.jobs?.length)
-    && loadNewsletterEmailConfig(env) !== undefined
-    && loadBroadcastConfig(env) !== undefined
+    && loadNewsletterEmailConfig(env, operation) !== undefined
+    && loadBroadcastConfig(env, operation) !== undefined
     && Boolean(env.RESEND_WEBHOOK_SECRET?.trim());
-  return ready && siteKey ? { mode: "pilot", siteKey } : { mode: "unavailable" };
+  return ready && siteKey ? { mode: backend, siteKey } : { mode: "unavailable" };
 }
 
 function resendMailer(apiKey: string): NewsletterMailer {
@@ -95,39 +102,11 @@ export function editionEmail(config: NewsletterEmailConfig, to: string, revision
   return { to, from: config.from, replyTo: config.replyTo, subject: rendered.subject, html: rendered.html, text: rendered.text };
 }
 
-type Attempt = { attemptStartedAt?: string; reservation?: { day: string; month: string }; sentAt?: string; resendId?: string; reconcile?: boolean };
-type Reservation = { day: string; month: string };
+type Attempt = { attemptStartedAt?: string; reservation?: QuotaReservation; sentAt?: string; resendId?: string; reconcile?: boolean };
 type Prepared = "done" | "send" | "reconcile" | { waitMs: number };
+type Collection = typeof COLLECTIONS.subscriptionConfirmations | typeof COLLECTIONS.newsletterDeliveries;
 
-async function reserveQuota(tx: Tx, config: NewsletterEmailConfig, at: Date): Promise<Reservation | { waitMs: number }> {
-  const day = at.toISOString().slice(0, 10);
-  const month = at.toISOString().slice(0, 7);
-  const dayId = `qt_day_${day}`;
-  const monthId = `qt_month_${month}`;
-  const dayDoc = await tx.get<EmailQuotaRecord>(COLLECTIONS.emailQuota, dayId);
-  const monthDoc = await tx.get<EmailQuotaRecord>(COLLECTIONS.emailQuota, monthId);
-  const nextDay = Date.UTC(at.getUTCFullYear(), at.getUTCMonth(), at.getUTCDate() + 1);
-  const nextMonth = Date.UTC(at.getUTCFullYear(), at.getUTCMonth() + 1, 1);
-  if ((monthDoc?.used ?? 0) >= config.monthlyLimit) return { waitMs: nextMonth - at.getTime() };
-  if ((dayDoc?.used ?? 0) >= config.dailyLimit) return { waitMs: nextDay - at.getTime() };
-  tx.set(COLLECTIONS.emailQuota, dayId, { id: dayId, used: (dayDoc?.used ?? 0) + 1, expiresAt: new Date(nextDay + DAY_MS).toISOString() });
-  tx.set(COLLECTIONS.emailQuota, monthId, { id: monthId, used: (monthDoc?.used ?? 0) + 1, expiresAt: new Date(nextMonth + DAY_MS).toISOString() });
-  return { day, month };
-}
-
-async function releaseQuota(tx: Tx, reservation: Reservation, config: NewsletterEmailConfig, exhausted?: "day" | "month") {
-  const scopes = [
-    { id: `qt_day_${reservation.day}`, limit: config.dailyLimit, name: "day" },
-    { id: `qt_month_${reservation.month}`, limit: config.monthlyLimit, name: "month" },
-  ] as const;
-  const docs = await Promise.all(scopes.map((scope) => tx.get<EmailQuotaRecord>(COLLECTIONS.emailQuota, scope.id)));
-  scopes.forEach((scope, index) => {
-    const doc = docs[index];
-    if (doc) tx.set(COLLECTIONS.emailQuota, scope.id, { ...doc, used: exhausted === scope.name ? scope.limit : Math.max(0, doc.used - 1) });
-  });
-}
-
-async function prepare<T extends Attempt>(store: Store, collection: typeof COLLECTIONS.subscriptionConfirmations | typeof COLLECTIONS.newsletterDeliveries, id: string, config: NewsletterEmailConfig, now: Date, create: (tx: Tx) => Promise<T | undefined>): Promise<Prepared> {
+async function prepare<T extends Attempt>(store: Store, collection: Collection, id: string, config: NewsletterEmailConfig, now: Date, create: (tx: Tx) => Promise<T | undefined>): Promise<Prepared> {
   return store.transaction(async (tx) => {
     const current = await create(tx);
     if (!current || current.sentAt) return "done";
@@ -139,14 +118,15 @@ async function prepare<T extends Attempt>(store: Store, collection: typeof COLLE
       }
       return "send";
     }
-    const reservation = await reserveQuota(tx, config, now);
+    // Converts the admission unit (or moves it across a UTC rollover); without room the accepted request waits, intact.
+    const reservation = await startAttempt(tx, current.reservation, now, config);
     if ("waitMs" in reservation) return reservation;
     tx.set(collection, id, { ...current, attemptStartedAt: now.toISOString(), reservation });
     return "send";
   });
 }
 
-async function settle<T extends Attempt>(store: Store, collection: typeof COLLECTIONS.subscriptionConfirmations | typeof COLLECTIONS.newsletterDeliveries, id: string, config: NewsletterEmailConfig, now: Date, result: EmailResult) {
+async function settle<T extends Attempt>(store: Store, collection: Collection, id: string, config: NewsletterEmailConfig, now: Date, result: EmailResult) {
   return store.transaction(async (tx) => {
     const current = await tx.get<T>(collection, id);
     if (!current || current.sentAt) return;
@@ -156,17 +136,26 @@ async function settle<T extends Attempt>(store: Store, collection: typeof COLLEC
     }
     const { code, status } = result;
     if (status === null || status < 400 || status >= 500 || status === 408 || status === 409) return;
-    if (current.reservation) await releaseQuota(tx, current.reservation, config, code === "daily_quota_exceeded" ? "day" : code === "monthly_quota_exceeded" ? "month" : undefined);
     const updated: Attempt = { ...current };
     delete updated.attemptStartedAt;
+    if (code === "rate_limit_exceeded" && current.reservation) {
+      // Transient refusal, nothing was sent: the unit stays counted as an admission for the retry.
+      updated.reservation = { ...current.reservation, kind: "admission" };
+      tx.set(collection, id, updated);
+      return;
+    }
+    if (current.reservation) await releaseReservation(tx, current.reservation, config, code === "daily_quota_exceeded" ? "day" : code === "monthly_quota_exceeded" ? "month" : undefined);
     delete updated.reservation;
     tx.set(collection, id, updated);
   });
 }
 
-async function sendAttempt<T extends Attempt>(store: Store, collection: typeof COLLECTIONS.subscriptionConfirmations | typeof COLLECTIONS.newsletterDeliveries, id: string, email: NewsletterEmail, config: NewsletterEmailConfig, now: () => Date, signal: AbortSignal, create: (tx: Tx) => Promise<T | undefined>) {
+async function sendAttempt<T extends Attempt>(store: Store, collection: Collection, id: string, email: NewsletterEmail, config: NewsletterEmailConfig, now: () => Date, signal: AbortSignal, create: (tx: Tx) => Promise<T | undefined>) {
   const prepared = await prepare(store, collection, id, config, now(), create);
-  if (prepared === "done") return;
+  if (prepared === "done") {
+    await releaseUnstartedAdmission(store, collection, id, config);
+    return;
+  }
   if (prepared === "reconcile") throw new PermanentFailure("reconciliation_required");
   if (typeof prepared === "object") throw new RetryLater(prepared.waitMs, { deferral: true });
   const guard = AbortSignal.any([signal, AbortSignal.timeout(SEND_TIMEOUT_MS)]);
@@ -189,7 +178,14 @@ async function sendAttempt<T extends Attempt>(store: Store, collection: typeof C
     throw new RetryLater(reset - at.getTime(), { deferral: true });
   }
   if (result.code === "rate_limit_exceeded") throw new RetryLater(60_000, { deferral: true });
+  // A definite refusal: settle already released the unit.
   throw new PermanentFailure(`resend_${result.code}`.slice(0, 60));
+}
+
+// Ends a job that never started an attempt: the admission unit is returned before the terminal outcome.
+async function refuse(store: Store, collection: Collection, id: string, config: NewsletterEmailConfig, code: string): Promise<never> {
+  await releaseUnstartedAdmission(store, collection, id, config);
+  throw new PermanentFailure(code);
 }
 
 export function createConfirmationHandler(store: Store, secret: string, config: NewsletterEmailConfig, now: () => Date): JobHandler {
@@ -201,8 +197,11 @@ export function createConfirmationHandler(store: Store, secret: string, config: 
       const subscription = record ? await tx.get<SubscriptionRecord>(COLLECTIONS.subscriptions, record.subscriptionId) : undefined;
       return { record, subscription };
     });
-    if (!basis.record || !basis.subscription || basis.record.consumedAt || basis.record.expiresAt <= now().toISOString() || basis.subscription.pendingConfirmationId !== id) return;
-    if (!config.allowlist.includes(basis.subscription.email)) throw new PermanentFailure("recipient_not_in_pilot_allowlist");
+    if (!basis.record || !basis.subscription || basis.record.consumedAt || basis.record.expiresAt <= now().toISOString() || basis.subscription.pendingConfirmationId !== id) {
+      if (basis.record) await releaseUnstartedAdmission(store, COLLECTIONS.subscriptionConfirmations, id, config);
+      return;
+    }
+    if (config.mode !== "public" && !config.allowlist.includes(basis.subscription.email)) return refuse(store, COLLECTIONS.subscriptionConfirmations, id, config, "recipient_not_in_pilot_allowlist");
     await sendAttempt(store, COLLECTIONS.subscriptionConfirmations, id, confirmationEmail(config, basis.subscription.email, confirmationToken(secret, id)), config, now, signal, async (tx) => {
       const record = await tx.get<SubscriptionConfirmationRecord>(COLLECTIONS.subscriptionConfirmations, id);
       const subscription = record ? await tx.get<SubscriptionRecord>(COLLECTIONS.subscriptions, record.subscriptionId) : undefined;
@@ -222,10 +221,13 @@ export function createEditionDeliveryHandler(store: Store, secret: string, confi
       const revision = published ? await tx.get<EditionRevisionRecord>(COLLECTIONS.editionRevisions, `${published.draftId}.${published.revision}`) : undefined;
       return { subscription, published, draft, revision };
     });
-    if (!basis.subscription || basis.subscription.status !== "confirmed") return;
-    if (!basis.subscription.confirmedAt) throw new PermanentFailure("missing_confirmation_date");
-    if (!basis.published || !basis.draft || !basis.revision || basis.draft.status !== "approved" || basis.draft.approvedRevision !== basis.published.revision || basis.revision.slug !== editionSlug) throw new PermanentFailure("edition_not_approved");
-    if (!config.allowlist.includes(basis.subscription.email)) throw new PermanentFailure("recipient_not_in_pilot_allowlist");
+    if (!basis.subscription || basis.subscription.status !== "confirmed") {
+      await releaseUnstartedAdmission(store, COLLECTIONS.newsletterDeliveries, job.id, config);
+      return;
+    }
+    if (!basis.subscription.confirmedAt) return refuse(store, COLLECTIONS.newsletterDeliveries, job.id, config, "missing_confirmation_date");
+    if (!basis.published || !basis.draft || !basis.revision || basis.draft.status !== "approved" || basis.draft.approvedRevision !== basis.published.revision || basis.revision.slug !== editionSlug) return refuse(store, COLLECTIONS.newsletterDeliveries, job.id, config, "edition_not_approved");
+    if (config.mode !== "public" && !config.allowlist.includes(basis.subscription.email)) return refuse(store, COLLECTIONS.newsletterDeliveries, job.id, config, "recipient_not_in_pilot_allowlist");
     const unsubscribe = `${config.siteOrigin}/newsletter/cancelar#token=${encodeURIComponent(cancellationToken(secret, basis.subscription.id, basis.subscription.confirmedAt))}`;
     const email = editionEmail(config, basis.subscription.email, basis.revision, unsubscribe);
     await sendAttempt(store, COLLECTIONS.newsletterDeliveries, job.id, email, config, now, signal, async (tx) => {
@@ -240,33 +242,50 @@ export function createEditionDeliveryHandler(store: Store, secret: string, confi
   };
 }
 
-export type ContactSync = (email: string, active: boolean, signal: AbortSignal) => Promise<void>;
+// `remote_unsubscribed`: the provider contact is globally unsubscribed and local state cannot explain why or prove a newer
+// consent, so it was left untouched. Any other outcome is a completed reconciliation.
+export type ContactSyncResult = void | "remote_unsubscribed";
+export type ContactSync = (email: string, active: boolean, signal: AbortSignal, options?: { reactivate: boolean }) => Promise<ContactSyncResult>;
 
 function resendContactSync(config: BroadcastConfig): ContactSync {
   const client = new Resend(config.apiKey);
-  return async (email, active, signal) => {
-    const options = { signal };
-    const found = await client.contacts.get(email, options);
+  return async (email, active, signal, options) => {
+    const request = { signal };
+    const found = await client.contacts.get(email, request);
     if (found.error && found.error.statusCode !== 404) throw new Error(`contact_lookup_${found.error.name}`);
-    if (active) {
-      if (!found.data) {
-        const created = await client.contacts.create({ email, unsubscribed: false, segments: [{ id: config.segmentId }] }, options);
-        if (created.error && created.error.statusCode !== 409) throw new Error(`contact_create_${created.error.name}`);
-        if (!created.error) return;
+    let contact = found.data ?? undefined;
+    if (active && !contact) {
+      const created = await client.contacts.create({ email, unsubscribed: false, segments: [{ id: config.segmentId }] }, request);
+      if (!created.error) return;
+      if (created.error.statusCode !== 409) throw new Error(`contact_create_${created.error.name}`);
+      // Someone created it between our lookup and create: judge the contact that exists now, never overwrite blindly.
+      const again = await client.contacts.get(email, request);
+      if (again.error || !again.data) throw new Error("contact_lookup_after_conflict");
+      contact = again.data;
+    }
+    if (active && contact) {
+      if (contact.unsubscribed) {
+        if (!options?.reactivate) return "remote_unsubscribed";
+        const updated = await client.contacts.update({ email, unsubscribed: false }, request);
+        if (updated.error) throw new Error(`contact_update_${updated.error.name}`);
       }
-      const updated = await client.contacts.update({ email, unsubscribed: false }, options);
-      if (updated.error) throw new Error(`contact_update_${updated.error.name}`);
-      const added = await client.contacts.segments.add({ email, segmentId: config.segmentId }, options);
+      const added = await client.contacts.segments.add({ email, segmentId: config.segmentId }, request);
       if (added.error && added.error.statusCode !== 409) throw new Error(`contact_segment_add_${added.error.name}`);
-    } else if (found.data) {
-      const removed = await client.contacts.segments.remove({ email, segmentId: config.segmentId }, options);
+    } else if (!active && contact) {
+      const removed = await client.contacts.segments.remove({ email, segmentId: config.segmentId }, request);
       if (removed.error && removed.error.statusCode !== 404) throw new Error(`contact_segment_remove_${removed.error.name}`);
     }
   };
 }
 
+const sameConsentState = (a: SubscriptionRecord, b: SubscriptionRecord | undefined) =>
+  b !== undefined && a.status === b.status && a.confirmedAt === b.confirmedAt && a.canceledAt === b.canceledAt && a.revokedAt === b.revokedAt;
+
+// Reconciles the provider contact with the local consent. Generic sync only ever removes from the segment or adds a contact
+// that is not unsubscribed; `unsubscribed: false` on an existing contact needs a local confirmation newer than the last
+// revocation. The provider offers no atomic compare, so after every remote call the local state is re-read: if it moved, the
+// loop reconciles again; if it keeps moving, the marker stays "pending" (Broadcast stays closed) and the job retries.
 export function createContactSyncHandler(store: Store, config: BroadcastConfig, sync?: ContactSync): JobHandler {
-  if (config.mode === "public") return holdPublicEffects;
   const syncContact = sync ?? resendContactSync(config);
   return async (job, { signal }) => {
     const id = job.payload.subscriptionId;
@@ -275,11 +294,29 @@ export function createContactSyncHandler(store: Store, config: BroadcastConfig, 
     try {
       for (let attempt = 0; attempt < 3; attempt++) {
         const subscription = await store.transaction((tx) => tx.get<SubscriptionRecord>(COLLECTIONS.subscriptions, id));
-        if (!subscription || !config.allowlist.includes(subscription.email)) throw new PermanentFailure("contact_not_in_pilot_allowlist");
+        if (!subscription) return;
+        if (config.mode !== "public" && !config.allowlist.includes(subscription.email)) throw new PermanentFailure("contact_not_in_pilot_allowlist");
+        if (subscription.contactSyncState === "blocked") return;
         const active = subscription.status === "confirmed";
-        await syncContact(subscription.email, active, guard);
-        const current = await store.transaction((tx) => tx.get<SubscriptionRecord>(COLLECTIONS.subscriptions, id));
-        if (current?.status === subscription.status && current.confirmedAt === subscription.confirmedAt && current.canceledAt === subscription.canceledAt) return;
+        const reactivate = active && subscription.revokedAt !== undefined && subscription.confirmedAt !== undefined && subscription.confirmedAt > subscription.revokedAt;
+        const result = await syncContact(subscription.email, active, guard, { reactivate });
+        const settled = await store.transaction(async (tx) => {
+          const current = await tx.get<SubscriptionRecord>(COLLECTIONS.subscriptions, id);
+          if (!current || !sameConsentState(subscription, current)) return false;
+          const updated: SubscriptionRecord = { ...current };
+          if (result === "remote_unsubscribed") {
+            updated.contactSyncState = "blocked";
+            updated.contactSyncSince = current.contactSyncSince ?? current.updatedAt;
+            updated.contactSyncReason = "remote_unsubscribed_unknown";
+          } else {
+            delete updated.contactSyncState;
+            delete updated.contactSyncSince;
+            delete updated.contactSyncReason;
+          }
+          tx.set(COLLECTIONS.subscriptions, id, updated);
+          return true;
+        });
+        if (settled) return;
       }
       throw new Error("contact_changed_during_sync");
     } catch (error) {

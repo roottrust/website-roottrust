@@ -5,7 +5,8 @@ import { opaqueId, verifyCancellationToken, verifyConfirmationToken } from "./id
 import { authenticateInternal, loadInternalKeys, type InternalKeys } from "./internal-auth";
 import { enqueueJob, processJobs, purgeExpired, type JobHandlers } from "./jobs";
 import { createNewsletterHandler, loadNewsletterConfig, type NewsletterConfig } from "./newsletter";
-import { createBroadcastHandler, createPublishHandler, holdPublicEffects, loadBroadcastConfig, type BroadcastConfig } from "./newsletter-broadcast";
+import { createBroadcastHandler, createPublishHandler, loadBroadcastConfig, resendAccountScan, type BroadcastConfig } from "./newsletter-broadcast";
+import { refreshMarketingBaseline, type AccountScan } from "./capacity";
 import { createConfirmationHandler, createContactSyncHandler, createEditionDeliveryHandler, loadNewsletterEmailConfig, type NewsletterEmailConfig } from "./newsletter-email";
 import { MAX_PROOF_BODY_BYTES, PROOF_TOLERANCE_S } from "./newsletter-protocol";
 import {
@@ -50,6 +51,8 @@ export interface Deps {
   broadcast?: BroadcastConfig;
   newsletterEmail?: NewsletterEmailConfig;
   resendWebhookReady?: boolean;
+  // Lists the whole Resend account for the marketing baseline (public mode, authenticated jobs flow only); tests inject it.
+  accountScan?: AccountScan;
   // Monotonic milliseconds for the jobs request's time plan; tests inject it.
   clock?: () => number;
 }
@@ -60,13 +63,15 @@ export function defaultDeps(env: Record<string, string | undefined> = process.en
   const getStore = async () => (firestoreStore ??= loadFirestoreStore());
   const now = () => new Date();
   const mode = resolveBackendMode(env.BACKEND_MODE);
-  // Only the diagnostic and the (held) Broadcast configs become public; report and e-mail keep the pilot recipient list for jobs already accepted.
+  // In public mode every config drops the pilot recipient list and carries an explicit "public" marker: a missing or partial
+  // configuration is unavailable, never an accidental allowlist-free pilot.
   const operation = mode === "public" ? "public" : "pilot";
+  const publicOnly = mode === "public" ? "public" : undefined;
   const diagnostic = loadDiagnosticConfig(env, operation);
-  const report = loadReportConfig(env);
+  const report = loadReportConfig(env, publicOnly);
   const newsletter = loadNewsletterConfig(env);
   const broadcast = loadBroadcastConfig(env, operation);
-  const newsletterEmail = loadNewsletterEmailConfig(env);
+  const newsletterEmail = loadNewsletterEmailConfig(env, publicOnly);
   const resendWebhookReady = Boolean(env.RESEND_WEBHOOK_SECRET?.trim());
   const idSecret = env.DATA_ID_SECRET;
   return {
@@ -83,6 +88,7 @@ export function defaultDeps(env: Record<string, string | undefined> = process.en
     broadcast,
     newsletterEmail,
     resendWebhookReady,
+    ...(mode === "public" && broadcast ? { accountScan: resendAccountScan(broadcast.apiKey) } : {}),
     jobHandlers: {
       ...(newsletter ? { [JOB_KINDS.newsletterDiscord]: (job, context) => getStore().then((store) => createNewsletterHandler(store, newsletter, now)(job, context)) } : {}),
       ...(newsletter && hasIdSecret(idSecret) ? { [JOB_KINDS.newsletterPublish]: (job, context) => getStore().then((store) => createPublishHandler(store, idSecret, now, broadcast !== undefined)(job, context)) } : {}),
@@ -119,6 +125,14 @@ function json(status: number, body: Record<string, unknown>, headers: Record<str
 const unavailable = (code: string) => json(503, { code });
 const rateLimited = (denied: Denied) =>
   json(429, { code: "rate_limited", retryAfter: denied.retryAfterSec }, { "Retry-After": String(denied.retryAfterSec) });
+
+// Neutral, shared answers: a sending-quota refusal looks like any other 429; a full or unmeasured marketing account is a
+// temporary 503. Neither says which identity or which counter, and neither consumes the data or the token.
+const capacityResponse = (capacity: "email" | "marketing" | undefined, retryAfterSec: number) =>
+  capacity === "marketing"
+    ? json(503, { code: "unavailable", retryAfter: retryAfterSec }, { "Retry-After": String(retryAfterSec) })
+    : rateLimited({ ok: false, retryAfterSec });
+const denied = (result: Denied) => capacityResponse(result.capacity, result.retryAfterSec);
 
 // Content-Length is only a fast path; the stream is counted so a missing or spoofed header cannot buffer more than the cap.
 async function readJson(request: Request): Promise<{ ok: true; body: unknown } | { ok: false }> {
@@ -205,7 +219,7 @@ async function handle<T>(request: Request, deps: Deps, operation: Operation<T>):
     const now = deps.now();
     const gate = gateOf(secret, operation.limits(parsed.value, defense.limits), now);
     const result = await operation.persist(store, secret, parsed.value, now, gate);
-    if (!result.ok) return rateLimited(result);
+    if (!result.ok) return denied(result);
     const rest: Record<string, unknown> = { ...result };
     delete rest.ok;
     return json(202, { status: "accepted", ...rest });
@@ -229,31 +243,38 @@ export const handleDiagnostic = (request: Request, deps: Deps = defaultDeps()) =
 // Same body for new, pending, confirmed and cancelled addresses (anti-enumeration).
 export const handleSubscription = (request: Request, deps: Deps = defaultDeps()) =>
   handle(request, deps, {
-    // Public admission of new addresses stays closed until the capacity and consent controls exist.
-    requires: (current) => current.mode === "pilot" && current.newsletterEmail !== undefined && current.broadcast !== undefined && current.resendWebhookReady === true && Boolean(current.internalKeys?.jobs?.length),
+    requires: (current) => current.newsletterEmail !== undefined && current.broadcast !== undefined && current.resendWebhookReady === true && Boolean(current.internalKeys?.jobs?.length)
+      && (current.mode !== "public" || (current.newsletterEmail.mode === "public" && current.broadcast.mode === "public")),
     action: "newsletter-inscricao",
     parse: parseSubscription,
     limits: subscriptionLimitSpecs,
     persist: async (store, secret, value, now, gate) => {
-      // The pilot never stores or sends to addresses outside its private recipient list.
-      if (!deps.newsletterEmail?.allowlist.includes(value.email)) return { ok: true };
-      const result = await requestSubscriptionConfirmation(store, secret, value, now, gate);
+      // The pilot never stores or sends to addresses outside its private recipient list; public mode admits any valid address.
+      if (deps.mode !== "public" && !deps.newsletterEmail?.allowlist.includes(value.email)) return { ok: true };
+      const result = await requestSubscriptionConfirmation(store, secret, value, now, gate, {
+        ...(deps.newsletterEmail ? { limits: { dailyLimit: deps.newsletterEmail.dailyLimit, monthlyLimit: deps.newsletterEmail.monthlyLimit } } : {}),
+        marketing: deps.mode === "public",
+      });
       return result.ok ? { ok: true } : result;
     },
   });
 
 // A confirmation link opens a page first; only an explicit POST consumes its token. Mail scanners may follow GET links.
 export async function handleNewsletterConfirmation(request: Request, deps: Deps = defaultDeps()): Promise<Response> {
-  if (deps.mode === "public") return unavailable("not_operational");
-  if (deps.mode !== "pilot") return unavailable("unavailable");
+  if (!isOperationalMode(deps.mode)) return unavailable("unavailable");
   if (!deps.defense || !hasIdSecret(deps.idSecret) || !deps.newsletterEmail || !deps.broadcast || !deps.resendWebhookReady || !deps.internalKeys?.jobs?.length) return unavailable("not_operational");
+  if (deps.mode === "public" && (deps.newsletterEmail.mode !== "public" || deps.broadcast.mode !== "public")) return unavailable("not_operational");
   if (!isTrustedOrigin(request, deps.defense.trustedOrigins)) return json(403, { code: "forbidden_origin" });
   const read = await readJson(request);
   if (!read.ok) return json(400, { code: "invalid_request" });
   const parsed = parseConfirmation(read.body);
   if (!parsed.ok || !verifyConfirmationToken(deps.idSecret, parsed.value.token)) return json(400, { code: "invalid_link" });
   try {
-    const result = await confirmSubscription(await deps.getStore(), deps.idSecret, parsed.value.token, deps.now(), deps.broadcast !== undefined);
+    const result = await confirmSubscription(await deps.getStore(), deps.idSecret, parsed.value.token, deps.now(), deps.broadcast !== undefined, {
+      limits: { dailyLimit: deps.newsletterEmail.dailyLimit, monthlyLimit: deps.newsletterEmail.monthlyLimit },
+      marketing: deps.mode === "public",
+    });
+    if (result.status === "capacity") return capacityResponse(result.reason === "marketing_capacity" ? "marketing" : "email", result.retryAfterSec);
     if (result.status === "confirmed") return json(200, { status: "confirmed", editionQueued: Boolean(result.editionSlug), selectedEditionUnavailable: result.selectedEditionUnavailable === true });
     if (result.status === "expired") return json(410, { code: "expired_link" });
     if (result.status === "superseded") return json(409, { code: "superseded_link" });
@@ -278,7 +299,7 @@ export async function handleNewsletterCancellation(request: Request, deps: Deps 
   const proof = verifyCancellationToken(deps.idSecret, body.token);
   if (!proof) return json(400, { code: "invalid_link" });
   try {
-    const result = await cancelSubscription(await deps.getStore(), deps.idSecret, proof, deps.now(), deps.broadcast !== undefined);
+    const result = await cancelSubscription(await deps.getStore(), deps.idSecret, proof, deps.now());
     return result === "invalid" ? json(409, { code: "invalid_link" }) : json(200, { status: "cancelled" });
   } catch (error) {
     logEvent("error", "cancellation_failed", { error: safeErrorCode(error) });
@@ -288,12 +309,13 @@ export async function handleNewsletterCancellation(request: Request, deps: Deps 
 
 export const handleReport = (request: Request, deps: Deps = defaultDeps()) =>
   handle(request, deps, {
-    requires: (current) => current.mode === "pilot" && current.report !== undefined && Boolean(current.internalKeys?.jobs?.length),
+    requires: (current) => current.report !== undefined && Boolean(current.internalKeys?.jobs?.length) && (current.mode !== "public" || current.report.mode === "public"),
     action: "relatorio",
     parse: parseReport,
-    allowed: (value) => deps.report?.allowlist.includes(value.email) === true,
+    allowed: (value) => deps.mode === "public" ? deps.report?.mode === "public" : deps.report?.allowlist.includes(value.email) === true,
     limits: reportLimitSpecs,
-    persist: recordReportRequest,
+    persist: (store, secret, value, now, gate) =>
+      recordReportRequest(store, secret, value, now, gate, deps.report ? { dailyLimit: deps.report.dailyLimit, monthlyLimit: deps.report.monthlyLimit } : undefined),
   });
 
 // Internal, scope "jobs": claims a small batch of due jobs and sweeps expired counters and six-month-inactive leads. No body is expected.
@@ -320,7 +342,7 @@ export async function handleJobsProcess(request: Request, deps: Deps = defaultDe
       logEvent("warn", "internal_auth_failed", { scope: "jobs", reason: auth.reason });
       return auth.status === 401 ? json(401, { code: "unauthorized" }) : json(auth.status, { code: auth.reason });
     }
-    const summary = await processJobs(store, effectiveHandlers(deps), {
+    const summary = await processJobs(store, { ...deps.jobHandlers }, {
       now: deps.now,
       limit: JOBS_BATCH,
       leaseMs: JOBS_LEASE_MS,
@@ -330,24 +352,22 @@ export async function handleJobsProcess(request: Request, deps: Deps = defaultDe
     // Retention (a legal duty) first; expired counters use whatever time remains.
     const pastDeadline = () => clock() - startedAt >= MAINTENANCE_DEADLINE_MS;
     const leadPurge = await purgeInactiveLeads(store, deps.idSecret, deps.now(), LEAD_PURGE_BATCH, pastDeadline);
+    // Public admission depends on a recent, complete measurement of the Resend ACCOUNT, prepared here (authenticated, bounded),
+    // never on a visitor's request. Failure or an inconclusive scan only closes admission.
+    const marketing = deps.mode === "public" && deps.accountScan && !pastDeadline()
+      ? await refreshMarketingBaseline(store, deps.accountScan, deps.now, AbortSignal.timeout(Math.max(1_000, MAINTENANCE_DEADLINE_MS - (clock() - startedAt)))).catch((error: unknown) => {
+        logEvent("warn", "marketing_baseline_failed", { error: safeErrorCode(error) });
+        return "closed" as const;
+      })
+      : undefined;
     const purged = await purgeExpired(store, deps.now(), PURGE_BATCH, pastDeadline);
     const deadlineReached = pastDeadline();
     if (deadlineReached) logEvent("warn", "jobs_maintenance_deadline", { deferredLeads: leadPurge.deferred, partialLeads: leadPurge.partial });
-    return json(200, { ...summary, purged, leadPurge, deadlineReached });
+    return json(200, { ...summary, purged, leadPurge, deadlineReached, ...(marketing ? { marketingBaseline: marketing } : {}) });
   } catch (error) {
     logEvent("error", "jobs_failed", { error: safeErrorCode(error) });
     return unavailable("storage_unavailable");
   }
-}
-
-// Defer held kinds instead of omitting them: due jobs must not permanently crowd eligible work out of the bounded queue scan.
-function effectiveHandlers(deps: Deps): JobHandlers {
-  const handlers = { ...deps.jobHandlers };
-  if (deps.mode === "public") {
-    handlers[JOB_KINDS.newsletterBroadcast] = holdPublicEffects;
-    handlers[JOB_KINDS.newsletterContactSync] = holdPublicEffects;
-  }
-  return handlers;
 }
 
 const DRAFT_MAX_BODY_BYTES = MAX_EDITION_BYTES + 4096; // the edition itself is capped at 64 KiB; the rest is JSON framing

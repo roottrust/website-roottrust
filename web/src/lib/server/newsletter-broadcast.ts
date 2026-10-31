@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { MARKETING_CONTACT_LIMIT, scanAccount, type AccountScan } from "./capacity";
 import { opaqueId } from "./ids";
 import { DRAFT_ID } from "./newsletter-protocol";
 import { PermanentFailure, RetryLater, type JobHandler } from "./jobs";
@@ -22,6 +23,8 @@ import { checkEmail, checkHttpsUrl } from "./validation";
 const CALL_TIMEOUT_MS = 15_000;
 const MAX_ALLOWLIST = 100;
 const MAX_LIST_PAGES = 5;
+const PAGE_SIZE = 100;
+const SYNC_PENDING_WAIT_MS = 5 * 60_000;
 const UNSUBSCRIBE_PLACEHOLDER = "{{{RESEND_UNSUBSCRIBE_URL}}}";
 // An approval authorizes a delivery only for a short time: a job parked for lack of configuration or by repeated failures must
 // not send an edition days later, when the approver's context (segment, allowlist, sources) may no longer hold.
@@ -59,8 +62,8 @@ export interface BroadcastMessage {
 }
 
 export interface BroadcastConfig {
-  // Absent means the restricted pilot. "public" is an interim state: no provider call happens until the capacity and consent
-  // controls exist, so every effect handler holds its job instead of running.
+  // Absent means the restricted pilot (allowlist guard). "public" replaces the allowlist by a complete, fail-closed
+  // inspection: every contact of the segment must be site-confirmed locally with its contact sync complete.
   mode?: "public";
   apiKey: string;
   from: string;
@@ -159,6 +162,17 @@ const failure = (error: { name?: string; statusCode?: number | null } | null | u
   status: error?.statusCode ?? null,
 });
 
+// Whole ACCOUNT (not the segment): a Free plan slot is a contact stored in the account.
+export function resendAccountScan(apiKey: string): AccountScan {
+  const client = new Resend(apiKey);
+  return (signal) =>
+    scanAccount(async (after, guard) => {
+      const { data, error } = await client.contacts.list({ limit: PAGE_SIZE, ...(after ? { after } : {}) }, { signal: guard });
+      if (error || !data) return { ok: false, reason: `list_${error?.statusCode ?? "failed"}` };
+      return { ok: true, contacts: data.data.map((contact) => ({ id: contact.id, email: contact.email })), hasMore: data.has_more };
+    }, signal);
+}
+
 function toRemote(item: { id: string; name?: string | null; segment_id?: string | null; status?: string; subject?: string | null; html?: string | null }): RemoteBroadcast {
   return { id: item.id, name: item.name ?? null, segmentId: item.segment_id ?? null, status: item.status ?? "unknown", subject: item.subject ?? null, html: item.html ?? null };
 }
@@ -168,15 +182,19 @@ function resendProvider(apiKey: string): BroadcastProvider {
   return {
     async listContacts(segmentId, max, signal) {
       const emails: string[] = [];
+      const cursors = new Set<string>();
       let after: string | undefined;
-      for (let page = 0; page < MAX_LIST_PAGES; page += 1) {
-        const { data, error } = await client.contacts.list({ segmentId, limit: 100, ...(after ? { after } : {}) }, { signal });
+      // Enough pages for `max` contacts plus one to prove there is no more; a repeated cursor is not a complete listing.
+      const pages = Math.max(MAX_LIST_PAGES, Math.ceil(max / PAGE_SIZE) + 1);
+      for (let page = 0; page < pages; page += 1) {
+        const { data, error } = await client.contacts.list({ segmentId, limit: PAGE_SIZE, ...(after ? { after } : {}) }, { signal });
         if (error || !data) return failure(error);
         for (const contact of data.data) emails.push(contact.email.trim().toLowerCase());
         if (emails.length > max) return { ok: true, value: { emails, complete: false } };
         if (!data.has_more) return { ok: true, value: { emails, complete: true } };
         after = data.data.at(-1)?.id;
-        if (!after) return { ok: false, code: "bad_pagination", status: null };
+        if (!after || cursors.has(after)) return { ok: false, code: "bad_pagination", status: null };
+        cursors.add(after);
       }
       return { ok: true, value: { emails, complete: false } };
     },
@@ -257,38 +275,42 @@ export function createPublishHandler(store: Store, idSecret: string, now: () => 
   };
 }
 
-type Safety = "ok" | "unavailable" | "unsafe";
-
-const PUBLIC_HOLD_MS = 60 * 60_000;
-
-// Temporary block: the job stays pending (a deferral does not spend an attempt) and no provider is touched.
-export const holdPublicEffects: JobHandler = async () => {
-  logEvent("warn", "public_effects_held", {});
-  throw new RetryLater(PUBLIC_HOLD_MS, { deferral: true });
-};
+type Safety = "ok" | "unavailable" | "unsafe" | "sync_pending";
 
 export function createBroadcastHandler(store: Store, config: BroadcastConfig, now: () => Date, idSecret?: string): JobHandler {
-  if (config.mode === "public") return holdPublicEffects;
   const provider = config.provider ?? resendProvider(config.apiKey);
   const allowed = new Set(config.allowlist);
+  const publicMode = config.mode === "public";
 
-  // Pilot guard: EVERY contact of the dedicated segment must be allowlisted. Anything else (provider down, partial list,
-  // empty segment, foreign or unparsable address, more contacts than the allowlist) blocks the call. Nothing is logged but codes.
+  // Any contact whose consent sync is pending or blocked (a cancellation not yet propagated, an unknown remote state) closes
+  // the Broadcast in BOTH modes: the provider list may still hold a revoked contact as subscribed.
+  const syncMarked = async (): Promise<boolean> => (await store.query(COLLECTIONS.subscriptions, "contactSyncSince", "9999-12-31", 1)).length > 0;
+
+  // The segment must hold only contacts the site knows as confirmed with a complete sync. Pilot: also inside the allowlist.
+  // Anything else (provider down, partial or repeated listing, empty segment, foreign address) blocks the call. An injected
+  // provider never bypasses this inspection. Nothing is logged but codes.
   const checkSegment = async (signal: AbortSignal): Promise<Safety> => {
-    const listed = await guarded(signal, (guard) => provider.listContacts(config.segmentId, allowed.size, guard));
+    if (await syncMarked()) {
+      logEvent("warn", "newsletter_contact_sync_pending", {});
+      return "sync_pending";
+    }
+    const listed = await guarded(signal, (guard) => provider.listContacts(config.segmentId, publicMode ? MARKETING_CONTACT_LIMIT : allowed.size, guard));
     if (!listed.ok) {
       logEvent("warn", "newsletter_segment_unavailable", { status: listed.status ?? 0 });
       return "unavailable";
     }
     const { emails, complete } = listed.value;
-    if (!complete || !emails.length || emails.some((email) => !allowed.has(email))) {
+    if (!complete || !emails.length || (!publicMode && emails.some((email) => !allowed.has(email)))) {
       logEvent("error", "newsletter_segment_unsafe", { complete, empty: emails.length === 0 });
       return "unsafe";
     }
+    if (publicMode && !idSecret) return "unsafe";
     if (idSecret) {
       const active = await store.transaction(async (tx) => Promise.all(emails.map(async (email) => {
         const record = await tx.get<SubscriptionRecord>(COLLECTIONS.subscriptions, opaqueId(idSecret, "sb", `email:${email}`));
-        return record?.status === "confirmed";
+        if (record?.status !== "confirmed") return false;
+        if (record.contactSyncSince || record.contactSyncState) return false;
+        return !record.revokedAt || (record.confirmedAt !== undefined && record.confirmedAt > record.revokedAt);
       })));
       if (active.some((value) => !value)) {
         logEvent("error", "newsletter_segment_has_inactive_contact", {});
@@ -304,6 +326,7 @@ export function createBroadcastHandler(store: Store, config: BroadcastConfig, no
   const requireSafeSegment = async (signal: AbortSignal): Promise<void> => {
     const safety = await checkSegment(signal);
     if (safety === "unavailable") throw new Error("segment_check_unavailable");
+    if (safety === "sync_pending") throw new RetryLater(SYNC_PENDING_WAIT_MS, { deferral: true });
     if (safety === "unsafe") throw new PermanentFailure("segment_not_pilot_safe");
   };
 

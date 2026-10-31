@@ -3,23 +3,21 @@ import path from "node:path";
 import { Resend } from "resend";
 import { tools } from "../../features/tools/content";
 import { resolveFormMode, type ContactFormConfig } from "../forms";
+import { RESEND_DAILY_LIMIT, RESEND_MONTHLY_LIMIT, releaseReservation, releaseUnstartedAdmission, startAttempt } from "./capacity";
 import { hasIdSecret, loadDefenseConfig } from "./defense";
 import { loadInternalKeys } from "./internal-auth";
 import { PermanentFailure, RetryLater, type JobHandler } from "./jobs";
 import { resolveBackendMode } from "./mode";
 import { logEvent, safeErrorCode } from "./safe";
 import type { Store } from "./store";
-import { COLLECTIONS, type EmailQuotaRecord, type ReportDeliveryRecord, type ToolId } from "./types";
+import { COLLECTIONS, type ReportDeliveryRecord, type ToolId } from "./types";
 import { checkEmail } from "./validation";
 
-// Resend Free plan. The environment may only lower these ceilings, never raise them.
-export const RESEND_DAILY_LIMIT = 100;
-export const RESEND_MONTHLY_LIMIT = 3000;
+export { RESEND_DAILY_LIMIT, RESEND_MONTHLY_LIMIT };
 // Resend keeps an idempotency key for 24 h. An uncertain send is retried with the same key only while the key is
 // certainly alive (margin for clock skew); after that a resend could duplicate the e-mail, so a human must reconcile.
 export const IDEMPOTENCY_WINDOW_MS = 23 * 60 * 60_000;
 const SEND_TIMEOUT_MS = 15_000;
-const DAY_MS = 24 * 60 * 60_000;
 
 const PDF_FILES: Record<ToolId, string> = {
   rosi: "rosi-v1.pdf",
@@ -46,7 +44,9 @@ export interface ReportConfig {
   replyTo: string;
   dailyLimit: number;
   monthlyLimit: number;
+  // Empty in public mode (`mode: "public"` is the explicit marker); a missing allowlist never means "open".
   allowlist: readonly string[];
+  mode?: "public";
   // Test seams; production uses the Resend SDK and the PDFs under private/reports.
   mailer?: Mailer;
   readPdf?: (toolId: ToolId) => Promise<Buffer>;
@@ -63,13 +63,13 @@ const senderAddress = (value: string): string | undefined => checkEmail(/<([^<>]
 // Fail closed: operational only with the API key, a sender and reply-to, the statement that the sending domain is verified
 // at the provider (RESEND_DOMAIN_CONFIRMED) and that something triggers the job runner (JOBS_TRIGGER_CONFIRMED). The
 // attestations are operator statements; the domain and the scheduler are not provisioned by this code.
-export function loadReportConfig(env: Record<string, string | undefined>): ReportConfig | undefined {
+export function loadReportConfig(env: Record<string, string | undefined>, mode?: "public"): ReportConfig | undefined {
   const apiKey = env.RESEND_API_KEY?.trim();
   const from = env.REPORT_EMAIL_FROM?.trim();
   const replyTo = checkEmail(env.REPORT_EMAIL_REPLY_TO?.trim());
   const items = (env.NEWSLETTER_PILOT_ALLOWLIST ?? "").split(",").map((item) => item.trim()).filter(Boolean);
   const emails = items.map(checkEmail);
-  if (!items.length || items.length > 100 || emails.some((email) => !email)) return undefined;
+  if (mode !== "public" && (!items.length || items.length > 100 || emails.some((email) => !email))) return undefined;
   if (!apiKey || !from || !senderAddress(from) || !replyTo) return undefined;
   if (env.RESEND_DOMAIN_CONFIRMED !== "true" || env.JOBS_TRIGGER_CONFIRMED !== "true") return undefined;
   return {
@@ -78,29 +78,27 @@ export function loadReportConfig(env: Record<string, string | undefined>): Repor
     replyTo,
     dailyLimit: clampLimit(env.REPORT_EMAIL_DAILY_LIMIT, RESEND_DAILY_LIMIT),
     monthlyLimit: clampLimit(env.REPORT_EMAIL_MONTHLY_LIMIT, RESEND_MONTHLY_LIMIT),
-    allowlist: [...new Set(emails as string[])],
+    allowlist: mode === "public" ? [] : [...new Set(emails as string[])],
+    ...(mode === "public" ? { mode } : {}),
   };
 }
 
 // Same contract as the contact form: FORM_MODE=demo wins; real mode needs the complete pilot plus the public site key.
-// Public admission of new addresses stays closed (unavailable) until capacity and consent controls exist: only "pilot" qualifies.
+// Pilot needs the allowlist; public needs the explicit public configuration. Capacity is checked at admission time.
 export function resolveReportAvailability(env: Record<string, string | undefined>): ContactFormConfig {
   if (resolveFormMode(env.FORM_MODE) === "demo") return { mode: "demo" };
   const siteKey = env.TURNSTILE_SITE_KEY?.trim();
-  const ready = resolveBackendMode(env.BACKEND_MODE) === "pilot"
-    && loadDefenseConfig(env).config !== undefined
+  const backend = resolveBackendMode(env.BACKEND_MODE);
+  if (backend !== "pilot" && backend !== "public") return { mode: "unavailable" };
+  const ready = loadDefenseConfig(env).config !== undefined
     && hasIdSecret(env.DATA_ID_SECRET)
     && Boolean(loadInternalKeys(env)?.jobs?.length)
-    && loadReportConfig(env) !== undefined;
-  return ready && siteKey ? { mode: "pilot", siteKey } : { mode: "unavailable" };
+    && loadReportConfig(env, backend === "public" ? "public" : undefined) !== undefined;
+  return ready && siteKey ? { mode: backend, siteKey } : { mode: "unavailable" };
 }
 
-const dayKey = (at: Date) => at.toISOString().slice(0, 10);
-const monthKey = (at: Date) => at.toISOString().slice(0, 7);
 const nextDayStart = (at: Date) => Date.UTC(at.getUTCFullYear(), at.getUTCMonth(), at.getUTCDate() + 1);
 const nextMonthStart = (at: Date) => Date.UTC(at.getUTCFullYear(), at.getUTCMonth() + 1, 1);
-const dayId = (day: string) => `qt_day_${day}`;
-const monthId = (month: string) => `qt_month_${month}`;
 
 // The PDF is read from private/reports (traced into the jobs route only); a missing or non-PDF file is a deploy defect.
 async function readReportPdf(toolId: ToolId): Promise<Buffer> {
@@ -181,17 +179,9 @@ export function createReportHandler(store: Store, config: ReportConfig, now: () 
         }
         return { kind: "send" };
       }
-      const day = dayKey(at);
-      const month = monthKey(at);
-      const dayDoc = await tx.get<EmailQuotaRecord>(COLLECTIONS.emailQuota, dayId(day));
-      const monthDoc = await tx.get<EmailQuotaRecord>(COLLECTIONS.emailQuota, monthId(month));
-      const dayUsed = dayDoc?.used ?? 0;
-      const monthUsed = monthDoc?.used ?? 0;
-      if (monthUsed >= config.monthlyLimit) return { kind: "defer", waitMs: nextMonthStart(at) - at.getTime() };
-      if (dayUsed >= config.dailyLimit) return { kind: "defer", waitMs: nextDayStart(at) - at.getTime() };
-      tx.set(COLLECTIONS.emailQuota, dayId(day), { id: dayId(day), used: dayUsed + 1, expiresAt: new Date(nextDayStart(at) + DAY_MS).toISOString() });
-      tx.set(COLLECTIONS.emailQuota, monthId(month), { id: monthId(month), used: monthUsed + 1, expiresAt: new Date(nextMonthStart(at) + DAY_MS).toISOString() });
-      tx.set(COLLECTIONS.reportDeliveries, id, { ...current, attemptStartedAt: at.toISOString(), reservation: { day, month } });
+      const reservation = await startAttempt(tx, current.reservation, at, config);
+      if ("waitMs" in reservation) return { kind: "defer", waitMs: reservation.waitMs };
+      tx.set(COLLECTIONS.reportDeliveries, id, { ...current, attemptStartedAt: at.toISOString(), reservation });
       return { kind: "send" };
     });
 
@@ -201,22 +191,20 @@ export function createReportHandler(store: Store, config: ReportConfig, now: () 
     store.transaction(async (tx) => {
       const current = await tx.get<ReportDeliveryRecord>(COLLECTIONS.reportDeliveries, id);
       if (!current?.reservation || current.sentAt) return;
-      const { day, month } = current.reservation;
+      await releaseReservation(tx, current.reservation, config, exhausted);
       const rest: Partial<ReportDeliveryRecord> = { ...current };
       delete rest.attemptStartedAt;
       delete rest.reservation;
-      // Firestore forbids reads after writes in a transaction: read both counters first.
-      const scopes = [
-        { docId: dayId(day), scope: "day", limit: config.dailyLimit },
-        { docId: monthId(month), scope: "month", limit: config.monthlyLimit },
-      ] as const;
-      const docs = await Promise.all(scopes.map(({ docId }) => tx.get<EmailQuotaRecord>(COLLECTIONS.emailQuota, docId)));
-      scopes.forEach(({ docId, scope, limit }, index) => {
-        const doc = docs[index];
-        if (!doc) return;
-        const used = Math.max(doc.used - 1, 0);
-        tx.set(COLLECTIONS.emailQuota, docId, { ...doc, used: exhausted === scope ? Math.max(used, limit) : used });
-      });
+      tx.set(COLLECTIONS.reportDeliveries, id, rest as ReportDeliveryRecord);
+    });
+
+  // Transient provider refusal: nothing was sent, the unit stays counted as an admission for the retry.
+  const revertToAdmission = (id: string) =>
+    store.transaction(async (tx) => {
+      const current = await tx.get<ReportDeliveryRecord>(COLLECTIONS.reportDeliveries, id);
+      if (!current?.reservation || current.sentAt) return;
+      const rest: Partial<ReportDeliveryRecord> = { ...current, reservation: { ...current.reservation, kind: "admission" } };
+      delete rest.attemptStartedAt;
       tx.set(COLLECTIONS.reportDeliveries, id, rest as ReportDeliveryRecord);
     });
 
@@ -225,14 +213,29 @@ export function createReportHandler(store: Store, config: ReportConfig, now: () 
     if (!id) throw new PermanentFailure("missing_request");
     const delivery = await readDelivery(id);
     if (!delivery) throw new PermanentFailure("request_not_found");
-    if (delivery.sentAt) return;
+    if (delivery.sentAt) {
+      await releaseUnstartedAdmission(store, COLLECTIONS.reportDeliveries, id, config);
+      return;
+    }
     if (delivery.reconcile) throw new PermanentFailure("reconciliation_required");
-    if (!delivery.email) throw new PermanentFailure("missing_email");
-    if (!config.allowlist.includes(delivery.email)) throw new PermanentFailure("pilot_recipient_not_allowed");
-    const pdf = await readPdf(delivery.toolId);
+    if (!delivery.email) {
+      await releaseUnstartedAdmission(store, COLLECTIONS.reportDeliveries, id, config);
+      throw new PermanentFailure("missing_email");
+    }
+    if (config.mode !== "public" && !config.allowlist.includes(delivery.email)) {
+      await releaseUnstartedAdmission(store, COLLECTIONS.reportDeliveries, id, config);
+      throw new PermanentFailure("pilot_recipient_not_allowed");
+    }
+    const pdf = await readPdf(delivery.toolId).catch(async (error: unknown) => {
+      if (error instanceof PermanentFailure) await releaseUnstartedAdmission(store, COLLECTIONS.reportDeliveries, id, config);
+      throw error;
+    });
 
     const prepared = await prepare(id);
-    if (prepared.kind === "done") return;
+    if (prepared.kind === "done") {
+      await releaseUnstartedAdmission(store, COLLECTIONS.reportDeliveries, id, config);
+      return;
+    }
     if (prepared.kind === "reconcile") {
       logEvent("error", "report_reconciliation_required", {});
       throw new PermanentFailure("reconciliation_required");
@@ -269,13 +272,16 @@ export function createReportHandler(store: Store, config: ReportConfig, now: () 
       logEvent("warn", "report_send_uncertain", { error: code });
       throw new Error(`report_send_${status ?? "unknown"}`);
     }
+    if (code === "rate_limit_exceeded") {
+      await revertToAdmission(id);
+      throw new RetryLater(60_000, { deferral: true });
+    }
     const exhausted = QUOTA_CODES[code as keyof typeof QUOTA_CODES];
     await release(id, exhausted);
     if (exhausted) {
       const at = now();
       throw new RetryLater((exhausted === "day" ? nextDayStart(at) : nextMonthStart(at)) - at.getTime(), { deferral: true });
     }
-    if (code === "rate_limit_exceeded") throw new RetryLater(60_000, { deferral: true });
     throw new PermanentFailure(`resend_${code}`.slice(0, 60));
   };
 }

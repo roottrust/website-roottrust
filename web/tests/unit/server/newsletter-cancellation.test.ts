@@ -38,7 +38,7 @@ describe("newsletter cancellation", () => {
   it("does not let an old cancellation token revoke a fresh confirmation", async () => {
     const env = setup();
     const old = await subscribe(env);
-    expect(await cancelSubscription(env.store, SECRET, verifyCancellationToken(SECRET, old)!, later(1000), true)).toBe("cancelled");
+    expect(await cancelSubscription(env.store, SECRET, verifyCancellationToken(SECRET, old)!, later(1000))).toBe("cancelled");
     await subscribe(env, later(2000));
     expect((await handleNewsletterCancellation(request(old), env.deps)).status).toBe(409);
     expect((env.store.dump(COLLECTIONS.subscriptions)[SUB_ID] as SubscriptionRecord).status).toBe("confirmed");
@@ -48,7 +48,12 @@ describe("newsletter cancellation", () => {
     const env = setup();
     const token = await subscribe(env);
     await cancelSubscription(env.store, SECRET, verifyCancellationToken(SECRET, token)!, later(1000));
-    expect(await purgeExpired(env.store, new Date("2027-04-13T12:00:02.000Z"), 25)).toBeGreaterThan(0);
+    const afterSix = new Date("2027-04-13T12:00:02.000Z");
+    await purgeExpired(env.store, afterSix, 25);
+    expect((env.store.dump(COLLECTIONS.subscriptions)[SUB_ID] as SubscriptionRecord).contactSyncState).toBe("pending");
+    const sync = Object.values(env.store.dump(COLLECTIONS.jobs)).find((job) => (job as JobRecord).kind === JOB_KINDS.newsletterContactSync) as JobRecord;
+    await createContactSyncHandler(env.store, env.deps.broadcast!, async () => undefined)(sync, { signal: new AbortController().signal });
+    expect(await purgeExpired(env.store, afterSix, 25)).toBeGreaterThan(0);
     expect(env.store.dump(COLLECTIONS.subscriptions)[SUB_ID]).toBeUndefined();
   });
 
@@ -60,7 +65,7 @@ describe("newsletter cancellation", () => {
     const handler = createContactSyncHandler(env.store, env.deps.broadcast!, sync);
     const queued = Object.values(env.store.dump(COLLECTIONS.jobs)).find((entry) => (entry as JobRecord).kind === JOB_KINDS.newsletterContactSync) as JobRecord;
     await handler(queued, { signal: new AbortController().signal });
-    await cancelSubscription(env.store, SECRET, verifyCancellationToken(SECRET, token)!, later(1000), true);
+    await cancelSubscription(env.store, SECRET, verifyCancellationToken(SECRET, token)!, later(1000));
     await handler(queued, { signal: new AbortController().signal });
     expect(calls).toEqual([true, false]);
   });
@@ -71,7 +76,7 @@ describe("newsletter cancellation", () => {
     const calls: boolean[] = [];
     const handler = createContactSyncHandler(env.store, env.deps.broadcast!, async (_email, active) => {
       calls.push(active);
-      if (active) await cancelSubscription(env.store, SECRET, verifyCancellationToken(SECRET, token)!, later(1000), true);
+      if (active) await cancelSubscription(env.store, SECRET, verifyCancellationToken(SECRET, token)!, later(1000));
     });
     const queued = Object.values(env.store.dump(COLLECTIONS.jobs)).find((entry) => (entry as JobRecord).kind === JOB_KINDS.newsletterContactSync) as JobRecord;
     await handler(queued, { signal: new AbortController().signal });
