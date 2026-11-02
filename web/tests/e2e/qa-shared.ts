@@ -6,8 +6,8 @@ const [recente] = sortedEdicoes();
 export const ROUTES = [
   { path: "/", h1: "Confiabilidade com profundidade." },
   { path: "/servicos/ciberseguranca", h1: "Cibersegurança para proteger o seu negócio." },
-  { path: "/servicos/infraestrutura-em-nuvem", h1: "Infraestrutura preparada para a sua operação." },
-  { path: "/servicos/desenvolvimento-de-software", h1: "Software sob medida" },
+  { path: "/servicos/infraestrutura", h1: "Infraestrutura preparada para a sua operação." },
+  { path: "/servicos/software", h1: "Software sob medida" },
   { path: "/ferramentas/rosi", h1: null },
   { path: "/ferramentas/shadow-ai", h1: null },
   { path: "/ferramentas/divida-tecnica", h1: null },

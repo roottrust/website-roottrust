@@ -320,11 +320,17 @@ test.describe("tema: shell, assinatura e acessibilidade", () => {
         const bar = document.querySelector("header > div")!.getBoundingClientRect();
         return { w: logo.width, h: logo.height, bar: bar.height, padding: getComputedStyle(document.documentElement).scrollPaddingTop };
       });
-      expect(desktop.h).toBeGreaterThanOrEqual(42);
-      expect(desktop.h).toBeLessThanOrEqual(45);
+      expect(desktop.h).toBeGreaterThanOrEqual(59.5);
+      expect(desktop.h).toBeLessThanOrEqual(60.5);
       expect(desktop.w / desktop.h).toBeCloseTo(1156.5 / 344.5, 1);
       expect(Math.round(desktop.bar)).toBe(76);
       expect(desktop.padding).toBe("96px");
+      for (const [width, expected] of [[959, 44], [960, 60]] as const) {
+        await page.setViewportSize({ width, height: 1000 });
+        const height = await page.evaluate(() => document.querySelector('header [role="img"]')!.getBoundingClientRect().height);
+        expect(Math.round(height), `viewport ${width}`).toBe(expected);
+      }
+      await page.setViewportSize({ width: 1440, height: 1000 });
       await expect(page.locator("header").getByText("Tema", { exact: true })).toHaveCount(0);
       await expect(themeSelect(page).locator("svg:visible")).toHaveCount(1);
 
@@ -336,7 +342,8 @@ test.describe("tema: shell, assinatura e acessibilidade", () => {
         });
         expect(mobile.scroll).toBeLessThanOrEqual(mobile.inner);
         expect(mobile.logo.left).toBeGreaterThanOrEqual(0);
-        expect(mobile.logo.height).toBeLessThanOrEqual(36);
+        expect(mobile.logo.height).toBeLessThanOrEqual(44.5);
+        expect(mobile.logo.height).toBeGreaterThanOrEqual(43.5);
         expect(mobile.logo.width / mobile.logo.height).toBeCloseTo(1156.5 / 344.5, 1);
         expect(mobile.logo.right).toBeLessThanOrEqual(mobile.select.left);
         expect(mobile.select.right).toBeLessThanOrEqual(mobile.toggle.left);

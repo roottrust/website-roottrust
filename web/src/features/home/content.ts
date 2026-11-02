@@ -16,9 +16,9 @@ export const services = [
   },
   {
     "kind": "servidores",
-    "href": "/servicos/infraestrutura-em-nuvem",
-    "code": "Infraestrutura em nuvem",
-    "title": "Infraestrutura em nuvem",
+    "href": "/servicos/infraestrutura",
+    "code": "Infraestrutura",
+    "title": "Infraestrutura",
     "resumo": "Ambientes estáveis, escaláveis e sob controle",
     "desc": "Planejamos, migramos e acompanhamos ambientes locais, em nuvem e híbridos, com atenção à capacidade, à recuperação e aos custos.",
     "entregas": [
@@ -30,7 +30,7 @@ export const services = [
   },
   {
     "kind": "modulos",
-    "href": "/servicos/desenvolvimento-de-software",
+    "href": "/servicos/software",
     "code": "Software",
     "title": "Software",
     "resumo": "Sistemas que acompanham o seu negócio",

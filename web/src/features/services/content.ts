@@ -6,7 +6,6 @@ export type Frente = {
   text: string;
   lines?: readonly string[];
   deliveries?: readonly string[];
-  detail?: Detail;
 };
 
 export type Detail = {
@@ -24,7 +23,7 @@ export type Detail = {
 export type Step = { title: string; text: string };
 
 export type ServiceContent = {
-  slug: "ciberseguranca" | "infraestrutura-em-nuvem" | "desenvolvimento-de-software";
+  slug: "ciberseguranca" | "infraestrutura" | "software";
   kind: PillarKind;
   label: string;
   metaTitle: string;
@@ -35,13 +34,13 @@ export type ServiceContent = {
   situations: readonly { title: string; text: string }[];
   frentesTitle: readonly [string, string];
   frentes: readonly Frente[];
+  pentest?: Detail;
   frentesNote?: string;
   concepts?: readonly { term: string; text: string }[];
   conceptsNote?: string;
   methodTitle: readonly [string, string];
   steps: readonly Step[];
   stageNote: string;
-  closing: string;
   faq: readonly { q: string; a: string }[];
   ctaTitle: readonly [string, string];
   ctaText: string;
@@ -69,36 +68,33 @@ export const services: readonly ServiceContent[] = [
     ],
     frentesTitle: ["Proteção conectada", "ao contexto da operação."],
     frentes: [
-      {
-        title: "Riscos e testes de segurança",
-        text: "Avaliamos riscos e vulnerabilidades dentro de um escopo definido, inclusive com testes de segurança autorizados (Pentest). Os achados orientam prioridades técnicas e decisões de negócio.",
-        detail: {
-          id: "pentest",
-          summary: "Sobre o Pentest",
-          title: "Teste de segurança autorizado, com escopo definido.",
-          text: "Pentest é um teste de segurança autorizado, com escopo definido. Avaliamos aplicações web, APIs, redes, infraestrutura e aplicações mobile, com objetivos e limites acordados antes da execução. Antes de qualquer teste de segurança, definimos escopo e autorização.",
-          listLabel: "Entregas do Pentest contratado",
-          items: [
-            "Relatório técnico com evidências e impacto dos achados.",
-            "Resumo executivo para apoiar decisões.",
-            "Recomendações priorizadas de correção.",
-          ],
-          complementLabel: "Capacidades complementares, conforme escopo contratado",
-          complements: [
-            { title: "Gestão de vulnerabilidades", text: "Complementa o diagnóstico e a priorização de correções." },
-            { title: "Red Team", text: "Capacidade complementar, com objetivo e escopo próprios; não é sinônimo de Pentest." },
-            { title: "Apoio a normas e compliance", text: "Apoio à adequação conforme a contratação; não garante certificação." },
-          ],
-          notes: [
-            { text: "Reteste após as correções conforme escopo e contrato." },
-            { text: "A conversa gratuita não inclui a execução do Pentest ou esses relatórios.", muted: true },
-          ],
-        },
-      },
+      { title: "Riscos e testes de segurança", text: "Avaliamos riscos e vulnerabilidades dentro de um escopo definido, inclusive com testes de segurança autorizados (Pentest). Os achados orientam prioridades técnicas e decisões de negócio." },
       { title: "Identidade e acesso", text: "Apoiamos a organização de identidades, permissões e controles de acesso considerando aplicações, infraestrutura e responsabilidades da operação." },
       { title: "Monitoramento", text: "Acompanhamos sinais relevantes nos ambientes contratados. O monitoramento automático pode ser 24×7 conforme contrato; cobertura humana e resposta são definidas separadamente." },
       { title: "Resposta a incidentes", text: "Apoiamos o tratamento de incidentes conforme o escopo acordado e as condições da operação, conectando análise, prioridades e ações necessárias." },
     ],
+    pentest: {
+      id: "pentest",
+      summary: "Sobre o Pentest",
+      title: "Teste de segurança autorizado, com escopo definido.",
+      text: "Pentest é um teste de segurança autorizado, com escopo definido. Avaliamos aplicações web, APIs, redes, infraestrutura e aplicações mobile, com objetivos e limites acordados antes da execução. Antes de qualquer teste de segurança, definimos escopo e autorização.",
+      listLabel: "Entregas do Pentest contratado",
+      items: [
+        "Relatório técnico com evidências e impacto dos achados.",
+        "Resumo executivo para apoiar decisões.",
+        "Recomendações priorizadas de correção.",
+      ],
+      complementLabel: "Capacidades complementares, conforme escopo contratado",
+      complements: [
+        { title: "Gestão de vulnerabilidades", text: "Complementa o diagnóstico e a priorização de correções." },
+        { title: "Red Team", text: "Capacidade complementar, com objetivo e escopo próprios; não é sinônimo de Pentest." },
+        { title: "Apoio a normas e compliance", text: "Apoio à adequação conforme a contratação; não garante certificação." },
+      ],
+      notes: [
+        { text: "Reteste após as correções conforme escopo e contrato." },
+        { text: "A conversa gratuita não inclui a execução do Pentest ou esses relatórios.", muted: true },
+      ],
+    },
     methodTitle: ["Do entendimento do risco", "às prioridades de ação."],
     steps: [
       { title: "Entender contexto e definir limites", text: "Entendemos o negócio, os sistemas e o que está dentro e fora do trabalho. Escopo e autorização vêm antes de qualquer teste." },
@@ -107,8 +103,6 @@ export const services: readonly ServiceContent[] = [
       { title: "Acompanhar e revisar prioridades", text: "Acompanhamos o que estiver contratado e revisamos prioridades quando o contexto muda. Reteste, monitoramento e suporte dependem do contrato." },
     ],
     stageNote,
-    closing:
-      "Segurança considera as aplicações que movem o negócio e a infraestrutura que as sustenta. Essa visão integrada orienta o trabalho sem exigir a contratação das três frentes.",
     faq: [
       { q: "Solicitar diagnóstico inclui testes de segurança?", a: "Não. O primeiro passo é uma conversa gratuita de qualificação. O Pentest é um serviço técnico com escopo, autorização e contratação definidos." },
       { q: "Quais ambientes podem ser avaliados?", a: "Aplicações web, APIs, redes, infraestrutura e aplicações mobile. Os alvos e limites são acordados para cada trabalho." },
@@ -122,10 +116,10 @@ export const services: readonly ServiceContent[] = [
       "Conte um pouco sobre sua empresa em uma conversa inicial gratuita de qualificação. A gente retorna por ligação ou WhatsApp no próximo dia útil.",
   },
   {
-    slug: "infraestrutura-em-nuvem",
+    slug: "infraestrutura",
     kind: "servidores",
-    label: "Infraestrutura em nuvem",
-    metaTitle: "Infraestrutura em nuvem",
+    label: "Infraestrutura",
+    metaTitle: "Infraestrutura",
     metaDescription:
       "Ambientes locais, nuvem, redes, backup e capacidade com atenção à continuidade e aos custos da sua operação.",
     h1: ["Infraestrutura", "preparada para a sua operação."],
@@ -154,8 +148,6 @@ export const services: readonly ServiceContent[] = [
       { title: "Acompanhar e otimizar", text: "Acompanhamos os ambientes incluídos no contrato e ajustamos capacidade e custos quando o contexto muda." },
     ],
     stageNote,
-    closing:
-      "A infraestrutura sustenta aplicações e precisa considerar os controles de segurança. As decisões conectam essas dependências sem exigir contratar os três serviços.",
     faq: [
       { q: "O serviço atende ambientes locais e híbridos?", a: "Sim. Inclui ambientes locais, em nuvem, híbridos e redes corporativas conforme o escopo contratado." },
       { q: "Toda contratação exige migrar para nuvem?", a: "Não. O contexto, as dependências, os custos e as necessidades da operação orientam a escolha." },
@@ -169,7 +161,7 @@ export const services: readonly ServiceContent[] = [
       "Uma conversa inicial gratuita para entender seus ambientes, suas prioridades de continuidade e seus desafios de custos. Retorno por ligação ou WhatsApp no próximo dia útil.",
   },
   {
-    slug: "desenvolvimento-de-software",
+    slug: "software",
     kind: "modulos",
     label: "Software",
     metaTitle: "Software e desenvolvimento sob medida",
@@ -206,8 +198,6 @@ export const services: readonly ServiceContent[] = [
       { title: "Colocar em uso e evoluir", text: "Orientamos a entrada em uso e, quando contratado, acompanhamos e evoluímos a solução." },
     ],
     stageNote,
-    closing:
-      "Aplicações dependem da infraestrutura em que operam e dos controles que protegem seus dados. Consideramos essas conexões desde a concepção, sem exigir a contratação dos três serviços.",
     faq: [
       { q: "Vocês criam aplicações web e mobile?", a: "Sim. As necessidades, a tecnologia e as entregas são definidas no escopo do projeto." },
       { q: "Vocês integram sistemas que já usamos?", a: "Sim, essa é uma frente de atuação. As possibilidades dependem dos sistemas envolvidos, acessos, restrições e objetivos acordados." },

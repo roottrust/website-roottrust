@@ -1,13 +1,14 @@
 # Contrato das ferramentas Root Trust
 
-## Aceite operacional — 19/10/2026
+## Estado vigente — 31/10/2026
 
-**Piloto restrito concluído e aceito por Renato.** Diagnóstico, quatro relatórios, newsletter agendada com aprovação humana, publicação/envio, confirmação/cancelamento e backup/restauração foram validados. Renato é responsável pela conferência de cotas e pela guarda/descarte de backups, CSVs, mensagens e contatos nos provedores. Procedimento e limitações em [development.md](development.md#responsabilidade-operacional-e-limites-do-aceite). O [plano arquivado](../plans/integrations-pilot-completed.md#encerramento-e-aceite-final--19102026) preserva as evidências. Este estado prevalece sobre propostas e pendências históricas abaixo. Não há autorização de abertura pública nem alteração das allowlists.
+F01–F29 e os modelos/fórmulas permanecem inalterados. As quatro ferramentas foram integradas e publicadas; Renato confirmou o fluxo real de relatório ROSI em 31/10, inclusive fora da antiga allowlist. Respostas/resultados seguem somente no navegador e não entram no pedido de relatório. O deployment está em modo `public`; formulários operam segundo readiness/defesas public. Os 12 exports aprovados continuam referência visual; auditoria e limites em [README](README.md). Propostas antigas abaixo são identificadas como histórico e não ampliam cálculo, escopo ou oferta.
 
+## Histórico operacional — piloto restrito, 19/10/2026
 
-**Atualizado:** 11/10/2026. F01–F29 definem o escopo aprovado das quatro ferramentas. Seus exports aprovados estão em `references/claude-design/` e foram avaliados na auditoria de 09/10; os modelos locais foram implementados, testados e revisados; a publicação futura exige nova revisão de fontes, patches e operação. Propostas neste contrato devem ser comparadas com o export aprovado. Entrada: [README](README.md); newsletter: [newsletter.md](newsletter.md).
+O piloto foi aceito após receber e validar os quatro PDFs; jobs concluíram na primeira tentativa. Pedido de relatório transmite apenas e-mail, ID da ferramenta e consentimento comercial opcional; respostas/resultados permanecem no navegador. Isso não inscreve newsletter. A notificação de relatório no Discord continua adiada. O [plano arquivado](../plans/integrations-pilot-completed.md) preserva as evidências históricas; o [PLAN.md](../../PLAN.md) é fonte ativa atual.
 
-**Estado do relatório, 17/10/2026:** os quatro PDFs padrão foram recebidos e validados pelo usuário no piloto restrito; os quatro jobs concluíram na primeira tentativa. O formulário envia apenas e-mail, ID da ferramenta e consentimento comercial opcional; respostas/resultados continuam no navegador. Isso não inscreve na newsletter. Notificação de relatórios no Discord foi solicitada como alteração futura no PLAN, sem implementação. As referências abaixo ao “protótipo sem envio” descrevem a fase original; aceite geral continua em T6.2/T6.3.
+**Histórico do relatório, 17/10/2026:** os quatro PDFs padrão foram recebidos e validados pelo usuário no piloto restrito; os quatro jobs concluíram na primeira tentativa. O formulário envia apenas e-mail, ID da ferramenta e consentimento comercial opcional; respostas/resultados continuam no navegador. Isso não inscreve na newsletter. Notificação de relatórios no Discord segue adiada. As referências abaixo ao “protótipo sem envio” descrevem a fase original.
 
 ## Resumo para começar
 
@@ -36,15 +37,15 @@ Standalone e export das ferramentas são versões anteriores, com números difer
 - Resultado inicial aberto, sem cadastro; método, fontes, unidades, premissas e limites visíveis.
 - Fluxo curto, com revisão das respostas e resultado na mesma página. F18/F21/F25/F29 substituem as etapas inicialmente propostas em F02: todas as quatro ferramentas usam formulário/checklist em uma página.
 - Quantitativo somente com modelo aprovado; qualitativo também exige critérios defensáveis.
-- Cálculo frontend. Respostas somente em memória, descartadas, sem envio/persistência/analytics/URL/associação ao e-mail.
+- Cálculo no navegador. Respostas somente em memória, descartadas, sem envio/persistência/analytics/URL/associação ao e-mail.
 - Relatório **padrão por tema**, opcional por e-mail, separado da newsletter; sem personalização/plano individual prometidos.
 - CTA **Solicitar diagnóstico**, conversa inicial gratuita; sem agenda automática.
 - Ícones Home: balança, olho, engrenagem com dentes faltantes, nuvem/seta. Reuso contido nas internas é proposta visual para revisão, sem substituir controles ou resultados.
-- Entrega real depende de integração; demonstrações precisam de identificação.
+- Pedido real de relatório depende de readiness do backend public/pilot e destinatário aceito; modo demo permanece local e identificado.
 
 ## Direção visual aprovada para as ferramentas
 
-**F01 — Home com efeitos contidos.** Herdar a linguagem da Home: fundo escuro, Baloo 2/Archivo, assinatura oficial, moldura/contornos, cards e repertório de ícones. Adaptar a intensidade dos efeitos para não disputar atenção com campos, explicações e resultados. Conteúdo e controles permanecem em HTML, independentes dos canvases.
+**F01 — Home com efeitos contidos.** Herdar a linguagem da Home em claro e escuro: Baloo 2/Archivo, assinatura oficial, moldura/contornos, cards e repertório de ícones. Adaptar a intensidade dos efeitos para não disputar atenção com campos, explicações e resultados. Conteúdo e controles permanecem em HTML, independentes dos canvases.
 
 A escolha aprova a direção geral, não a posição dos objetos, quantidade de animações, amplitude, velocidade, pinning ou composições específicas. A seção de composição abaixo propõe uma solução simples para revisão visual. Pausa acessível, redução de movimento e fallback permanecem requisitos; não preservar falhas do export como comportamento desejado.
 
@@ -67,7 +68,7 @@ Números e estatísticas históricos **não são evidências ou benchmarks aprov
 
 Linguagem visual definida em F01. F02 propôs etapas curtas; F18/F21/F25/F29 definem formulário/checklist em uma página para todas as ferramentas. Permitir revisar respostas e exibir resultado aberto logo abaixo. As quatro rotas de ferramenta estão no escopo; hub de ferramentas adiado e fora das rotas desta entrega. Não acrescentar etapas artificiais ou telas de captura antes do resultado.
 
-As regras operacionais e propostas de copy/composição abaixo completam o contrato de implementação e revisão. Não apresentar essas propostas como respostas adicionais do proprietário. Integrações, revisão técnica/editorial final, relatórios e publicação continuam pendentes.
+As regras operacionais e propostas de copy/composição abaixo completam o contrato de implementação. Não apresentar propostas como respostas adicionais do proprietário. Relatórios foram testados/confirmados pelo usuário; o ensaio editorial da newsletter permanece pendente.
 
 ### ROSI
 
@@ -199,7 +200,7 @@ O item 2 é orçamento de operação do cenário inteiro dentro do horizonte, n�
 - **Limites:** hipóteses informadas pelo visitante, mesmo escopo/nível de serviço, sem taxa de câmbio, preços automáticos, descontos, gráfico ou cálculo de retorno temporal. Totais do período não permitem determinar payback.
 - **Complementos:** método, relatório padrão opcional e diagnóstico; nenhum custo/resposta enviado ou associado ao e-mail.
 
-**Entrevista das quatro ferramentas concluída em F29.** Composição, copy e estados detalhados abaixo são propostas para revisão; integrações e liberação de produção continuam pendentes.
+**Registro histórico da entrevista F29:** algumas composições/copies abaixo eram propostas para revisão. Os modelos foram implementados e as páginas publicadas; propostas históricas não substituem o escopo aprovado nem ampliam as ferramentas.
 
 ## Registro da entrevista
 
@@ -245,7 +246,7 @@ As seções seguintes completam a entrega para prototipagem. São propostas edit
 
 Usar uma estrutura compartilhada: cabeçalho/assinatura oficial → voltar às ferramentas → introdução curta com ícone do tema → formulário → resultado → método/limites → relatório padrão opcional → diagnóstico → rodapé. As rotas estão em [conteúdo](product.md). O hub de ferramentas está adiado e não é uma rota desta entrega.
 
-Propor fundo escuro `#171717`, painéis `#1D1D1D`, contornos `#3C3C3C`, textos Superfície e acentos da paleta aprovada da Home. Baloo 2 nos títulos, Archivo nos campos/textos; não redesenhar assinatura nem trocar por texto HTML. A transferência dos tokens UI para estas internas decorre de F01; não constitui mudança do manual oficial. Não usar variáveis legadas de `_ds` como novas cores de marca.
+**Proposta visual histórica:** fundo escuro `#171717`, painéis `#1D1D1D`, contornos `#3C3C3C`, textos Superfície e acentos da paleta aprovada da Home. A aplicação atual adapta a mesma composição aos dois temas. Baloo 2 nos títulos, Archivo nos campos/textos; não redesenhar assinatura nem trocar por texto HTML. Tokens UI não alteram o manual oficial.
 
 Introdução menor que o hero da Home; conteúdo central, sem coluna visual gigante ao lado do formulário. Objeto hachurado do tema em escala contida, preferencialmente com reuso do código existente. Não adicionar hero ASCII, múltiplos grafismos, partículas, pinning ou animações contínuas dentro dos campos. Esta posição/intensidade ainda será revisada pelo proprietário. Se o objeto não puder ser carregado, manter ilustração estática ou omitir a decoração, sem perder conteúdo.
 
@@ -312,9 +313,9 @@ Mostrar “Total para manter”, “Total para migrar e operar” e “Diferenç
 
 Alterar 12↔36 invalida o resultado e solicita revisar/reconfirmar os três totais antes de comparar; não recalcular com números do horizonte anterior. Totais zero declarados são válidos; nenhum campo ausente vira zero. Comparação exige escopo e nível de serviço equivalentes; só custos não decidem segurança, desempenho, restrições ou benefício estratégico.
 
-### Estados e dados — requisitos para a demonstração
+### Estados e dados — demonstração e proteção de respostas
 
-Protótipo deve calcular com entradas reais **localmente** quando o formato permitir JavaScript; separar isso de envio real, ainda indisponível. Não repetir os mockups históricos com resultados fixos. Identificar “Protótipo — cálculos locais; formulários de envio indisponíveis”. Exemplos financeiros são fictícios e não representam organização, benchmark ou promessa da Root Trust.
+Os modelos calculam com entradas do visitante localmente; isso é separado do pedido opcional de relatório, operado pelo backend real nos modos public/pilot quando há readiness. A demonstração local nunca envia. Não repetir mockups históricos com resultados fixos nem confundir exemplos fictícios com resultado do visitante. Exemplos financeiros não representam organização, benchmark ou promessa da Root Trust.
 
 | Estado | Comportamento |
 |---|---|
@@ -326,7 +327,7 @@ Protótipo deve calcular com entradas reais **localmente** quando o formato perm
 | Limpar | Remover respostas, auxiliares, erros e resultado da memória; retornar ao estado inicial. |
 | Exemplo ROSI | Abrir demonstração fictícia separada, conforme F13; não preencher/substituir silenciosamente o formulário real. |
 | Falha | Mensagem útil; manter dados conhecidos e permitir corrigir/reiniciar. Falha de decoração não impede cálculo. |
-| Relatório indisponível | Explicar que não há envio no protótipo; não coletar e-mail real nem mostrar confirmação de recebimento. |
+| Demo/offline | Demo não envia; `BACKEND_MODE=off` ou configuração inválida fecha a disponibilidade. `FORM_MODE=off` não desliga o backend public/pilot. Não afirmar confirmação ou entrega sem o estado real correspondente. |
 
 Aceitar valores decimais compatíveis com pt-BR e exibir moeda com formatação local; parsing inválido gera erro explícito. Tratar overflow numérico como erro, nunca como resultado. Não adicionar tetos de orçamento/frequência arbitrários. A validação acima não substitui revisão da implementação.
 
@@ -334,7 +335,7 @@ Respostas em memória da ferramenta: sem localStorage, sessionStorage, banco, UR
 
 ### Relatório, método e diagnóstico
 
-Proposta de título: “Receba o relatório de [tema]”. Descrição: “Material padrão sobre o tema, conceitos e próximos passos gerais. Não é personalizado a partir das suas respostas.” O nome **relatório** foi escolhido pelo proprietário; não substituí-lo por “guia”. Em produção, pedir somente o e-mail necessário ao envio, sem respostas anexadas; informar que newsletter é independente. No protótipo, apresentar o estado indisponível sem coletar cadastro real. Material, envio, retenção e confirmação aguardam definição.
+Proposta histórica de título: “Receba o relatório de [tema]”. Descrição: “Material padrão sobre o tema, conceitos e próximos passos gerais. Não é personalizado a partir das suas respostas.” O nome **relatório** foi escolhido pelo proprietário; não substituí-lo por “guia”. A implementação ativa pede somente o e-mail necessário, sem respostas anexadas; newsletter é independente. Readiness por fluxo determina disponibilidade; não mostrar sucesso simulado.
 
 “Como chegamos a este resultado” contém fórmulas/regras, unidades, premissas, fontes e limites por ferramenta. Proposta: detalhe recolhido por padrão, com resumo de limites próximo ao resultado, nunca escondido atrás de inscrição. No Shadow AI, explicar associação direta entre resposta declarada e orientação, sem ponderação. As fontes sustentam conceitos; os modelos simples de dívida/migração, a adaptação temporal ROSI e as frases do checklist são escolhas deste briefing, não modelos certificados pelas instituições citadas.
 
@@ -342,7 +343,7 @@ CTA: **Solicitar diagnóstico**. Oferece conversa inicial gratuita de qualifica�
 
 ### Exemplos reproduzíveis para conferir o protótipo
 
-**Dados próprios e fictícios para verificação, não benchmarks.** Nunca carregar como respostas iniciais do visitante. São critérios de revisão do protótipo; não foi implementada/testada uma aplicação de ferramentas neste repositório.
+**Dados próprios e fictícios para verificação, não benchmarks.** Nunca carregar como respostas iniciais do visitante. Exemplos reproduzíveis servem à revisão dos modelos e não são métricas comerciais nem resultados iniciais.
 
 | Ferramenta | Entradas | Resultado esperado |
 |---|---|---|

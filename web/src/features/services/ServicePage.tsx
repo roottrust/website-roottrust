@@ -4,7 +4,7 @@ import { FrameCanvas } from "@/features/graphics/FrameCanvas";
 import { PillarArt } from "@/features/graphics/PillarArt";
 import { SymbolAscii } from "@/features/graphics/SymbolAscii";
 import { contactAvailability } from "@/app/api/diagnostico/availability";
-import type { ServiceContent } from "./content";
+import type { Detail, ServiceContent } from "./content";
 import styles from "./services.module.css";
 
 function Eyebrow({ children, accentRule = false }: { children: string; accentRule?: boolean }) {
@@ -40,6 +40,46 @@ function Check() {
   return <span aria-hidden="true" className={styles.check}>√</span>;
 }
 
+function PentestPanel({ detail }: { detail: Detail }) {
+  return (
+    <article id={detail.id} aria-labelledby={`${detail.id}-titulo`} className={styles.pentest}>
+      <div className={styles.pentestGrid}>
+        <div className={styles.pentestContext}>
+          <span className={styles.label}>{detail.summary}</span>
+          <h3 id={`${detail.id}-titulo`}>{detail.title}</h3>
+          <p>{detail.text}</p>
+        </div>
+        <div className={styles.pentestDeliveries}>
+          <h4 className={styles.label}>{detail.listLabel}</h4>
+          <ol className={styles.detailList}>
+            {detail.items.map((item, itemIndex) => (
+              <li key={item}>
+                <span aria-hidden="true" className={styles.detailNumber}>{String(itemIndex + 1).padStart(2, "0")}</span>
+                {item}
+              </li>
+            ))}
+          </ol>
+        </div>
+      </div>
+      {detail.complements ? (
+        <div className={styles.pentestBand}>
+          <h4 className={styles.label}>{detail.complementLabel}</h4>
+          <ul className={styles.complements}>
+            {detail.complements.map((item) => (
+              <li key={item.title}><strong>{item.title}.</strong> {item.text}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+      <div className={styles.detailNotes}>
+        {detail.notes.map((note) => (
+          <p key={note.text} className={note.muted ? styles.muted : undefined}>{note.text}</p>
+        ))}
+      </div>
+    </article>
+  );
+}
+
 export function ServicePage({ service }: { service: ServiceContent }) {
   return (
     <main id="conteudo" data-graphics-root className={styles.root}>
@@ -60,7 +100,6 @@ export function ServicePage({ service }: { service: ServiceContent }) {
                 Solicitar diagnóstico
                 <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
               </a>
-              <span className={styles.actionNote}>Conversa inicial gratuita de qualificação. Retorno por ligação ou WhatsApp no próximo dia útil.</span>
             </div>
           </div>
           <div className={styles.art}>
@@ -113,47 +152,10 @@ export function ServicePage({ service }: { service: ServiceContent }) {
                       </ul>
                     </div>
                   ) : null}
-                  {frente.detail ? (
-                    <details id={frente.detail.id} className={styles.detail}>
-                      <summary>
-                        {frente.detail.summary}
-                        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 5v14" /><path d="M5 12h14" /></svg>
-                      </summary>
-                      <div className={styles.detailBody}>
-                        <h4>{frente.detail.title}</h4>
-                        <p>{frente.detail.text}</p>
-                        <div className={styles.detailBlock}>
-                          <h5 className={styles.label}>{frente.detail.listLabel}</h5>
-                          <ol className={styles.detailList}>
-                            {frente.detail.items.map((item, itemIndex) => (
-                              <li key={item}>
-                                <span aria-hidden="true" className={styles.detailNumber}>{String(itemIndex + 1).padStart(2, "0")}</span>
-                                {item}
-                              </li>
-                            ))}
-                          </ol>
-                        </div>
-                        {frente.detail.complements ? (
-                          <div className={styles.detailBlock}>
-                            <h5 className={styles.label}>{frente.detail.complementLabel}</h5>
-                            <ul className={styles.complements}>
-                              {frente.detail.complements.map((item) => (
-                                <li key={item.title}><strong>{item.title}.</strong> {item.text}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        ) : null}
-                        <div className={styles.detailNotes}>
-                          {frente.detail.notes.map((note) => (
-                            <p key={note.text} className={note.muted ? styles.muted : undefined}>{note.text}</p>
-                          ))}
-                        </div>
-                      </div>
-                    </details>
-                  ) : null}
                 </li>
               ))}
             </ul>
+            {service.pentest ? <PentestPanel detail={service.pentest} /> : null}
           </div>
 
           {service.concepts ? (
@@ -191,8 +193,7 @@ export function ServicePage({ service }: { service: ServiceContent }) {
                 </li>
               ))}
             </ol>
-            <div className={styles.closingBlock}>
-              <p className={styles.closing}>{service.closing}</p>
+            <div className={styles.stageNote}>
               <Pill>{service.stageNote}</Pill>
             </div>
           </div>

@@ -1,11 +1,10 @@
 # Design do website
 
-## Aceite operacional — 19/10/2026
+## Estado visual vigente — 31/10/2026
 
-**Piloto restrito concluído e aceito por Renato.** Diagnóstico, quatro relatórios, newsletter agendada com aprovação humana, publicação/envio, confirmação/cancelamento e backup/restauração foram validados. Renato é responsável pela conferência de cotas e pela guarda/descarte de backups, CSVs, mensagens e contatos nos provedores. Procedimento e limitações em [development.md](development.md#responsabilidade-operacional-e-limites-do-aceite). O [plano arquivado](../plans/integrations-pilot-completed.md#encerramento-e-aceite-final--19102026) preserva as evidências. Este estado prevalece sobre propostas e pendências históricas abaixo. Não há autorização de abertura pública nem alteração das allowlists.
+Renato aprovou o conjunto de telas em claro/escuro e autorizou publicação em 31/10. Os 12 exports preservados continuam a baseline; as decisões R01–R09 delimitam refinamentos posteriores. O aceite do piloto restrito de 19/10 é histórico e não impõe exclusividade do tema escuro nem limita as rotas públicas atuais. O rollout ativo e seus limites estão em [README](README.md) e no [PLAN.md](../../PLAN.md). A cópia de assinatura usa os SVGs oficiais rastreados; originais, Manual de Marca e licenças não foram alterados.
 
-
-**Atualizado:** 11/10/2026. Os 12 exports aprovados foram movidos intactos para `references/claude-design/` e auditados em 09/10. Eles continuam como referência de visual e conteúdo durante a portabilidade; corrigir as lacunas técnicas sem redesenho. Fonte da Home: [Home.dc.html](../../references/claude-design/Home.dc.html), com moldura/laterais. [Auditoria](../../references/audits/home-export-audit.md) registra execução e lacunas. Produto e decisões estão em [product.md](product.md).
+Fonte da Home: [Home.dc.html](../../references/claude-design/Home.dc.html), com moldura/laterais. A [auditoria](../../references/audits/home-export-audit.md) registra execução e lacunas; [product.md](product.md) preserva o conteúdo e precedência.
 
 ## 1. Autoridade e adaptações aprovadas
 
@@ -24,7 +23,7 @@ Não generalizar adaptações para internas sem decisão. F01 autoriza ferrament
 
 ### Temas, cor e tipografia
 
-A entrega aprovada usa **somente o tema escuro** (D03). Não implementar tema claro/automático nesta fase.
+O site tem tema claro e escuro. Na primeira visita segue `prefers-color-scheme`; o controle sem texto “Tema” mostra Sol para o estado claro e Lua para escuro, com nome acessível que informa estado e ação. A primeira escolha manual persiste e passa a alternar apenas entre claro/escuro; não há opção UI para retornar a Sistema. SSR é determinístico e o bootstrap evita flash. Falha de storage não quebra a página.
 
 | Papel | Valor observado |
 |---|---|
@@ -37,6 +36,8 @@ A entrega aprovada usa **somente o tema escuro** (D03). Não implementar tema cl
 | Apoio/luz | Menta/Musgo, conforme token |
 | G2 na faixa verde | Floresta `#175B4B` |
 
+As cores UI são adaptações web; cores e assinaturas oficiais não mudam. Mudança do tema global atualiza gráficos sem recriar cenas, loops ou canvases. CAPTCHA Cloudflare segue sempre o tema global do elemento `html`, inclusive dentro de faixa verde/escura. Na atualização de tema, recria apenas se o tema efetivo muda; cruzar compact/flexible, retry e mudanças de siteKey/action também podem recriar o widget. Isso invalida o token anterior e exige nova verificação, preserva os campos e descarta callbacks antigos. Mudança manual que não altera o tema efetivo não remonta o widget.
+
 Baloo 2 para títulos; Archivo para corpo/UI; monoespaçada de sistema para terminal/ASCII. No export, fontes em `_ds/assets/fonts`; na aplicação, cópias locais rastreáveis via `next/font/local`; OFL oficial em `docs/design/assets/fonts`, a preservar na redistribuição.
 
 Medidas vêm do HTML, não da antiga tabela proposta: H1 `clamp(48px,6vw,92px)/1.04`, H2 `clamp(40px,4.4vw,64px)/1.04`, corpo 18px/1.55 e descrição do hero 20px/1.55. Não converter pt do manual diretamente em px.
@@ -45,13 +46,13 @@ Moldura máxima 1320px; conteúdo 1200px; padding horizontal `clamp(20px,4vw,60p
 
 ### Responsividade
 
-- Abaixo de 960px: menu móvel, serviços/processo empilhados e sem ornamentação lateral.
+- Abaixo de 960px: menu móvel, serviços/processo empilhados e sem ornamentação lateral; assinatura do header 60px a partir de 960px e 44px no mobile, barra 76px e controles 44px.
 - Abaixo de 900px: ASCII do hero abaixo da mensagem/CTA.
 - Abaixo de 560px: CTA sai da barra superior e aparece no menu móvel.
 - Ferramentas: quatro/duas/uma coluna conforme espaço.
 - Mobile expõe todos os entregáveis/etapas sem depender do pinning.
 
-Chrome testado em 1440×1000 e 390×844, sem overflow horizontal observado. Reflow em 320px e viewports equivalentes a 200%/400%, teclado Chromium e smoke Firefox/WebKit foram verificados. Zoom real, dispositivos físicos e leitor de tela não foram certificados.
+Chrome testado em 1440×1000, 390×844 e 320px. T6.3 mediu breakpoints 320/390/559/560/959/960/1100/1440 sem colisões no header. Reflow, teclado Chromium e smoke Firefox/WebKit foram verificados na árvore local. Zoom real, dispositivos físicos, leitores de tela e certificação de acessibilidade não foram comprovados.
 
 ## 3. Home por seção
 
@@ -81,6 +82,8 @@ Three.js hachurado, rotação, luz pelo ponteiro e arrasto com retorno suave. Pr
 
 **Três frentes. Uma base.** Desktop: lista vertical à esquerda e painel compartilhado à direita com objeto, descrição e quatro entregáveis. Scroll seleciona serviço; clique desloca a página ao estado. Troca de objeto por dissolução hachurada.
 
+Logo abaixo do H2 aparece uma vez o parágrafo aprovado: “Segurança, infraestrutura em nuvem e software que se conectam, para operações com ambientes complexos. O escopo de cada trabalho é definido em conversa.”
+
 | Serviço aprovado | Objeto |
 |---|---|
 | Cibersegurança | Chave |
@@ -92,6 +95,8 @@ Não restaurar três cards independentes desktop. Mobile apresenta os três card
 ### Processo
 
 **Da análise à evolução.** Diagnóstico → Estratégia → Implementação → Operação → Evolução. Lista desktop e terminal à direita; scroll/clique alteram etapa e texto digitado. Progresso é ilustrativo, não acompanhamento contratual.
+
+Logo abaixo do H2 aparece o texto aprovado: “Um processo claro, colaborativo e adaptado a cada realidade.”
 
 Mobile mostra cinco cards completos. Ressalva: **As etapas podem variar conforme o escopo do projeto.** Existe avanço temporizado em estados sem pinning/sem escolha explícita, quando a redução de movimento está desativada; não descrever toda a lógica como exclusivamente manual.
 
@@ -116,13 +121,13 @@ Hachuras, volume, luz e movimento seguem o export. Na aplicação, os cards leva
 
 ### Newsletter
 
-Símbolo ASCII, **Análise em dias úteis.**, descrição e e-mail. Histórico do export: **Inscrição confirmada. A próxima edição chega no próximo dia útil.** A aplicação substitui esse falso sucesso pelo contrato D10: modo padrão indisponível; demo explícito aceita apenas pedido local, sem confirmação/envio. “Ver edições anteriores” leva ao arquivo real. Operação em [jornadas](product.md).
+Símbolo ASCII, **Análise em dias úteis.**, descrição e e-mail. Histórico do export: **Inscrição confirmada. A próxima edição chega no próximo dia útil.** Não usar como confirmação automática ao aceitar um pedido: pedido, confirmação e entrega são estados distintos. O deployment atual está `public/off`; em modo demo explícito, o pedido é apenas local. “Ver edições anteriores” leva ao arquivo real. Operação em [jornadas](product.md).
 
 ### Contato e rodapé
 
 Faixa Verde Raiz: **Vamos cuidar da sua base.** Texto/formulário à esquerda, símbolo ASCII à direita. **Conversa inicial gratuita de qualificação. Retorno por ligação ou WhatsApp.** Nome, Empresa e WhatsApp obrigatórios; não acrescentar e-mail/escolha de canal à reprodução por suposição.
 
-Histórico do export: **Diagnóstico solicitado. A gente retorna por ligação ou WhatsApp no próximo dia útil.** Na aplicação, aviso e estados locais não confirmam recebimento; a promessa exige integração real antes da publicação. Rodapé: assinatura, slogan oficial **A base que sustenta o crescimento!**, atalhos, Privacidade e copyright 2026. A rota de privacidade é provisória e descreve honestamente a operação local.
+Histórico do export: **Diagnóstico solicitado. A gente retorna por ligação ou WhatsApp no próximo dia útil.** Mostrar retorno apenas após recebimento aceito, sem inferir sucesso no modo demo ou com `BACKEND_MODE=off`. Rodapé mantém assinatura, slogan oficial **A base que sustenta o crescimento!**, atalhos, Privacidade e copyright 2026. A página Privacidade está publicada com limites legais e operacionais explícitos descritos em [product.md](product.md).
 
 ## 4. Preservação técnica
 
@@ -143,7 +148,7 @@ Destino: Next.js App Router, React, TypeScript, npm e CSS Modules/tokens. React 
 - Rotas/formulários locais, falhas honestas e privacidade correspondente.
 - Descarte de recursos e tratamento de pointer cancel.
 
-A lista acima registra as lacunas históricas corrigidas em código. Contraste/acessibilidade completos não são certificados. Formulários/rotas são locais; recebimento e envio reais continuam fora do escopo.
+A lista acima registra lacunas corrigidas. O deployment público tem modo real e catálogo real; `FORM_MODE=off` evita fallback demo, mas formulários reais continuam ativos conforme readiness public. Renato confirmou fluxos de formulário fora da antiga allowlist; o ensaio editorial público segue pendente. Contraste e acessibilidade completos não são certificados.
 
 PillarArt carrega Three/runtime ao entrar no viewport (no mount quando IntersectionObserver não existe), conserva fallback até o primeiro desenho bem-sucedido e descarta inicializações tardias. Pausa SPA, redução dinâmica, suspensão e descarte têm testes; perda de contexto mantém instâncias já montadas em falha, sem impedir novas instâncias futuras. Aba realmente oculta teve dois testes pulados no headless; não declarar essa cobertura real como aprovada. [Evidências finais](../../references/audits/final-qa.md).
 
@@ -155,7 +160,7 @@ Os quatro exports de ferramentas estão em `references/claude-design/`; o [brief
 
 ### Newsletter — direção N02 e composição N01/N05–N10
 
-Três internas no mesmo projeto: apresentação/inscrição, arquivo de prévias e prévia individual. [newsletter.md](newsletter.md) contém decisões de produto e estados; [amostras](../../references/editorial/newsletter-editorial-samples.md) fornecem conteúdo demonstrativo. Tema escuro, Baloo 2/Archivo, assinatura negativa pronta, tokens, cabeçalho/moldura/divisórias/botões/rodapé compartilhados.
+Três páginas: apresentação/inscrição, arquivo e prévia individual. [newsletter.md](newsletter.md) contém decisões e estados; [amostras](../../references/editorial/newsletter-editorial-samples.md) são privadas e demonstrativas. Tema claro/escuro global, Baloo 2/Archivo, assinatura oficial e componentes compartilhados.
 
 - **Apresentação:** formulário na abertura e pequeno símbolo ASCII existente, seguidos de amostra, benefícios, curadoria/FAQ; não replicar hero G4 gigante.
 - **Arquivo:** destaque compacto e lista cronológica, filtro por pilar, paginação; sem imagens obrigatórias, busca ou métricas sociais.
@@ -168,7 +173,7 @@ N11 registra estados de pedido, confirmação, erro e cancelamento. Pelo contrat
 
 ## Páginas de serviços — direção S02
 
-Copy proposta: [copy proposta de Cibersegurança](product.md#conteúdo-proposto--cibersegurança), [Infraestrutura em nuvem](product.md#conteúdo-proposto--infraestrutura-em-nuvem) e [Software](product.md#conteúdo-proposto--software). Tema escuro, moldura/componentes da Home e apenas um objeto existente no hero: chave, servidores ou módulos. Não incluir animação contínua atrás de textos, novos assets obrigatórios ou a longa sequência fixada da Home por suposição.
+Conteúdo de serviço: [Cibersegurança](product.md#conteúdo-proposto--cibersegurança), [Infraestrutura](product.md#conteúdo-proposto--infraestrutura-em-nuvem) e [Software](product.md#conteúdo-proposto--software). Tema claro/escuro, moldura/componentes existentes e um objeto aprovado no hero: chave, servidores ou módulos. Não incluir animação contínua atrás de textos, novos assets obrigatórios ou pinning da Home por suposição.
 
 S01 + S16 definem seis seções: abertura, situações, quatro frentes, método, FAQ e formulário final. Sem seção ou links promocionais para ferramentas. S03 mantém CTA `#contato` local e formulário da Home. Mobile expõe todo o conteúdo em HTML; movimento contido, pausa/redução, teclado e fallback continuam requisitos. Os exports das páginas de serviço são a referência visual/conteúdo aprovada em D02; revisar a implementação e aplicar os achados da auditoria na portabilidade.
 

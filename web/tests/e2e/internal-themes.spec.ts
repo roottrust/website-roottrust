@@ -99,9 +99,9 @@ test.describe("temas internos: claro e escuro", () => {
       const frente = await sample(page.locator("#frentes > div ul > li").first());
       expect(frente.background).toBe(scheme === "light" ? "rgb(255, 255, 255)" : "rgb(29, 29, 29)");
       await expectText(page.locator("#frentes li p"));
-      await page.locator("details#pentest summary").click();
-      await expectText(page.locator("details#pentest h4"));
-      await expectText(page.locator("details#pentest h5").first());
+      await expectText(page.locator("#pentest h3"));
+      await expectText(page.locator("#pentest h4").first());
+      await expectText(page.locator("#pentest li").first());
       await expectText(page.locator("#faq summary"));
 
       const band = page.locator('[data-band="cta"]');
@@ -183,7 +183,7 @@ test.describe("temas internos: claro e escuro", () => {
 
     test(`demais serviços e ferramentas (${scheme}): superfícies e rótulos`, async ({ page }) => {
       const issues = collectIssues(page);
-      for (const path of ["/servicos/infraestrutura-em-nuvem", "/servicos/desenvolvimento-de-software", "/ferramentas/shadow-ai", "/ferramentas/divida-tecnica", "/ferramentas/migracao-para-nuvem"]) {
+      for (const path of ["/servicos/infraestrutura", "/servicos/software", "/ferramentas/shadow-ai", "/ferramentas/divida-tecnica", "/ferramentas/migracao-para-nuvem"]) {
         await visit(page, path, scheme);
         await expectText(page.getByRole("heading", { level: 1 }));
         await expectText(page.locator("main label").first());

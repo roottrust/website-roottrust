@@ -19,7 +19,7 @@ return (<><p className="srOnly" aria-live="polite" aria-atomic="true">Etapa {cur
       <span className={(styles.eyebrow)}>Como trabalhamos</span>
       <span className={(styles.eyebrowRule)}></span>
     </div>
-    <div className={(styles.sectionHeading)}>
+    <div className={(styles.sequenceHeading)}>
       <h2 className={(styles.sectionTitle)}>Da análise <span className={(styles.accentLine)}>à evolução.</span></h2>
       <p className={(styles.processIntroduction)}>Um processo claro, colaborativo e adaptado a cada realidade.</p>
     </div>

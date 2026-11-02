@@ -1,15 +1,16 @@
 # Produto, conteúdo e jornadas
 
-## Aceite operacional — 19/10/2026
+## Estado vigente — 31/10/2026
 
-**Piloto restrito concluído e aceito por Renato.** Diagnóstico, quatro relatórios, newsletter agendada com aprovação humana, publicação/envio, confirmação/cancelamento e backup/restauração foram validados. Renato é responsável pela conferência de cotas e pela guarda/descarte de backups, CSVs, mensagens e contatos nos provedores. Procedimento e limitações em [development.md](development.md#responsabilidade-operacional-e-limites-do-aceite). O [plano arquivado](../plans/integrations-pilot-completed.md#encerramento-e-aceite-final--19102026) preserva as evidências. Este estado prevalece sobre propostas e pendências históricas abaixo. Não há autorização de abertura pública nem alteração das allowlists.
+Rotas, copy e fluxos refletem D01–D19 e R01–R09. Renato aprovou o conjunto e a publicação. `website-roottrust.vercel.app` aponta para `dpl_GymUQNaiV8UiCe6obXrArWJQ9YK3`: modo `BACKEND_MODE=public`, `FORM_MODE=off`, catálogo real e noindex. `FORM_MODE=off` desativa apenas demo; formulários reais seguem ativos conforme readiness public. GETs pós-deploy confirmaram 11 rotas atuais HTTP 200 e as duas antigas URLs de serviço HTTP 404 sem redirect. O CAPTCHA real seguiu o tema global claro → escuro → claro, sem pageerror/POST, e não foi resolvido nem submetido. A autorização Vercel Hobby é declaração específica de Renato, não verificação independente de documento.
 
+**Histórico — 19/10/2026:** o piloto restrito recebeu aceite após ensaios de diagnóstico, PDFs, newsletter, confirmação/cancelamento e backup/restauração. Allowlists do piloto e tema escuro exclusivo eram limites daquele estado; foram substituídos por decisões posteriores e não se aplicam como regra do modo `public`. O [arquivo de integrações](../plans/integrations-pilot-completed.md) mantém as evidências históricas.
 
-**Atualizado:** 11/10/2026. A Home (export) foi aprovada em 04/10. Os 12 exports aprovados (Home, três serviços, quatro ferramentas, três páginas de newsletter e 404) estão preservados em `references/claude-design/`; a auditoria de 09/10 está em `references/audits/`. F01–F29, S01–S16 e N01–N11 regem suas jornadas. A aprovação dos exports define a referência visual/conteúdo; não comprova cálculo auditado, integração ou operação. Marca oficial: [docs/design](../design/README.md).
+**Baseline editorial:** Home aprovada em 04/10; 12 exports aprovados (Home, serviços, ferramentas, newsletter e 404) preservados em `references/claude-design/`; auditoria de 09/10 em `references/audits/`. F01–F29, S01–S16 e N01–N11 seguem como contratos, sem criar aprovação comercial ou técnica. Marca oficial: [docs/design](../design/README.md).
 
 ## Estado da entrega
 
-O frontend local recebeu aceite humano. Seus resultados de QA de 11/10/2026 são históricos. O piloto restrito tem APIs implementadas em `web/`, contas configuradas e ensaios reais aceitos, registrados no [PLAN.md](../plans/integrations-pilot-completed.md); a abertura pública não foi autorizada. Slugs bem formados inexistentes retornam HTTP 404 antes de streaming. Encoding UTF-8 malformado pode retornar 500 no decodificador do Next antes da aplicação; limitação registrada para revisão antes da publicação.
+O conjunto integrado recebeu aceite humano em 31/10 e foi publicado no alias principal. Produção está `BACKEND_MODE=public` e `FORM_MODE=off`: formulários reais seguem ativos conforme readiness public; `FORM_MODE=off` apenas desativa fallback demo. `BACKEND_MODE=off`/desconhecido fecha; `FORM_MODE=demo` tem precedência e nunca envia. Public mantém origem, IP, Turnstile, limites, validação e readiness por fluxo; HMAC/replay protegem chamadas internas/jobs/webhooks, não o visitante. Slugs inexistentes e as duas rotas antigas de serviço retornam HTTP 404 sem redirect; UTF-8 malformado pode resultar em 500 no decodificador Next antes da aplicação, limitação preservada.
 
 ## Público e posicionamento
 
@@ -19,15 +20,15 @@ Abordagens conceituais confirmadas: segurança desde a concepção; visão integ
 
 ## Contrato comum de serviços
 
-A decisão aprovada S01–S16 estabelece seis seções por serviço: abertura/CTA, situações, quatro frentes, método, FAQ e CTA/formulário final. S16 remove a seção e os links promocionais para ferramentas. S02 autoriza a Home escura com efeitos contidos, moldura e um objeto existente na abertura: chave, servidores ou módulos. S03 exige Nome, Empresa e WhatsApp, conversa inicial gratuita de qualificação e retorno por ligação ou WhatsApp no próximo dia útil. Retorno é promessa futura condicionada a recebimento real; o formulário demo nunca envia dados. Os blocos abaixo rotulados como proposta preservam o histórico editorial; os 12 exports aprovados e os contratos S/F/N orientam a implementação atual, sem criar aprovação comercial para alegações novas.
+S01–S16 estabelecem seis seções por serviço: abertura/CTA, situações, quatro frentes, método, FAQ e CTA/formulário final. S16 remove seção e links promocionais para ferramentas. S02 mantém composição/efeitos contidos adaptados a claro/escuro, moldura e objeto existente no hero. S03 exige Nome, Empresa e WhatsApp; retorno por ligação ou WhatsApp no próximo dia útil depende de pedido realmente aceito e operação disponível. `demo` nunca envia. Conteúdo marcado proposta ou histórico permanece contextual, sem criar oferta ou alegação nova.
 ## Rotas desta entrega
 
 | Página | Rota |
 |---|---|
 | Home | `/` |
 | Cibersegurança | `/servicos/ciberseguranca` |
-| Infraestrutura em nuvem | `/servicos/infraestrutura-em-nuvem` |
-| Software | `/servicos/desenvolvimento-de-software` |
+| Infraestrutura | `/servicos/infraestrutura` |
+| Software | `/servicos/software` |
 | ROSI | `/ferramentas/rosi` |
 | Shadow AI | `/ferramentas/shadow-ai` |
 | Dívida técnica | `/ferramentas/divida-tecnica` |
@@ -35,10 +36,19 @@ A decisão aprovada S01–S16 estabelece seis seções por serviço: abertura/CT
 | Newsletter | `/newsletter` |
 | Arquivo de prévias | `/newsletter/edicoes` |
 | Prévia de edição | `/newsletter/edicoes/[slug]` |
-| Privacidade provisória | `/privacidade` |
+| Privacidade (publicada, com pendências declaradas) | `/privacidade` |
 | 404 | Página não encontrada, com resposta HTTP 404 na aplicação |
 
-O hub de ferramentas e a página dedicada de diagnóstico estão adiados e não fazem parte destas rotas. A Home e cada página de serviço oferecem o formulário de contato `#contato`. A navegação global mantém os destinos aprovados da Home; a portabilidade Next recebeu aceite humano. O piloto restrito recebeu aceite final em19/10/2026.
+As rotas antigas `/servicos/infraestrutura-em-nuvem` e `/servicos/desenvolvimento-de-software` retornam HTTP 404 diretamente, sem redirect ou alias. “Infraestrutura em nuvem” continua nome de categoria/pilar no catálogo e filtro da newsletter, não uma rota de serviço. O hub de ferramentas e a página dedicada de diagnóstico não fazem parte do escopo. A Home e páginas de serviço têm formulário `#contato`; os envios reais seguem as defesas e readiness public.
+
+### Refinos aprovados em 31/10/2026
+
+- Header: assinatura horizontal oficial 60px desktop (≥960px), 44px mobile; barra 76px e controles 44px. Botão sem texto “Tema”: Sol = claro, Lua = escuro; segue o sistema até a primeira escolha manual e então alterna apenas claro/escuro.
+- Home: os textos abaixo foram aprovados literalmente e aparecem uma vez logo abaixo de seus H2: “Segurança, infraestrutura em nuvem e software que se conectam, para operações com ambientes complexos. O escopo de cada trabalho é definido em conversa.” e “Um processo claro, colaborativo e adaptado a cada realidade.”
+- Serviços: Cibersegurança mantém quatro frentes de mesmo peso. Pentest permanece capacidade técnica, apresentado em painel neutro, estático e sempre visível após as quatro frentes dentro de `#frentes`, sem badge/acordeão. Métodos, CTA, formulário, FAQ e ressalva de escopo permanecem. Removidos o `actionNote` exato dos heros e os fechamentos removíveis definidos em R06; outras explicações aprovadas permanecem.
+- Ferramentas: avisos têm largura máxima de 560px incluindo padding/borda; arte 400×360 desktop, 320×288 tablet, 240×218 mobile, limitada pela largura disponível. Modelos F01–F29 não mudaram.
+- CAPTCHA: todo widget segue o tema global de `html`, inclusive em faixa verde/escura. Na atualização de tema, remonta apenas se o tema efetivo muda; isso invalida token/feedback solved antigo e preserva campos, limpeza, geração e callbacks. Cruzar compact/flexible, retry e mudanças de siteKey/action também podem recriar o widget. Não cortar, ampliar ou ocultar branding do iframe.
+- Newsletter: “Infraestrutura em nuvem” permanece categoria editorial, não rota de serviço. Catálogo publicado é real e sem indexação. O ensaio editorial real até Broadcast/inbox/cancelamento permanece pendente por decisão explícita de Renato devido à cota Claude.
 
 ## Home — textos e composição aprovados
 
@@ -124,7 +134,7 @@ Faixa Verde Raiz com G2 Abrigo e texto editorial. Os quatro contextos de públic
 
 **Texto de jornada:** Resultado inicial sem cadastro.
 
-Todos os cards usam `href="#contato"` na Home analisada: destino provisório. Os quatro exports de ferramentas estão em `references/claude-design/`, mas sua navegação/cálculos ainda precisam de revisão; a presença dos arquivos não comprova rotas de produção ou integração. Ícones não calculam; copy/objeto da Home não definem o modelo. O contrato é F01–F29 no [briefing](tools.md). Pausa, fallback e movimento reduzido completo continuam requisitos da portabilidade.
+O export da Home usava `href="#contato"` como destino provisório; a aplicação atual tem rotas de produção para as quatro ferramentas. Ícones não calculam; copy/objeto da Home não definem o modelo. O contrato é F01–F29 no [briefing](tools.md). Respostas permanecem locais e nunca são transmitidas.
 
 ### 7. Newsletter
 
@@ -135,7 +145,7 @@ Todos os cards usam `href="#contato"` na Home analisada: destino provisório. Os
 **Link:** Ver edições anteriores → `#` no export; `/newsletter/edicoes` continua destino previsto.  
 **Sucesso aprovado:** Inscrição confirmada. A próxima edição chega no próximo dia útil.
 
-Símbolo ASCII à esquerda e composição editorial com formulário. O handler valida e-mail e mostra sucesso local; não confirma endereço, cadastra ou envia edição. O arquivo de edições não existe no export. Os requisitos de operação, confirmação e entrega histórica permanecem nos fluxos futuros; implementar estados intermediários reais antes de usar o sucesso aprovado em produção. Não acrescentar uma notícia fictícia nem substituir o design atual pelo antigo Eco.
+Símbolo ASCII à esquerda e composição editorial com formulário. O handler do export apenas validava e-mail e mostrava sucesso local; isso não descreve a aplicação atual. As rotas de arquivo/prévia e o catálogo real existem em produção. Não acrescentar notícia fictícia nem substituir o design atual pelo antigo Eco.
 
 ### 8. CTA final
 
@@ -148,24 +158,26 @@ Símbolo ASCII à esquerda e composição editorial com formulário. O handler v
 **Erros:** Informe seu nome. / Informe a empresa. / Informe um número com DDD.  
 **Sucesso aprovado:** Diagnóstico solicitado. A gente retorna por ligação ou WhatsApp no próximo dia útil.
 
-Formulário à esquerda, símbolo ASCII à direita e fundo Verde Raiz. Sem campo de e-mail, assunto, mensagem ou seleção de canal. O handler apenas valida e altera estado local; não encaminha solicitação. O prazo aprovado precisa ser cumprido pela operação futura.
+Formulário à esquerda, símbolo ASCII à direita e fundo Verde Raiz. Sem campo de e-mail, assunto, mensagem ou seleção de canal. Historicamente, o handler do export apenas validava e alterava estado local. Na aplicação atual, demo nunca envia; public/pilot usam a API real quando a configuração/readiness permite. O prazo aprovado depende de recebimento aceito e atendimento ativo.
 
 ### 9. Rodapé
 
-Assinatura negativa, slogan **“A base que sustenta o crescimento!”**, links Serviços/Ferramentas/Newsletter e Privacidade, copyright **“© 2026 Root Trust. Todos os direitos reservados.”**. Privacidade usa `#` provisório. Não há controle de tema nem contatos exibidos neste rodapé; os contatos oficiais permanecem disponíveis como requisitos para os demais fluxos.
+Assinatura oficial, slogan **“A base que sustenta o crescimento!”**, links Serviços/Ferramentas/Newsletter e Privacidade, copyright **“© 2026 Root Trust. Todos os direitos reservados.”**. O link de Privacidade funciona. O rodapé não inclui controle de tema nem contatos; os canais oficiais ficam nos fluxos pertinentes.
 
 ## Serviços — páginas completas
 
-**Estado atual:** há exports das três páginas de serviço entre os 12 arquivos preservados e auditados em 09/10. O escopo de negócio é aprovado; copy específica e composição dessas internas continuam propostas para revisão humana.
+**Estado atual:** as três páginas foram portadas, revisadas e publicadas sob as rotas atuais. A copy proposta detalhada nas seções abaixo é material histórico de elaboração: só os textos/elementos com status aprovado acima e no PLAN regem a versão atual. Infraestrutura e Software usam as rotas curtas atuais, sem redirect das antigas. O Pentest aparece de forma neutra, estática e sem prioridade visual.
+
+**Histórico — baseline de 09/10:** há exports das três páginas de serviço entre os 12 arquivos preservados e auditados. Naquela etapa, copy específica e composição ainda aguardavam revisão humana; a aprovação e publicação atuais ocorreram depois.
 
 **Estrutura final S01 + S16:** abertura/CTA → situações em que o serviço ajuda → quatro frentes → como trabalhamos → FAQ → CTA/formulário final. S16 remove ferramentas; não acrescentar seção ou links promocionais para elas. Integração entre pilares pode aparecer no texto sem exigir contratar os três.
 
-**Comum S02–S03:** Home escura com efeitos contidos; objeto existente do serviço no hero; HTML para conteúdo essencial; Nome, Empresa e WhatsApp obrigatórios no formulário local `#contato`. Conversa inicial gratuita de qualificação e retorno por ligação ou WhatsApp no próximo dia útil. Não usar `/diagnostico` como destino nesta fase nem apresentar demonstração como envio real.
+**Comum S02–S03 (atual):** mesma composição em claro/escuro, com efeitos contidos; objeto existente do serviço no hero; HTML para conteúdo essencial; Nome, Empresa e WhatsApp obrigatórios no formulário `#contato`. Conversa inicial gratuita de qualificação e retorno por ligação ou WhatsApp no próximo dia útil após pedido aceito. Não usar `/diagnostico` como destino nem apresentar demonstração como envio real.
 
-| Página e conteúdo proposto abaixo | Quatro frentes da Home | Destaque confirmado |
+| Página e conteúdo proposto abaixo | Quatro frentes da Home | Capacidades descritas, sem hierarquia visual |
 |---|---|---|
 | [Cibersegurança](product.md#conteúdo-proposto--cibersegurança) | Diagnóstico de riscos; Identidade e acesso; Monitoramento contínuo; Resposta a incidentes | Pentest em web, APIs, redes, infraestrutura e mobile. Relatório técnico/evidências/impacto, resumo executivo e recomendações priorizadas. Reteste conforme contrato. |
-| [Infraestrutura em nuvem](product.md#conteúdo-proposto--infraestrutura-em-nuvem) | Arquitetura e migração; Ambientes escaláveis; Backup e continuidade; Custos sob controle | Continuidade e custos; ambientes locais/nuvem/híbridos e redes. Consumo/ociosidade/capacidade; arquitetura, configuração, backup/testes e ajustes conforme escopo. |
+| [Infraestrutura](product.md#conteúdo-proposto--infraestrutura-em-nuvem) | Arquitetura e migração; Ambientes escaláveis; Backup e continuidade; Custos sob controle | Continuidade e custos; ambientes locais/nuvem/híbridos e redes. Consumo/ociosidade/capacidade; arquitetura, configuração, backup/testes e ajustes conforme escopo. Rota atual `/servicos/infraestrutura`; filtro editorial mantém “Infraestrutura em nuvem”. |
 | [Software](product.md#conteúdo-proposto--software) | Sistemas sob medida; Integrações entre ferramentas; Automação de processos; Evolução contínua do código | Aplicações web/mobile, conexão e automação; legados no catálogo. Aplicações/integrações/testes/documentação/orientações conforme escopo; suporte posterior contratual. |
 
 Chave, servidores e módulos continuam ilustrações, não provas de operação. Não converter capacidades complementares em novos pilares. Não inventar pacotes universais, métricas, SLA, certificações ou propriedade intelectual. Os textos por seção, FAQ e metadados propostos para as três páginas estão consolidados abaixo.
@@ -310,22 +322,24 @@ Metadados são redação para revisão, sem domínio/canonical, imagem social, d
 
 ## Revisão editorial e passagem
 
-Registrar responsável/data de aceite da portabilidade por página antes da publicação. Conferir oferta, CTA/destino, FAQ, metadados, estados e ativos; nenhum caso, métrica, SLA ou certificado fictício. Copy em desktop/mobile é equivalente; ASCII e objetos não substituem texto essencial. A Home foi aprovada em 04/10/2026 e os 12 exports atuais são a baseline visual aprovada (D02); páginas internas ainda precisam de revisão e aceite da portabilidade, sem reabrir a aprovação dos exports. O [plano](development.md#fases-e-gates) separa conclusão da documentação e liberações futuras: validar modelo de ferramenta, integração, operação e jurídico continua necessário mesmo após o frontend estar prototipado.
+**Histórico — checklist de passagem anterior à publicação:** conferência por página de oferta, CTA/destino, FAQ, metadados, estados e ativos, preservando copy equivalente entre desktop/mobile e sem casos, métricas, SLAs ou certificados fictícios. A Home foi aprovada em 04/10/2026 e os 12 exports permanecem baseline aprovada (D02); as páginas internas foram revisadas, aceitas e publicadas em 31/10. As decisões atuais e o [PLAN](../../PLAN.md) preservam pendências específicas de operação, jurídico e ensaio editorial sem reabrir os exports ou a aprovação visual.
 
 
 ---
 
-## Registro aprovado S01–S16, entrevista de 07/10/2026
+## Registro histórico da entrevista S01–S16 — 07/10/2026
 
-O proprietário confirmou três páginas distintas, com aprofundamento do catálogo da Home. Os textos detalhados, marcados como propostas editoriais, são: [Cibersegurança](product.md#conteúdo-proposto--cibersegurança), [Infraestrutura em nuvem](product.md#conteúdo-proposto--infraestrutura-em-nuvem) e [Software](product.md#conteúdo-proposto--software). Negócio/estrutura aprovados; nova copy, composição e exports ainda exigem revisão.
+Os registros abaixo preservam as respostas originais. As decisões posteriores D10 e R03 prevalecem onde houver conflito visual: as quatro frentes de Cibersegurança têm peso equivalente e o painel de Pentest é neutro, estático e sem badge/acordeão.
+
+**Registro histórico da entrevista:** o proprietário confirmou três páginas distintas, com aprofundamento do catálogo da Home. Os textos detalhados foram mantidos como propostas editoriais: [Cibersegurança](product.md#conteúdo-proposto--cibersegurança), [Infraestrutura em nuvem](product.md#conteúdo-proposto--infraestrutura-em-nuvem) e [Software](product.md#conteúdo-proposto--software). A aprovação/publicação atual das páginas está registrada no início deste documento; estas propostas não alteram a copy vigente.
 
 | ID | Decisão | Estado |
 |---|---|---|
 | S01 | Base comum com sete seções: abertura e CTA; situações em que o serviço ajuda; frentes de atuação; como trabalhamos; ferramentas relacionadas; FAQ; CTA final. Textos e exemplos específicos por serviço. | Estrutura inicial; seção de ferramentas substituída por S16 |
-| S02 | Herdar a Home com efeitos contidos: escuro, tipografia, moldura e componentes existentes. Um objeto 3D já associado ao serviço na abertura: chave para Cibersegurança, servidores para Infraestrutura em nuvem, módulos para Software. Interação sutil e leitura prioritária nas demais seções, sem animação contínua atrás dos textos. | Aprovado na entrevista |
+| S02 | Herdar a Home com efeitos contidos: escuro, tipografia, moldura e componentes existentes. Um objeto 3D já associado ao serviço na abertura: chave para Cibersegurança, servidores para Infraestrutura em nuvem, módulos para Software. Interação sutil e leitura prioritária nas demais seções, sem animação contínua atrás dos textos. | Registro original da entrevista; adaptações de tema claro foram aprovadas depois |
 | S03 | Reutilizar no final de cada página de serviço o formulário da Home: Nome, Empresa e WhatsApp obrigatórios. CTA da abertura leva ao formulário na própria página. Conversa inicial gratuita de qualificação e retorno por ligação ou WhatsApp no próximo dia útil; sem página de diagnóstico dedicada nesta fase. | Aprovado na entrevista |
 | S04 | Manter quatro blocos da Home: diagnóstico de riscos; identidade e acesso; monitoramento contínuo; resposta a incidentes. Aprofundar capacidades complementares confirmadas nos detalhes: Pentest/Red Team, gestão de vulnerabilidades e apoio à adequação a normas/compliance, conforme escopo contratado. | Aprovado na entrevista |
-| S05 | Priorizar riscos, organizar acessos e preparar detecção/resposta, com Pentest em destaque por ser um dos pontos mais fortes da Root Trust. Não relegar Pentest somente aos detalhes. Manter a estrutura de quatro frentes aprovada em S04. | Aprovado na entrevista |
+| S05 | Priorizar riscos, organizar acessos e preparar detecção/resposta, com Pentest em destaque por ser um dos pontos mais fortes da Root Trust. Não relegar Pentest somente aos detalhes. Manter a estrutura de quatro frentes aprovada em S04. | Registro original, supersedido por D10 e R03: sem destaque hierárquico; capacidade permanece |
 | S06 | Aplicações web, APIs, redes, infraestrutura e aplicações mobile. | Aprovado na entrevista |
 | S07 | O Pentest contratado pode ser apresentado com relatório técnico incluindo evidências e impacto dos achados, resumo executivo e recomendações priorizadas de correção. A conversa gratuita do CTA permanece somente qualificação. | Aprovado na entrevista |
 | S08 | Reteste após correções conforme escopo e contrato; não apresentar como incluído universalmente. | Aprovado na entrevista |
@@ -363,7 +377,7 @@ Não houve coleta Firecrawl nesta pesquisa de serviços. Tentativas sem conteúd
 
 ## Design e interações
 
-**Direção aprovada S02:** Home com efeitos contidos, tema escuro, moldura, tipografia e componentes existentes. Um objeto do serviço na abertura; não repetir cenas por toda a página. O posicionamento e os textos novos abaixo são propostas para revisão visual.
+**Direção original S02 (histórico):** Home com efeitos contidos, tema escuro, moldura, tipografia e componentes existentes. D15 aprovou depois a adaptação da mesma composição ao tema claro. Um objeto do serviço na abertura; não repetir cenas por toda a página. Os textos detalhados abaixo são propostas históricas, salvo copy explicitamente aprovada nas decisões posteriores.
 
 - Reutilizar fundo `#171717`, painéis `#1D1D1D`, contornos `#3C3C3C`, Verde Raiz `#003428` e Superfície `#F5F5F2`. Folha/Menta apenas nos papéis já observados. Baloo 2 nos títulos; Archivo no corpo/UI; assinatura negativa SVG pronta.
 - Referência de largura: moldura 1320px, conteúdo 1200px, padding `clamp(20px,4vw,60px)`. Ajustar quebras para o conteúdo da interna; não transpor o tamanho do H1 sem avaliar leitura.

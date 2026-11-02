@@ -1,6 +1,6 @@
 # Revisão do website Root Trust — temas, conteúdo, feedback e formulários
 
-**Data:** 30/10/2026. **Estado:** APROVADO por Renato em 30/10/2026 para implementação na nova conversa. Revisão independente concluída. **Não iniciar código nesta conversa; gates visuais/Privacidade permanecem separados.**
+**Data:** 30/10/2026. **Estado atual em31/10:** implementação e emendaT6 aceitas/publicadas, gatesA/B e aceite localT6.5 recebidos; documentação e revisões concluídas. Ensaio editorial realT5.3 permanece explicitamente PENDENTE. Plano ativo, sem arquivamento como concluído. A restrição original de não iniciar código referia-se à conversa de planejamento já encerrada.
 
 Este é o plano ativo e a fonte única de tarefas. O [plano anterior](docs/plans/integrations-pilot-completed.md) permanece histórico; o handoff apenas orienta a próxima conversa. Não criar SQL todos, cópia de tarefas ou plano concorrente. As decisões atuais substituem as restrições históricas de tema escuro exclusivo, piloto como único modo real e Pentest com destaque visual superior. Marca, fórmulas, sigilo dos resultados e proteções continuam válidos.
 
@@ -671,12 +671,14 @@ Isolamentoeditorialconfirmadoexplicitamente31/10: Renato respondeu“Sim, todos 
 
 #### T5.3b [codex] Correção de reatividade do tema do CAPTCHA, solicitada durante T5.4
 
+**Histórico de implementação:** contrato local abaixo foi substituído explicitamente por T6.4a: tema GLOBAL vence inclusive em faixas verdes. Correção final aceita e publicada emT6.5/T6.6, com provas atuais ali.
+
 Renato observou que o widget/moldura conservavam o primeirotema após alternância doheader e pediu correção. Instruçãoatual substitui a exceçãopinned deT5.3a: widget acompanha otemaefetivo da superfície doformulário, inclusive mudançasSOenquantoSistema, mantendo faixaslocaisexplicitamenteescuras. Cloudflare configura theme na criação; recriar apenasquando temalocalefetivo mudar, invalidar token/feedbacksolved anterior e preservar campos. MudançaSOcompreferênciamanualsemalterarsuperfícienãorecria. Lercolor-scheme dosform/ancestraisexternosaomoldurapinned paraevitarautoaprisionamentodotema; semmanipulariframeinterno/branding. Preservarsize300/fallback/observerdescarte/callbacksgeneration/coalescênciacorrigidos.
 
 Escopodelimitado: TurnstileWidget e testesfakesdiretos (configsomentesenecessária), sembackend/provedores/Routine/env/ícones. TerraGPTimplementa, Codex+GPTindependentesrevisam eCodexexecutagatespertinentesantesrolloutnoescopodacorreçãopedida. DocumentaçãoGPTLuna temporariamenteinterrompida, paraumaescritaporvez, retomarácomcontratoatual. EnsaioeditorialrealcontinuaadiadoexplicitamenteporcotaClaude; nãofoireaberto. Nenhumcommitfinal/push/PR.
 
-- [ ] Tema manual/SO reativo, campospreservados/tokennovoobrigatório, callbackantigorejeitado eframes/listenerssemduplicação.
-- [ ] Teste fake de troca/resizecoalescido/desmontagem, revisãoindependente e gatesrelevantes; correçãopublicada everificada.
+- [x] Tema manual/SO reativo, campospreservados/tokennovoobrigatório, callbackantigorejeitado eframes/listenerssemduplicação; contrato global final emT6.4a.
+- [x] Teste fake de troca/resizecoalescido/desmontagem, revisãoindependente e gatesrelevantes; correçãopublicada everificada emT6.6.
 
 **T5.3b concluída localmente antes dos novos ajustes da Home:** Terra alterou somente `TurnstileWidget.tsx` e seu teste dedicado. O widget lê `color-scheme` do formulário externo à moldura, acompanha atributos de tema e mudanças do SO, invalida token e geração apenas quando a superfície efetiva muda, e descarta observers/listeners/callbacks antigos. Faixas com esquema de cor próprio continuam coerentes. Revisor GPT independente não encontrou P1/P2; não executou testes. Codex executou lint, typecheck, 45 arquivos/718 unitários, build (`t53b-build.log`) e quatro E2E dedicados de produção com provedor simulado: 4 passes/0 skips/0 retries, 5,2 s (`t53b-turnstile.log`). Incluem três layouts, tema manual/SO, preferência manual prevalecente, superfície local, resize coalescido e callback após desmontagem. Nenhuma publicação: o gate local solicitado por Renato continua obrigatório. Próximo passo agora é T5.3c, conforme ordem dele.
 
@@ -684,22 +686,24 @@ Escopodelimitado: TurnstileWidget e testesfakesdiretos (configsomentesenecessár
 
 #### T5.3c [codex] Assinatura e textos da Home, com aceite local antes de novo deploy
 
+**Absorvida/concluída emT6:** R01 substituiu proposta54/40 por60/44; Sonnet implementou o escopoT6.2, Codex integrou/revisou. Relato abaixo preserva a proposta inicial, sem instrução concorrente de execuçãoTerra.
+
 Pedido literal registrado em T5.3b. Ampliar o SVG horizontal oficial no header, preservando proporção e variantes por tema. Ponto inicial de revisão: 54 px de altura em desktop e 40 px em mobile, mantendo barra de 76 px, controles de 44 px e ausência de colisões nos breakpoints/320 px. Inserir os dois parágrafos pedidos sob os respectivos títulos das seções Nossos Serviços e Como Trabalhamos; não parafrasear, redesenhar a Home ou alterar os métodos/cálculos.
 
 Terra implementa CSS do shell e componentes/estilos de Services/Process e testes diretamente afetados. Codex integra e executa gates dirigidos, revisão independente e capturas claras/escuras desktop/mobile. Uma escrita por vez; documentação permanece interrompida. Subir aplicação local e entregar link revisável, com CAPTCHA em ambiente de teste seguro quando necessário. **Aguardar OK explícito de Renato antes de qualquer novo deployment na Vercel**. A autorização anterior não substitui este gate.
 
-- [ ] Assinatura ampliada sem deformação, colisão ou overflow; textos literais visíveis no local solicitado.
-- [ ] Gates/revisão/capturas e link local disponíveis, incluindo reatividade do CAPTCHA já corrigida.
-- [ ] OK local de Renato recebido antes do rollout; nenhum commit final/push/PR.
+- [x] Assinatura ampliada sem deformação, colisão ou overflow; textos literais visíveis no local solicitado.
+- [x] Gates/revisão/capturas e link local disponíveis, incluindo reatividade do CAPTCHA já corrigida.
+- [x] OK local de Renato recebido antes do rollout; nenhum commit final/push/PR.
 
-#### T5.4 [claude:escreve] Atualizar contexto — Haiku; Codex revisa e arquiva
+#### T5.4 [claude:escreve] Atualizar contexto — exceção GPT Luna executada; arquivamento adiado
 
 **Depende:** T5.3; exceção explícita31/10 permite documentação comensaioeditorialreal pendente porcotaClaude, semarquivarconclusãoglobal. **Arquivos:** seis canônicos, AGENTS e plano, onde pertinente. ExecutorGPTLuna porfunção documental naexceçãodeexecuçãoGPTjáautorizada, semalegarequivalênciaexata ouchamadaHaiku.
 
-- [ ] Estado public/temas/métodos/feedback/deploy coerente; antigas regras de escuro exclusivo/piloto atualizadas, assets originais intactos.
-- [ ] Evidências, limitações Free e hospedagem futura fora de escopo registradas.
-- [ ] Revisão independente final, links/diff-check e nenhuma credencial/cache/build/backup no versionamento.
-- [ ] Arquivar PLAN somente após critérios/aceite; sem encerramento por tokens e sem commit/push não autorizado.
+- [x] Estado public/temas/métodos/feedback/deploy coerente; antigas regras de escuro exclusivo/piloto atualizadas, assets originais intactos. Entrega consolidada emT6.7.
+- [x] Evidências, limitações Free e hospedagem futura fora de escopo registradas.
+- [x] Revisão independente final, links/diff-check e inspeção de credenciais/cache/build/backup concluídas emT6.8, sem achados nesse recorte.
+- [x] PLAN mantido ativo e não arquivado, conforme exceção explícita do usuário para avançar docs com ensaioeditorial pendente; sem encerramento por tokens ou commitfinal/push/PR.
 
 ### Fase 6 — emenda aprovada: Home, serviços, ferramentas e gate local
 
@@ -740,14 +744,26 @@ Inspeção pré-escrita T6.2: git add-A dry-run, diff/check e padrões limitados
 
 **Depende:** T6.1. Uma escrita por vez. Ordem: Home/header → serviços/Pentest → rotas/nomes → ferramentas → testes afetados.
 
+**Início31/10:** checkpoint WIP LOCAL autorizado `9e4b18d13f1892115a9f0f4f3ac85a2c2f73f400` (`wip: pre-claude T6.2`), após inspeção acima. Hash registrado antes da chamada de escrita. Nenhum commitfinal/push/PR. Sonnet receberá lista explícita de arquivos; Codex não editará durante a sessão.
+
+**Entrega Sonnet:** sessão36ed52a3-dd18-4781-b265-68c7bbdd5c0f terminou succeeded/301s, modelo observado claude-sonnet-5-5. Escopo permitido respeitado, duas novas páginas e remoção das antigas semredirect, mudanças em20arquivos de código/teste; lint e45arquivos/720unit passaram pelo executor. Typecheck inicial falhou nosvalidadoresgerados apontandoàsrotasremovidas, semerroalegadoemsrc/tests. Codex verificou tsconfig e removeu SOMENTE `.next/dev/types/validator.ts` ignorado/obsoleto, comcaminhoabsolutoconferidodentrodeweb/.next; build regenerou tipos deprodução e build/typecheck passaram, semalterartsconfig oucódigoparacalarerro. Semlimpezaampla.
+
+Revisão independente GPT do diff contraWIP e duas novas páginas não encontrouP1/P2; observou CTAheader42px emvezdos44previstos. Codex ajustou somente height/min-height44, antesdarodadafinal. Consulta de diff da ponte somenteleitura emdc1f5603-cf26-4c02-a734-570fdc9f24b3 emandamento; semescrita concorrente e semtestesalegadospelosrevisores. E2E/visual ainda pendentes; nenhumdeploy.
+
+**Revisão e gates T6.3 em andamento:** consulta dc1f5603-cf26-4c02-a734-570fdc9f24b3 terminou succeeded/187s, modelo claude-sonnet-5-5, diff real916linhas e duas novas páginas lidos, semP1/P2 confirmado. P3 de espaçamento do painel/Pill e cobertura visual serão conferidos nas capturas; nenhuma execução de testes alegada pelo revisor. Após ajusteCTA44, Codex rodou lint,45arquivos/720unit,build e typecheck: todos passaram (`t63-{lint,test,build,typecheck}.log`).34E2E focados emnovasrotas/404/Pentest/logo/parágrafos/tools passaram21,9s semskips/retries (`t63-focused.log`). A suíte completa obrigatória eCAPTCHAfakeestão emexecução; não declarar rodadafinalverdeantesdeencerrar. Nenhuma alteração posterior na fonte deapp após essebuild.
+
+**Gates integrados encerrados:** 438E2E passaram/14skips/zero retries em7,7min (`t63-e2e.log`), processoexit0 confirmado. Skips são6históricos e8execuções dosquatrocenáriosfake fora daconfigdemo; estes4cenários passaram separadamente em5,0s/zero skips/retries no servidor deprodução isolado (`t63-turnstile.log`). Não contar skips como passes. Lint/typecheck/720unit/build acima são da mesma fonte; nenhumcódigoappalteradodepois. Next-env gerado inspecionado/restaurado isoladamente. Capturas32rotas/temas/larguras e spotcheck de desempenho empreparação, sem certificação.
+
+Prévia T6.4 iniciada em127.0.0.1:3100, buildprodução, sessão27397: configuração pública FICTÍCIA derivada do teste dedicado, chaves oficiaisCloudflaretestesomenteprocessolocal, StoreJSON{} inválido antesADC/Firestore e destinos fictícios. Não ler/puxar.env nem credenciais reais; nenhumenvVercelalterado. Mostra comportamento visual eCAPTCHAsemcoleta/envio reais, não sucesso deintegração. GateT6.5 continua pendente, produçãoEZSNVG inalterada.
+
 **Escopo permitido:** shell.module.css; home.module.css, Services/Process e home/content; services/ServicePage, content e services.module.css; páginas de serviços (novas infraestrutura/software, remoção das duas antigas, ciberseguranca se necessário); tools/ToolPage e tools.module.css; testes e2e services/home/theme/internal-themes/public-routes/qa-shared/qa-capture/graphics-motion e referências ativas necessárias identificadas emT6.1. Proibir escrita fora da lista delimitada no prompt. Não reverter CAPTCHA reativo já entregue. Sem backend/modelos/deps/lockfile/env/docs/PLAN/brand/assets/provedores/efeitos externos.
 
-- [ ] R01–R09 implementadas sem deformação, colisões, duplicação de copy ou alteração de contratos preservados.
-- [ ] Painel Pentest conserva entregas, Red Team distinto, reteste/contratação e ausência de garantia de certificação; nenhuma alegação nova.
-- [ ] Remoções reais de DOM/conteúdo, sem ocultar textos por CSS; Pill de escopo mantido.
-- [ ] Páginas novas e links atuais coerentes; antigas removidas sem redirect, com404 nativa.
-- [ ] Avisos e 3D consistentes em todas as quatro ferramentas; gráficos e conteúdo essenciais conservados.
-- [ ] Testes relevantes atualizados, sem apagar cobertura existente para tolerar regressões.
+- [x] R01–R08 implementadas sem deformação, colisões, duplicação de copy ou alteração de contratos preservados; R09 preservada pelo bloqueio T6.5/T6.6.
+- [x] Painel Pentest conserva entregas, Red Team distinto, reteste/contratação e ausência de garantia de certificação; nenhuma alegação nova.
+- [x] Remoções reais de DOM/conteúdo, sem ocultar textos por CSS; Pill de escopo mantido.
+- [x] Páginas novas e links atuais coerentes; antigas removidas sem redirect, com404 nativa.
+- [x] Avisos e 3D consistentes em todas as quatro ferramentas; gráficos e conteúdo essenciais conservados.
+- [x] Testes relevantes atualizados, sem apagar cobertura existente para tolerar regressões.
 
 **Protocolo Claude:** aplicar integralmente seção5/AGENTS: dry-run segredos/gerados, WIP LOCAL autorizado e hash antes da chamada, modelsonnet observado, prompt AGENTS/PLAN/contratos e rodapé headless, nenhum esforço/defaultglobal alterado, sem MCPexterno/commit/push/install. Poll30–60s, estado terminal, cancelar/registrar falhas; nenhuma edição concorrente. GPTs usam a exceção explícita, não são alegados Claude.
 
@@ -755,56 +771,77 @@ Inspeção pré-escrita T6.2: git add-A dry-run, diff/check e padrões limitados
 
 **Depende:** entrega terminal deT6.2.
 
-- [ ] Diff examinado contra baseline/WIP, incluindo callers e testes; revisor independente não é apenas o executor.
-- [ ] Após escrita Claude: lint/typecheck/unit/build/E2E obrigatórios. Iterações GPT podem ser focadas, com rodada integrada final pertinente; resultados reais registrados, sem contagens históricas apresentadas como novas.
-- [ ] Novas rotas200/antigas404 em acesso direto, sem links ativos antigos; SSR, head hierarchy, CTA/formulário e ressalvas preservados.
-- [ ] Home: texto único abaixo de cada H2 medido no layout; logo60/44 e controles44 sem colisões nos breakpoints320/390/559/560/959/960/1100/1440.
-- [ ] Ferramentas: aviso≤560/fullavailable, arte responsiva, pausa/reduced-motion/fallback/SPA; modelos/respostas sem rede/storage/log/URL.
-- [ ] CAPTCHA reativo e resize/desmontagem/callbacks cobertos pelos quatro testes fakes de produção isolados.
-- [ ] Capturas claro/escuro com fontes e Canvas estabilizados; Chromium principal e Firefox/WebKit smoke sem multiplicação desnecessária. Spotcheck comparável Home/ROSI, com regressões e limites registrados.
+- [x] Diff examinado contra baseline/WIP, incluindo callers e testes; revisor independente não é apenas o executor.
+- [x] Após escrita Claude: lint/typecheck/unit/build/E2E obrigatórios. Resultados reais acima, incluindo720unit/438E2E/14skips, semcontagemhistórica como nova.
+- [x] Novas rotas200/antigas404 em acesso direto, sem links ativos antigos; SSR, head hierarchy, CTA/formulário e ressalvas preservados.
+- [x] Home: texto único abaixo de cada H2 medido no layout; logo60/44 e controles44 sem colisões nos breakpoints320/390/559/560/959/960/1100/1440.
+- [x] Ferramentas: aviso≤560/fullavailable, arte responsiva, pausa/reduced-motion/fallback/SPA; modelos/respostas sem rede/storage/log/URL.
+- [x] CAPTCHA reativo e resize/desmontagem/callbacks cobertos pelos quatro testes fakes de produção isolados.
+- [x] Capturas claro/escuro com fontes e Canvas estabilizados; Chromium principal e Firefox/WebKit smoke. Spotcheck Home/ROSI registrado com variância/3,8s/meta2,5nãoatingida, semalegarausênciaderegressão.
 
 #### T6.4 [codex] Disponibilizar prévia local completa
 
 **Depende:** T6.3.
 
-- [ ] Build de produção rodando em127.0.0.1:3100 (ou endereço concreto informado se porta ocupada), com todas as alterações.
-- [ ] Config local sem credenciais/coleta/provedores reais. Para mostrar CAPTCHA e aviso público, processo local com chaves oficiais de teste Cloudflare e FirebaseJSON{} inválido que falha antes deADC/Store; destinos fictícios, sem sucesso/entrega real alegados. Nunca .envpull ou chavesdeteste emVercel.
-- [ ] Link ativo e natureza da prévia informados; revisão pode conferir todos os estados/rotas sem enviar dados pessoais.
+- [x] Build de produção rodando em127.0.0.1:3100, com todas as alterações; GET200. Após T6.4a, servidor reconstruído/reiniciado no mesmo endereço, processo25192 confirmado.
+- [x] Config local sem credenciais/coleta/provedores reais. Para mostrar CAPTCHA e aviso público, processo local com chaves oficiais de teste Cloudflare e FirebaseJSON{} inválido que falha antes deADC/Store; destinos fictícios, sem sucesso/entrega real alegados. Nunca .envpull ou chavesdeteste emVercel.
+- [x] Link ativo e natureza da prévia informados; revisão pode conferir todos os estados/rotas sem enviar dados pessoais.
 
 #### T6.5 [codex + Renato] Gate humano local
 
 **Depende:** T6.4.
 
-- [ ] OK explícito do conjunto recebido e associado à árvore apresentada.
-- [ ] Ajustes solicitados revalidados nos trechos afetados; não publicar outra versão por inferência.
+**Revisão de Renato:** único ponto em desacordo foi o cartão CAPTCHA continuar escuro no tema claro. Reproduzido porCodex naHome: esquema global light/formulário dark/cartão dark. A escolha anterior de seguir a superfície local é substituída explicitamente: TODOS os cartões/widgets devem seguir o tema GLOBAL da página, inclusive dentro de faixas verdes/escuras. Correção T6.4a [codex]: derivar o tema do html, preservar observadores/geração/token/campos, testar formulário com esquema local oposto ao global, reconstruir e reapresentar a prévia. Demais itens sem objeção relatada; ainda NÃO há OK para publicar.
+
+**T6.4a concluída localmente:** `TurnstileWidget.tsx` lê o esquema computado do html; o teste dedicado força esquema local oposto e verifica cartão branco/iframe claro na página clara, recriação, invalidação do token e callbacks obsoletos. Lint/typecheck/720 unitários/build e quatro E2E dedicados passaram, zero skips/retries nessa suíte (`t64a-{lint,typecheck,test,build,turnstile}.log`). A rodada completa anterior de438passes/14skips não foi repetida nem apresentada como nova: os testes focados cobrem a alteração Codex no widget público, ausente no modo demo da suíte geral. `next-env.d.ts` gerado inspecionado/restaurado; diff-check aprovado.
+
+Revisões somente leitura: GPT `/root/review_t13_contracts` e ponte Sonnet, sessionId`155b49e9-57ac-4618-b56d-eaa6a31d77cc`, modelo efetivo`claude-sonnet-5-5`, succeeded52s; nenhum P1/P2. Revisores não executaram testes. Limites menores de observação após desmontagem e browsers adicionais registrados, sem nova funcionalidade ou alteração de provedores.
+
+Verificação Chromium com widget oficial de TESTE em1440/390: faixa de diagnóstico continua localmente dark, mas cartão/iframe seguem light→dark→light; fundo branco no claro e rgb(29,29,29) no escuro, sem pageerror/POST ao app. Capturas `t64a-captcha-{1440,390}-{light,dark}.png` e resumo `t64a-captcha-global-theme.json` inspecionados. Teste não comprova nova entrega real, nenhum formulário enviado.
+
+**Árvore reapresentada:**244arquivosweb/4350682bytes, manifesto`t64a-source-manifest.json` SHA256`17a2b42323a7f9984f0b94fa81d5666ba074d79f243136c7708e72a87617d9de`, baseWIP9e4b18d+alterações locais. Substitui o manifesto`t64` para aceite/publicação. Mesmo link local3100, chaves oficiais de teste e Store/destinos isolados; Vercel ainda sem alterações T6. Gate humano novamente pendente, sem inferir aprovação da resposta anterior.
+
+- [x] OK explícito do conjunto recebido em31/10/2026: Renato respondeu “Aprovar o conjunto e publicar na Vercel (recomendado).” Aceite associado ao manifesto`t64a`/SHA256`17a2b42323a7f9984f0b94fa81d5666ba074d79f243136c7708e72a87617d9de`, incluindo correção global do CAPTCHA e limites de desempenho já informados.
+- [x] Ajustes solicitados revalidados nos trechos afetados; autorização explícita libera T6.6, sem commitfinal/push/PR.
 
 #### T6.6 [codex] Rollout da árvore aprovada
 
-**Depende:** T6.5; BLOQUEADO até esse OK.
+**Depende:** T6.5; OK recebido em31/10, rollout autorizado da árvore identificada acima.
 
-- [ ] Revalidar destino/plano/config e advisories; preservar autorização Hobby específica já declarada se nada mudou, sem pedir novamente.
-- [ ] MCPVercel publica fonte aprovada com manifesto/hash, sem commitfinal/push/PR; metadata/alias/ID/versão compatível anterior registrados.
-- [ ] GETs confirmam novasURLs200/antigas404, modospublic/offFORM, catálogo real/noindex e widget reativo no site, sem envio de teste a inscritos reais.
+- [x] Revalidados por MCP time/projeto/planoHobby/aliasEZSNVG; CLI54.15.1 confirmou raizweb/Node24.x e presença/tipos/targets das variáveis deProduction, sem valores secretos. Declaração anterior da autorização específicaVercel permanece aplicável, sem mudanças de plano/billing/DNS. Fontes oficiais Next de14/10 e27/10 rechecadas:16.4.2 contém correção16.4.1; release anunciada para03/11 ainda futura em31/10. Sem dependências ou env alterados nesta entrega.
+- [x] MCPVercel publicou a fonte aprovada (244arquivos,21hashes novos enviados) do manifesto`t64a`/SHA256`17a2b42323a7f9984f0b94fa81d5666ba074d79f243136c7708e72a87617d9de`. Deployment`dpl_GymUQNaiV8UiCe6obXrArWJQ9YK3`, URL`website-roottrust-2rrat2te4-renato-soares-projects.vercel.app`, READY e alias`website-roottrust.vercel.app` conferidos porMCP em31/10. Build remoto28s, Next16.4.2/Node24.x; aviso npm cache-dir legado não bloqueante. WIP9e4b18d+dirty, nenhum commitfinal/push/PR. Metadados de rastreio foram enviados, mas respostaMCP mostra meta{}: rastreabilidade fica neste plano/manifesto, sem alegar persistência remota. Rollback compatível imediato`dpl_EZSNVGuekPfh7saEbwLQPP54WzVt`; nenhum rollback executado.
+- [x] Em31/10 23:22UTC,13GETs confirmaram11rotas200 e2antigas404, semredirect/linksativosantigos, noindex e propspublic nas páginascomformulário; semavisoDemo/chavedeteste. ConfigFORM_MODEoff preservada da ativação anterior, sem leitura/alteração de segredos. Catálogo publicado real conferido separadamente. Chromium naHome confirmou globalclaro/formdark/cartãobranco/iframeclaro → globalescuro/cartãoeiframeescuros → claro, sempageerror/POSTapp (`t66-production-check.json`, capturas`t66-production-captcha-*`). Chave oficial de teste permaneceu apenas local. Nenhuma nova entrega real alegada nem mensagem enviada a inscritos.
 
 #### T6.7 [codex/GPT Luna] Retomar documentação
 
 **Depende:** estabilização e rollout. Absorve T5.4; sete documentos canônicos/AGENTS, sem plano concorrente. Haiku apenas se designado/ponte disponível, não etapa adicional obrigatória.
 
-- [ ] Estado, nomes/rotas, layout, CAPTCHA reativo, evidências/deploy e limites coerentes; históricos rotulados, assets e contratos preservados.
+- [x] GPTLuna atualizou somente AGENTS e seis canônicos; Codex integrou correções de semântica public/off, histórico, capacidade/retencão e remontagem. Estado, nomes/rotas, layout, CAPTCHAglobal, evidências/deploy e limites coerentes; contratosF/S/N e assets preservados. Documentação local não implica novo deployment.
 
 #### T6.8 [codex + revisão independente] Conferir docs e árvore
 
 **Depende:** T6.7.
 
-- [ ] Links/diff/arquivos gerados/rastreabilidade verificados; nenhum segredo, cache, build ou referência privada incluído indevidamente.
+- [x] Revisão independente GPT `/root/review_t13_contracts` e ponte Sonnet, sessão`fe06d8c4-0a2d-44c3-8f99-a59163cb6c67`, modelo efetivo`claude-sonnet-5-5`: leitura inicial succeeded133s e follow-up succeeded24s. Corrigidos quatroP2 documentais: histórico de autorização/scheduler, guard de baseline sem promessa de geração obrigatória e retenção de canceladas já implementada. Rechecagens confirmaram resolvidos, sem P1/P2 residual no recorte; revisores não executaram testes/shell/serviços externos.
+- [x] Links/diff/arquivos gerados/rastreabilidade inspecionados porCodex:109links relativos e11âncoras válidos, zero destinos ausentes, conforme`t68-doc-check.json` em31/10 23:42UTC; scan limitado de padrões de segredo não é certificação. ContratosF01–F29/S/N preservados e244fontesweb iguais ao manifesto aprovado/publicado. Nenhum teste/build foi repetido por mudanças somente documentais GPT; gates da aplicação continuam os discriminados emT6.3/T6.4a.
 
 #### T6.9 [codex] Registrar entrega e pendências
 
 **Depende:** T6.8.
 
-- [ ] Aceite local, publicação e verificações registrados com limites; ensaio editorial real permanece PENDENTE por decisão deRenato, sem disparo alternativo nem arquivamento como plenamente concluído.
+- [x] Aceite local, publicação e verificações registrados com limites; ensaio editorial real permanece PENDENTE por decisão deRenato, sem disparo alternativo nem arquivamento como plenamente concluído. T6 concluída; plano global continua ativo pela pendênciaT5.3. Nenhum commitfinal/push/PR, billing/DNS/migração/Worker ou envio a inscritos nesta entrega.
 
-**Acompanhamento da emenda:** T6.1 em andamento; T6.2–T6.9 pendentes. T5.3b concluída localmente, sem publicação; T5.3c absorvida; documentação interrompida. Nenhum commitfinal/push/PR autorizado. Quando houver escrita Claude documental, os cinco gates obrigatórios continuam aplicáveis.
+**Acompanhamento da emenda:** T6.1–T6.9 concluídas, com aceite local explícito/publicação, documentação/revisões e limites de desempenho. T5.3b finalizada pelo contrato globalT6.4a; T5.3c absorvida/concluída; T5.4 documental concluída pela exceção GPT. EnsaioeditorialT5.3 segue pendente por decisão explícita; PLAN não arquivado. Nenhum commitfinal/push/PR autorizado. Novas escritas Claude continuam sujeitas aos cinco gates obrigatórios.
+
+**Autorização posterior de Git — 01/11/2026:** Renato instruiu “Perfeito, faça o commit dessas alterações e o push.” Autoriza o commit final do conjunto revisado e push normal de `main` para `origin`, incluindo os dez checkpoints WIP ancestrais locais, sem reescrever histórico ou criar PR. Esta instrução substitui a ausência de autorização Git registrada acima para a entrega de31/10; não altera o adiamento do ensaio editorial. Antes do commit: branch/destino e ancestralidade do main remoto conferidos via gh/Git, dry-run de staging e diff-stat inspecionados, scan limitado dos dez commits e árvore atual sem caminhos proibidos/padrões de segredo;244fontesweb permanecem iguais ao manifesto aprovado. `Cloudflare.png` contém somente a amostra visual do widget e não é asset do app. Gates da árvore já registrados são reutilizados, sem alegar nova rodada. Push pode acionar CI/integração Git existente; não autoriza configurações, billing/DNS, envio editorial ou código novo.
+
+**Evidência visual T6.3/T6.4:**32combinações de8rotas em1440/390 Claro/Escuro responderam200, semoverflow/pageerror/POSTaoapp (`t64-visual-summary.json`). Osquatroavisospúblicos e3Dforammedidos; headerem320/390/559/560/959/960/1100/1440 manteve proporçãooficial ealtura44/60, semcolisão.57PNGslocaisforamgerados, incluindo recortes e verificações extras; capturas deelementoslongos comUIfixa sobreposta foram corrigidas para finsdeinspeção, semalterarproduto. Pentestdesktopclaro/mobileescuro,parágrafoServiços,heroROSI,métodoCiberewidgetclaroinspecionadosporCodex. Espaços do painel/Pill não apresentaram bloqueante concreto. Fonte permanece igual ao build testado.
+
+**CAPTCHA oficial local:** chave pública detesteCloudflare, semsubmissãoformulário; iframe542×65 foi observado emdark e, apóscliquenoheader, emlight, comsuaURLdetemaeresuperfíciecoerentes (`t64-captcha-theme.json`/`t64-captcha-{dark,light}.png`). “Sucesso”nessewidgetindicasomentetestedeverificação, nãoentregareal; Store/destinoscontinuamisolados. NãoalterarSitekeyProduction.
+
+**Spotchecklaboratorial:** Lighthouse13.5/Chrome156 mobile412×823/CPU4x/slow4Gsimulado/escuro, buildproduçãooffem3101. HomeLCP3089,5/2565ms,TBT144/55ms,JS180934bytes; ROSILCP2879,5/3802ms,TBT470/535ms,JS317310bytes; CLS0. Duasamostrasporrota, semcertificação/INPdecampo. AmostraROSI2original2975ms/TBT471 foi retida, mas excluída do resumo por possível sobreposição comrecaptura; repetiçãoisolada justificadaregistradaem`t63-lighthouse-rosi-clean.json`. Variância alta: nãoatribuir3,8sao3Dsemprova, nemalegarausênciaderegressão. Meta2,5scontinuaNÃOatingida. ComparaçãoT5.1Home3154–3214/ROSI2971–2980 tambémcurta; JS+425/+417bytes (~0,24%/~0,13%). Resultadose limitesficamvisíveisnogatelocal, semnovo projeto deotimização. Servidoroff3101 encerradoapósspotcheck.
+
+**Histórico — prévia anterior a T6.4a, substituída pelo manifesto t64a:**244arquivosweb/4349868bytes, manifesto`t64-source-manifest.json` SHA256`9576c9a01fce8720d82df5887bd3d66928674af71613ac490aec2bd389ae7619`, baseWIP9e4b18d+fonteslocaissujas. Hashesincluemduasnovasrotas eexcluemasremovidas, arquivos.env/gerados/reparsepointsnãointegram. Typecheckfinalapósrestaurarnext-envpassou. Nenhumupload/deploydestaárvoreexecutadoantesdoOK; siteEZSNVGpermaneceinalterado. Próximopasso:gatehumanoT6.5.
 
 ## 7. Testes e matriz de validação
 
@@ -819,7 +856,7 @@ Em `web/`: `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `np
 | Consentimento | Não confirmado/cancelado não recebe; relatório não inscreve; segmento errado/incompleto bloqueia; resultado incerto não duplica. |
 | Quotas | Limites locais/marketing, concorrência, provedor429, diagnóstico independente; sem esgotamento real ou cobrança. |
 | Feedback | Estados 4.4, dados após falha, dupla submissão, retryAfter, anúncio/foco; nenhum aviso inicial padrão. |
-| Tema | SO claro/escuro, manual sobre SO, voltar a Sistema, reload/SPA, storage negado, bootstrap, hidratação/flash, foco/select nativo. |
+| Tema | SO claro/escuro até primeira escolha, Sol/Lua manual prevalece sobre SO, reload/SPA, storage negado, bootstrap, hidratação/flash, foco do botão44px; CAPTCHA acompanha html global inclusive em faixa localdark. SeletorSistema foi substituído pela decisão explícitaT5.3a. |
 | Gráficos | Hero/cards/faixas/fallback nos dois temas; pausa antes/depois, reduced-motion, hidden/offscreen/unmount, loops/GPU únicos. |
 | Copy | Hero literal, métodos de 4 etapas específicos e 5 gerais na Home, Cibersegurança sem privilégio visual de Pentest, newsletter sem horário/entrega garantidos. |
 | Dados privados | Corpo newsletter ausente do conjunto público; ferramentas sem respostas/resultados em rede/storage/log/URL. |
@@ -832,9 +869,9 @@ Contraste alvo 4,5:1 para texto e 3:1 para texto grande; medir cores reais e foc
 
 - [ ] D01–D19 refletidas ou exceção explícita; sem mudança silenciosa de requisito.
 - [ ] Gates A/B, revisão independente e aceite final registrados.
-- [ ] Alias mostra a árvore validada, modos/fluxos reais e feedback verdadeiro, não sucesso simulado.
+- [x] Alias mostra a árvore validada, modos/fluxos reais e feedback verdadeiro, não sucesso simulado; T6.6 registra as verificações e a distinção entre GET/widget e ensaio humano de entrega.
 - [ ] Consentimento, cotas e sigilo preservados por design; limitações reais sem certificação inventada.
-- [ ] Nenhum outro projeto/hospedagem/billing/segredo/email/PDF/edição alterado fora do escopo.
+- [x] Nenhum outro projeto/hospedagem/billing/segredo/email/PDF/edição alterado fora do escopo.
 
 ## 8. Riscos e rollback
 
@@ -855,6 +892,8 @@ Rollback de interface usa versão compatível/conferida, não snapshot antigo pr
 
 ## 9. Dependências reais da próxima execução
 
+**Estado em31/10 após T6.6:** gatesA/B/local aceitos, elegibilidade declarada pelo operador e rollout conferido; pendência operacional atual é o ensaio editorial explicitamente adiado. Lista abaixo preserva dependências da abertura do plano em30/10, com sua resolução rastreada nas tarefas, sem reabrir aprovações recebidas. Causa histórica do unavailable continua desconhecida, embora disponibilidade atual esteja comprovada.
+
 - Causa exata de unavailable ainda não determinada; não pedir segredos para resolvê-la.
 - Copy completa será produzida em T1.2; fatos legais faltantes exigem pergunta pontual, não preenchimento fictício.
 - Plano aprovado não significa tema claro aprovado: gate A é separado.
@@ -873,7 +912,8 @@ Rollback de interface usa versão compatível/conferida, não snapshot antigo pr
 | Fase2/gate A | Concluída e aceita em30/10/2026 | Renato aprovou o gate A e o avanço às internas;629 unitários e344 E2E/6 skips. |
 | Fase3/gate B | Concluída; gate B aceito em31/10/2026 com limites |650 unitários/build e414 E2E/6 skips; Renato aprovou o texto operacional e registro das pendências. |
 | Fase4 | T4.1/T4.2 concluídas localmente; T4.3 conferida para rollout |718unit/414E2E/6skips; revisão independente, configporpresença/readiness, confirmaçãooperador e elegibilidade registradas; entrega real continuaT5.3. |
-| Fase5 | T5.1/T5.2/T5.3a concluídas; T5.3 parcial, docsT5.4 autorizadas |DeploymentMCPEZSNVG noalias solicitado, public/off/catálogo/ícones/CAPTCHA reais conferidos; fluxosformuláriosconfirmadosporRenato. Ensaioeditorialreal adiadoexplicitamenteporcotaClaude; docsavançam, aceitefinal/arquivo pendentes. |
+| Fase5 | T5.1/T5.2/T5.3a–c/T5.4 concluídas; T5.3 editorial parcial | Public/off/catálogo/ícones/CAPTCHA reais conferidos; fluxosformuláriosconfirmadosporRenato. Ensaioeditorialreal adiadoexplicitamenteporcotaClaude, aceiteeditorial/arquivo pendentes. |
+| Fase6/emenda | T6.1–T6.9 concluídas/aceitas/publicadas e documentadas | Logo60/44, Home, painelPentest, rotascurtas/404antigas, aviso/artesferramentas e CAPTCHAglobal aceitos porRenato. GymUQN noalias confirmado;720unit e438E2E/14skips integrados, seguidos de gatesfocados globalfix eGET/browserprodução. Docs/revisão final concluídas; ensaioeditorial continua pendente. |
 
 Registrar por tarefa: responsável, arquivos, comandos/resultados, revisão e limitações; nunca segredos, lista de contatos ou corpos editoriais privados. Estado remoto citado é 30/10/2026 e deve ser revalidado antes de atuar.
 

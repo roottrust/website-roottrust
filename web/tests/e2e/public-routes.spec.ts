@@ -4,8 +4,8 @@ import { sortedEdicoes } from "../../src/features/newsletter/catalog";
 const ROUTES: [string, string][] = [
   ["/", "Root Trust — Confiabilidade com profundidade"],
   ["/servicos/ciberseguranca", "Cibersegurança para proteger o seu negócio · Root Trust"],
-  ["/servicos/infraestrutura-em-nuvem", "Infraestrutura em nuvem · Root Trust"],
-  ["/servicos/desenvolvimento-de-software", "Software e desenvolvimento sob medida · Root Trust"],
+  ["/servicos/infraestrutura", "Infraestrutura · Root Trust"],
+  ["/servicos/software", "Software e desenvolvimento sob medida · Root Trust"],
   ["/ferramentas/rosi", "ROSI: retorno de uma proteção adicional · Root Trust"],
   ["/ferramentas/shadow-ai", "Shadow AI: governança do uso de IA · Root Trust"],
   ["/ferramentas/divida-tecnica", "Dívida técnica: custo do tempo atribuído · Root Trust"],
@@ -54,6 +54,14 @@ test("initial no-integration notice phrase is absent from every route in default
   }
   const demo = await (await request.get("/newsletter")).text();
   expect(demo).toContain("Demonstração local");
+});
+
+test("removed service URLs return the native 404 without redirect", async ({ request }) => {
+  for (const path of ["/servicos/infraestrutura-em-nuvem", "/servicos/desenvolvimento-de-software"]) {
+    const response = await request.get(path, { maxRedirects: 0 });
+    expect(response.status(), path).toBe(404);
+    expect(response.headers().location, path).toBeUndefined();
+  }
 });
 
 test("arbitrary URL and invalid newsletter slug return HTTP 404 with the native page", async ({ request }) => {

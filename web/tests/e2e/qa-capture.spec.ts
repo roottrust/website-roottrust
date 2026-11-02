@@ -16,8 +16,8 @@ const EXPORTS_ROOT = fileURLToPath(new URL("../../../references/claude-design", 
 const TYPES: Record<string, string> = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg", ".woff2": "font/woff2", ".woff": "font/woff", ".ttf": "font/ttf", ".json": "application/json" };
 const PAIRS = [
   { id: "servico-ciberseguranca", route: "/servicos/ciberseguranca", file: "Servico Ciberseguranca.dc.html" },
-  { id: "servico-nuvem", route: "/servicos/infraestrutura-em-nuvem", file: "Servico Infraestrutura em nuvem.dc.html" },
-  { id: "servico-software", route: "/servicos/desenvolvimento-de-software", file: "Servico Software.dc.html" },
+  { id: "servico-nuvem", route: "/servicos/infraestrutura", file: "Servico Infraestrutura em nuvem.dc.html" },
+  { id: "servico-software", route: "/servicos/software", file: "Servico Software.dc.html" },
   { id: "ferramenta-rosi", route: "/ferramentas/rosi", file: "Ferramenta ROSI.dc.html" },
   { id: "ferramenta-shadow-ai", route: "/ferramentas/shadow-ai", file: "Ferramenta Shadow AI.dc.html" },
   { id: "ferramenta-divida-tecnica", route: "/ferramentas/divida-tecnica", file: "Ferramenta Divida tecnica.dc.html" },

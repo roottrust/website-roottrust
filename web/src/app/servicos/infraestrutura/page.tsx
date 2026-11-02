@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { ServicePage } from "@/features/services/ServicePage";
 import { getService } from "@/features/services/content";
 
-const service = getService("desenvolvimento-de-software");
+const service = getService("infraestrutura");
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: service.metaTitle, description: service.metaDescription };

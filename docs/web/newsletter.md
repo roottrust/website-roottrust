@@ -1,15 +1,18 @@
 # Newsletter Root Trust
 
-## Aceite operacional — 19/10/2026
+## Estado vigente — 31/10/2026
 
-**Piloto restrito concluído e aceito por Renato.** Diagnóstico, quatro relatórios, newsletter agendada com aprovação humana, publicação/envio, confirmação/cancelamento e backup/restauração foram validados. Renato é responsável pela conferência de cotas e pela guarda/descarte de backups, CSVs, mensagens e contatos nos provedores. Procedimento e limitações em [development.md](development.md#responsabilidade-operacional-e-limites-do-aceite). O [plano arquivado](../plans/integrations-pilot-completed.md#encerramento-e-aceite-final--19102026) preserva as evidências. Este estado prevalece sobre propostas e pendências históricas abaixo. Não há autorização de abertura pública nem alteração das allowlists.
+O alias publicado usa `BACKEND_MODE=public`, `FORM_MODE=off` e catálogo real. GETs confirmaram duas prévias reais disponíveis, arquivo HTTP 200 e páginas sem indexação. As amostras de três edições descritas neste documento pertencem à demonstração local, não ao catálogo atual de produção. `FORM_MODE=off` desativa apenas demo; formulários reais seguem readiness/defesas public. Metadados, fontes e abertura completa do primeiro parágrafo são públicos; corpos completos continuam privados. “Infraestrutura em nuvem” segue nome do filtro/pilar editorial, embora a rota de serviço atual seja `/servicos/infraestrutura`.
 
+Renato confirmou em 31/10 os fluxos de inscrição fora da antiga allowlist, confirmação, edição e cancelamento. O ensaio editorial real do fluxo Routine → aprovação humana → Broadcast/inbox/cancelamento está **pendente** por decisão explícita de Renato devido à cota Claude. Não executar rotina alternativa, API paga ou reenvio. O aceite do piloto de 19/10 e seu ensaio agendado são históricos e não substituem esse novo teste.
 
-**Complemento cloud T6.2-R3, 18/10/2026:** [prompt diário da Routine](../../web/ops/newsletter-routine/prompt.md) e [guia operacional](../../web/ops/newsletter-routine/README.md) implementam os contratos abaixo. Criação cloud, regeneração com mesmo ID/slug, recusa e aprovação de outra edição seguida de prévia/Broadcast/recebimento pelo usuário foram comprovados. Confirmação do trigger corrigida e ensaiada (D2). Prompt diário e agenda seg–sex08h Brasília salvos conforme confirmação do operador; primeira ocorrência automática confirmada em19/10, com aprovação humana, prévia publicada e e-mail recebido. Claude só pesquisa/redige rascunho; uma pessoa decide cada revisão. Sem pauta verificável, não há edição fictícia nem alerta Discord adicional. Network secret fica no proxy, sem HMAC no Claude; LinkedIn separado. Operação/aceite restantes no PLAN; validação técnica não aprova fatos editoriais.
+## Histórico operacional — piloto restrito, 19/10/2026
 
-**Histórico de ensaios manuais, 17/10/2026:** ensaio manual restrito validou rascunho e revisão no Discord, regeneração, recusa, aprovação, prévia pública, Broadcast e entrega individual completos, confirmação/reinscrição e cancelamento tanto pelo Resend quanto pelo site. Usuário conferiu os e-mails; webhook e sincronização de cancelamentos foram verificados no banco. ACK diferido atualiza o resultado sem depender de resposta API em 2,2 s; repetição de aprovação não criou novo envio. A rotina agendada ainda não foi configurada; cenários restantes e aceite completo continuam no [PLAN.md](../plans/integrations-pilot-completed.md). Não há CMS próprio ou abertura pública. Entrada: [README](README.md).
+O piloto restrito foi aceito após ensaios de confirmação/cancelamento, newsletter manual e agendada, aprovação humana, prévia/Broadcast/recebimento e backup/restauração. [Prompt diário da Routine](../../web/ops/newsletter-routine/prompt.md) e [guia operacional](../../web/ops/newsletter-routine/README.md) registram fluxo e evidências. Criação, regeneração, recusa e publicação foram verificadas; primeira ocorrência automática confirmada em 19/10, às 08h11 de Brasília. Claude só redige rascunho; uma pessoa decide cada revisão. Sem pauta verificável, não há edição fictícia. O segredo de rede fica no proxy, não no Claude; LinkedIn permanece separado.
 
-**Estado dos exports:** apresentação, arquivo e prévia estão preservados entre os 12 exports em `references/claude-design/`. A auditoria de 09/10 registra a análise estática e suas limitações. O Markdown editorial completo permanece em `references/editorial/`, fora do conteúdo publicável.
+**Histórico de ensaios manuais, 17/10/2026:** ensaio restrito validou rascunho e revisão no Discord, regeneração, recusa, aprovação, prévia pública, Broadcast e entrega individual, confirmação/reinscrição e cancelamento pelo Resend e pelo site. Usuário conferiu e-mails; webhook e sincronização de cancelamentos foram verificados no banco. ACK diferido atualiza o resultado; repetição da aprovação não criou novo envio. O primeiro ensaio agendado foi validado em 19/10, conforme registro acima. Esses testes históricos não substituem o novo ensaio editorial público pendente. Entrada: [README](README.md).
+
+**Estado dos exports:** apresentação, arquivo e prévia estão preservados entre os 12 exports em `references/claude-design/`. A auditoria de 09/10 registra a análise estática e suas limitações. Corpos editoriais completos permanecem privados em `references/editorial/`, fora do conteúdo publicável.
 
 ## 1. Objetivo e precedência
 
@@ -19,7 +22,7 @@ Precedência:
 
 1. Decisões N01–N11 e instruções posteriores do proprietário.
 2. Este briefing para estrutura/limites; [conteúdo](product.md) para copy compartilhada e [jornadas](product.md) para operação.
-3. [Home.dc.html](../../references/claude-design/Home.dc.html), com moldura/laterais, e [design web](design.md) para linguagem contida. N02 autoriza essa aplicação nestas internas, sem alterar o manual.
+3. [Home.dc.html](../../references/claude-design/Home.dc.html), com moldura/laterais, e [design web](design.md) para linguagem contida, em claro e escuro. N02 autoriza essa aplicação nestas páginas, sem alterar o manual.
 4. [Marca v2](../design/README.md), [guia](../design/brand-design.md) e [catálogo](../design/assets-catalog.md) para identidade/ativos.
 5. Referências externas como repertório, não especificações comerciais ou licença de assets.
 
@@ -39,7 +42,7 @@ Os quatro exports aprovados de ferramentas estão em `references/claude-design/`
 | N08 | Prévia | Primeiro parágrafo editorial completo da edição | Sem redação pública separada |
 | N09 | Assinante existente | Mesmo formulário, sem login/exposição de cadastro | Um caminho de pedido |
 | N10 | Após a prévia | Voltar ao arquivo | Sem relacionados/anterior/próxima |
-| N11 | Estados da jornada | Andamento e erro; pedido aceito no modo demo. Confirmação e cancelamento pertencem à operação futura (D10). | Revisão da jornada sem sucesso operacional fictício |
+| N11 | Estados da jornada | Registro da entrevista: andamento/erro e pedido aceito em demo; confirmação/cancelamento ainda futuros naquela data. Os fluxos reais foram implementados e ensaiados depois. | Revisão da jornada sem sucesso operacional fictício |
 
 N08 substitui a proposta de tópicos, implicação prática e fontes separadas na prévia. Dois parágrafos foram discutidos; **um** foi aprovado.
 
@@ -52,7 +55,7 @@ N08 substitui a proposta de tópicos, implicação prática e fontes separadas n
 - Site: prévia aberta. E-mail: completa após confirmação. Sem login, desbloqueio no site, paywall, desfoque ou texto integral escondido.
 - Pedido geral: iniciar entrega da edição aprovada mais recente após confirmação. Pedido em prévia: daquela edição; depois, próximos envios em dias úteis. Confirmar não comprova recebimento.
 - Newsletter independente dos relatórios; não anexar respostas/resultados de ferramentas à inscrição.
-- Histórico N01–N11: CMS externo e envio estavam pendentes. No piloto atual, Resend e Discord foram escolhidos no PLAN; pub/sub e painel próprio continuam fora do escopo.
+- Histórico N01–N11: CMS externo e envio estavam pendentes. Resend e Discord foram usados no piloto; o modo `public` está publicado. CMS próprio, pub/sub e painel próprio permanecem fora do escopo.
 
 ### Uma edição, um recorte público
 
@@ -64,9 +67,9 @@ Arquivo e amostra da landing usam o mesmo parágrafo. Não exigir outra lista p�
 
 ## Estado implementado
 
-As três rotas estão implementadas em Next, com três amostras demonstrativas sem indexação, arquivo com dois itens por página e filtro que reinicia na página 1. Histórico: o formulário exibia o aviso inicial de nenhum envio; por D12 a frase inicial exata de FormStatus foi removida (sem ocultar por CSS nem substituir), mantendo o aviso do modo demo e o feedback pós-tentativa honestos. O formulário preserva edição escolhida, ou seleciona a mais recente na origem geral. Metadata individual deriva somente da abertura pública, com corte de até 160 caracteres sem quebrar palavras.
+As três rotas estão implementadas em Next. Em demonstração local, há três amostras sem indexação e o arquivo tem dois itens por página; em produção, o catálogo real retornou duas prévias. Filtros reiniciam na página 1. A frase inicial exata de FormStatus foi removida; o aviso de demo e o feedback pós-tentativa permanecem honestos. O formulário preserva edição escolhida ou seleciona a mais recente na origem geral. Metadata individual deriva somente da abertura pública, com corte de até 160 caracteres sem quebrar palavras.
 
-Layout (D13): título, lista e card do arquivo usam 1200 px úteis em 1440, parágrafos de leitura em 65ch, grade a partir de 960 px e landing inalterada. O item Newsletter do header leva a `/newsletter` (D11). Aberturas e fontes são públicas; corpos completos permanecem fora da distribuição pública. Scan GPT atual (P9) de 430 arquivos e 11 âncoras privadas encontrou zero ocorrências, dentro desse recorte limitado (histórico: 230 arquivos). Slug inexistente bem formado retorna 404; UTF-8 malformado pode resultar em 500 antes da aplicação. [QA final](../../references/audits/final-qa.md). Confirmação, entrega e cancelamento foram ensaiados no piloto de17/10; CMS próprio não integra o escopo. Nenhum estado demo comprova essas operações.
+Layout (D13): título, lista e card do arquivo usam 1200 px úteis em 1440, parágrafos de leitura em 65ch, grade a partir de 960 px e landing inalterada. O item Newsletter do header leva a `/newsletter` (D11). Aberturas/fontes são públicas; corpos completos ficam fora da distribuição. Scan GPT P9 cobriu 430 arquivos e 11 âncoras privadas, com zero ocorrências nesse recorte — não é garantia universal. Slug inválido retorna 404; UTF-8 malformado pode resultar em 500 antes da aplicação. [QA final](../../references/audits/final-qa.md). Confirmação, entrega e cancelamento têm evidência humana do piloto e de 31/10; o ensaio editorial público permanece pendente.
 
 ## 4. Página A — apresentação/inscrição
 
@@ -138,15 +141,15 @@ Um padrão com intenção geral ou edição escolhida. Rótulo visível, teclado
 | Falha ao cancelar (futuro) | **Não foi possível concluir o cancelamento. Tente novamente.** |
 | Link de cancelamento inválido (futuro) | Orientar usar cancelamento em e-mail recebido; alternativa real é pendência operacional |
 
-No modo `FORM_MODE=demo`, somente andamento, pedido aceito aguardando confirmação e erro/retry são simulados. Os estados Confirmado, Entregue e Cancelado abaixo são requisitos de operação futura, não opções locais de demonstração. Não enviar ou persistir e-mails nem usar dados pessoais reais.
+No modo `FORM_MODE=demo`, somente andamento, pedido aceito aguardando confirmação e erro/retry são simulados; demo nunca envia. Confirmado, Entregue e Cancelado não são estados simuláveis localmente. Modos reais exigem configuração/readiness; o backend public/pilot decide cada fluxo mesmo com `FORM_MODE=off`. Não usar dados pessoais reais em demo.
 
-No piloto implementado: novos leitores confirmam por token único de 24 h antes de receber; assinantes já confirmados podem pedir a edição pelo mesmo formulário, com resposta pública idêntica. Ações repetidas têm limite e idempotência; jobs mortos exigem reconciliação. Cancelados só voltam após novo pedido e confirmação explícita. Cancelar newsletter não cancela relatório, autorização comercial separada ou outros dados. A operação real e os prazos de provedores ainda dependem de T6.2.
+Nos modos reais: novos leitores confirmam por token único de 24 h antes de receber; assinantes já confirmados podem pedir a edição pelo mesmo formulário, com resposta pública idêntica. Ações repetidas têm limite e idempotência; jobs mortos exigem reconciliação. Cancelados só voltam após novo pedido e confirmação explícita. Cancelar newsletter não cancela relatório, autorização comercial separada ou outros dados. Renato confirmou o fluxo de inscrição fora da antiga allowlist, confirmação, edição e cancelamento em 31/10; o ensaio editorial completo ainda está pendente.
 
-A copy de sucesso da Home **Inscrição confirmada. A próxima edição chega no próximo dia útil.** é registro aprovado do export. Não usar essa mensagem como sucesso do formulário demo: ela requer confirmação e envio operacionais, validados somente no piloto restrito; o pedido de inscrição isolado não os comprova.
+A copy de sucesso da Home **Inscrição confirmada. A próxima edição chega no próximo dia útil.** é registro aprovado do export. Não usar essa mensagem como sucesso de pedido ou demo: ela requer confirmação real; o pedido de inscrição isolado não comprova confirmação/entrega.
 
 ## 8. Visual e acessibilidade
 
-- **Escuro**; Baloo 2/Archivo, SVG negativo pronto, fundo #171717, painel #1D1D1D, contorno #3C3C3C, Superfície #F5F5F2 e acentos oficiais do export. Sem tema claro inventado.
+- **Claro e escuro**; Baloo 2/Archivo, assinatura oficial, tokens UI e acentos adaptados por tema, sem alterar as cores oficiais do manual.
 - Reutilizar cabeçalho/moldura/cantoneiras/botões/divisórias/rodapé. N02 autoriza decoração contida; não replicar hero G4 gigante.
 - ASCII existente pequeno na landing; arquivo/prévia com margens discretas, sem movimento atrás da leitura. Newsletter não exige Three.js novo.
 - Coluna de leitura proposta próxima de 65 caracteres por linha; corpo/entrelinha confortáveis, largura responsiva sem encolher fonte.
@@ -180,14 +183,14 @@ Consulta web da entrevista em 07/10/2026. Documentação do Claude/fontes editor
 
 ## Critérios de revisão e pendências de produção
 
-- Três páginas em pt-BR/tema escuro; landing, arquivo e prévia com composição e estados definidos acima.
+- Três páginas em pt-BR, claro/escuro; landing, arquivo e prévia com composição e estados definidos acima.
 - Arquivo com filtros, paginação e ordem decrescente; a prévia repete exatamente uma abertura editorial completa.
 - Pedido geral ou da edição escolhida permanece no mesmo formulário para leitores novos ou existentes.
 - Todos os estados demo são identificados e locais, sem rede ou persistência; pedido, confirmação e entrega são estados distintos.
 - Revisar desktop, mobile, 320 px, zoom, teclado, foco, labels, fallback e movimento antes de aceite.
-- CMS e envio, verificação do pedido histórico, duplicidade/reenvio, confirmação/cancelamento, finalidade/retenção/privacidade, responsável editorial em dias úteis, aprovação de cada edição, acessibilidade, desempenho e implantação ainda dependem de decisão/operação real.
+- O ensaio editorial de ponta a ponta com a Routine/Broadcast permanece pendente por decisão de Renato. Não é permitido concluir esse ensaio com edição antiga, disparo alternativo ou resultado incerto repetido. Limites jurídicos, retenção ampliada, cópias externas, acessibilidade/desempenho certificados também não foram comprovados.
 
-Fornecedor, endpoint/API e integrações não foram escolhidos. Esta documentação não comprova entrega de e-mail ou certificação.
+O fornecedor Resend e a infraestrutura do piloto foram usados; a publicação atual está em modo public, com catálogos reais. A documentação não certifica entrega contínua nem substitui o ensaio editorial pendente.
 
 
 

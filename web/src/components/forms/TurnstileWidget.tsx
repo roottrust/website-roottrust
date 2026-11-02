@@ -32,9 +32,9 @@ function loadScript(): Promise<TurnstileApi> {
 
 type WidgetTheme = "dark" | "light";
 
-// Read the form outside the widget surface: bands can override the page color-scheme.
-const surfaceTheme = (element: HTMLElement): WidgetTheme => {
-  const scheme = getComputedStyle(element).colorScheme;
+// The widget follows the page theme even inside a locally dark form or band.
+const pageTheme = (): WidgetTheme => {
+  const scheme = getComputedStyle(document.documentElement).colorScheme;
   return scheme.includes("light") && !scheme.includes("dark") ? "light" : "dark";
 };
 
@@ -79,10 +79,9 @@ export function TurnstileWidget({ siteKey, action, active, resetKey, statusId, o
   }, [active]);
 
   useEffect(() => {
-    const form = container.current?.closest("form");
-    if (!active || !form) return;
+    if (!active) return;
     const update = () => {
-      const next = surfaceTheme(form);
+      const next = pageTheme();
       if (targetTheme.current === next) return;
       if (targetTheme.current !== null) {
         generation.current += 1;
@@ -107,9 +106,7 @@ export function TurnstileWidget({ siteKey, action, active, resetKey, statusId, o
     const live = () => !cancelled && generation.current === currentGeneration;
     loadScript().then((api) => {
       if (!live() || !container.current) return;
-      const form = container.current.closest("form");
-      if (!form) return;
-      const theme = targetTheme.current ?? surfaceTheme(form);
+      const theme = targetTheme.current ?? pageTheme();
       widgetId.current = api.render(container.current, {
         sitekey: siteKey,
         action,

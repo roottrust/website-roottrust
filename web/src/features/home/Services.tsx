@@ -24,7 +24,7 @@ return (<section id="servicos" data-sec="servicos" data-screen-label="Serviços"
       <span className={(styles.eyebrow)}>Nossos serviços</span>
       <span className={(styles.eyebrowRule)}></span>
     </div>
-    <div className={(styles.sectionHeading)}>
+    <div className={(styles.sequenceHeading)}>
       <h2 className={(styles.sectionTitle)}>Três frentes. <span className={(styles.accentLine)}>Uma base.</span></h2>
       <p className={(styles.servicesIntroduction)}>Segurança, infraestrutura em nuvem e software que se conectam, para operações com ambientes complexos. O escopo de cada trabalho é definido em conversa.</p>
     </div>

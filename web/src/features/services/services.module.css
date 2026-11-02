@@ -25,7 +25,6 @@
 .cta:hover { background:var(--button-hover-bg); }
 .cta:active { transform:scale(0.98); }
 .cta:focus-visible { outline:2px solid var(--accent);outline-offset:3px; }
-.actionNote { max-width:460px;font:400 14px/1.5 var(--font-body);color:var(--text-muted); }
 .art { position:relative;min-width:0;width:100%;height:clamp(300px,38vw,500px); }
 
 .stack48,.stack40 { display:flex;flex-direction:column;gap:48px; }
@@ -52,22 +51,21 @@
 .check { font:700 15px/1 var(--font-display);color:var(--accent); }
 .label { margin:0;font:700 12px/1.4 var(--font-body);letter-spacing:0.18em;text-transform:uppercase;color:var(--text-muted); }
 
-.detail { border-top:1px dotted var(--rt-musgo); }
-.detail summary { cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:48px;padding:8px 0;font:600 16px/1.35 var(--font-display);list-style:none; }
-.detail summary::-webkit-details-marker { display:none; }
-.detail summary svg { flex:none;color:var(--accent); }
-.detail summary:focus-visible { outline:2px solid var(--accent);outline-offset:3px; }
-.detailBody { display:flex;flex-direction:column;gap:16px;padding:8px 0 4px; }
-.detailBody h4 { margin:0;font:700 20px/1.25 var(--font-display);text-wrap:balance; }
-.detailBody > p { margin:0;font:400 16px/1.55 var(--font-body);text-wrap:pretty; }
-.detailBlock { display:flex;flex-direction:column;gap:12px; }
+.pentest { margin-top:-20px;box-sizing:border-box;display:flex;flex-direction:column;gap:28px;padding:clamp(22px,2.4vw,32px);border-radius:12px;background:var(--panel);box-shadow:inset 0 0 0 1px var(--border); }
+.pentestGrid { display:grid;grid-template-columns:minmax(0,1fr);gap:28px 56px; }
+.pentestContext,.pentestDeliveries { min-width:0;display:flex;flex-direction:column;gap:16px; }
+.pentestContext h3 { margin:0;font:700 clamp(22px,2.2vw,28px)/1.15 var(--font-display);text-wrap:balance; }
+.pentestContext p { margin:0;font:400 16px/1.55 var(--font-body);text-wrap:pretty; }
+.pentestBand { display:flex;flex-direction:column;gap:14px;padding-top:24px;border-top:1px dotted var(--rt-musgo); }
 .detailList,.complements { margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px; }
+.complements { display:grid;grid-template-columns:minmax(0,1fr);gap:16px 32px; }
 .detailList li { display:flex;gap:14px;align-items:baseline;font:400 16px/1.5 var(--font-body); }
 .detailNumber { font:700 16px/1 var(--font-display);color:var(--accent); }
 .complements li { font:400 16px/1.5 var(--font-body); }
-.detailNotes { display:flex;flex-direction:column;gap:8px;padding-top:16px;border-top:1px dotted var(--rt-musgo); }
+.detailNotes { display:flex;flex-direction:column;gap:8px;padding-top:20px;border-top:1px dotted var(--rt-musgo); }
 .detailNotes p { margin:0;font:400 16px/1.55 var(--font-body);text-wrap:pretty; }
 .detailNotes .muted { font-size:14px;color:var(--text-muted); }
+@media (min-width:760px) { .pentestGrid { grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); } .complements { grid-template-columns:repeat(3,minmax(0,1fr)); } }
 
 .concepts { margin-top:20px;box-sizing:border-box;display:flex;flex-wrap:wrap;gap:12px 40px;padding:clamp(20px,2.4vw,28px);border-radius:12px;background:var(--panel);box-shadow:inset 0 0 0 1px var(--border); }
 .concepts dl { flex:1 1 280px;margin:0;display:flex;flex-direction:column;gap:6px; }
@@ -86,8 +84,7 @@
 .steps h3 { margin:0;font:700 22px/1.2 var(--font-display); }
 .stepNumber { margin-right:10px;font:700 13px/1 var(--font-body);letter-spacing:0.18em;color:var(--text-muted); }
 .steps p { margin:0;font:400 16px/1.55 var(--font-body);text-wrap:pretty; }
-.closingBlock { display:flex;flex-direction:column;align-items:flex-start;gap:20px;max-width:760px;padding-top:24px;border-top:1px dotted var(--rt-musgo); }
-.closing { margin:0;font:400 clamp(18px,1.8vw,22px)/1.5 var(--font-body);text-wrap:pretty; }
+.stageNote { display:flex;align-items:flex-start;max-width:760px;padding-top:24px; }
 
 .faqGrid { display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:40px 64px;align-items:start; }
 .faqHead { display:flex;flex-direction:column;gap:20px; }

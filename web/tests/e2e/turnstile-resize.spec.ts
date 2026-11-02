@@ -112,7 +112,7 @@ test(`Turnstile ${scenario.path}: largura integral, resize e tokens`, async ({ p
 });
 }
 
-test("Turnstile segue o sistema, respeita superfície local e descarta callbacks após desmontagem", async ({ page }) => {
+test("Turnstile segue o tema global mesmo em superfície oposta e descarta callbacks após desmontagem", async ({ page }) => {
   test.skip(process.env.TURNSTILE_FAKE_TEST !== "1", "Executar configuração dedicada com provedor simulado.");
   await page.route("**/api/**", (route) => route.abort());
   await page.route("https://**", (route) => route.abort());
@@ -129,21 +129,31 @@ test("Turnstile segue o sistema, respeita superfície local e descarta callbacks
   await page.goto("/");
   const form = page.getByRole("form", { name: "Assinar newsletter" });
   await form.getByLabel("Seu e-mail").fill("reader@example.com");
+  await form.evaluate((element) => { element.style.colorScheme = "dark"; });
+  const card = form.getByRole("group", { name: "Verificação de segurança" });
   const submit = form.locator('button[type="submit"]');
   const state = () => page.evaluate(() => (window as unknown as { __themeWidget: { renders: { theme: string }[]; removed: string[] } }).__themeWidget);
   await expect.poll(async () => (await state()).renders.length).toBe(1);
   await page.emulateMedia({ colorScheme: "light" });
   await expect.poll(async () => (await state()).renders.length).toBe(2);
   expect((await state()).renders.map(item => item.theme)).toEqual(["dark", "light"]);
+  await expect(card).toHaveAttribute("data-widget-theme", "light");
+  expect(await form.evaluate(element => getComputedStyle(element).colorScheme)).toBe("dark");
+  expect(await card.evaluate(element => getComputedStyle(element).backgroundColor)).toBe("rgb(255, 255, 255)");
   await page.evaluate(() => (window as unknown as { __themeWidget: { renders: { callback: (token: string) => void }[] } }).__themeWidget.renders[1].callback("fresh"));
   await expect(submit).toBeEnabled();
   await form.evaluate((element) => { element.style.colorScheme = "light"; });
   await page.emulateMedia({ colorScheme: "dark" });
-  await page.waitForTimeout(100);
-  expect((await state()).renders).toHaveLength(2);
+  await expect.poll(async () => (await state()).renders.length).toBe(3);
+  expect((await state()).renders[2].theme).toBe("dark");
+  await expect(card).toHaveAttribute("data-widget-theme", "dark");
+  await expect(submit).toBeDisabled();
+  await page.evaluate(() => (window as unknown as { __themeWidget: { renders: { callback: (token: string) => void }[] } }).__themeWidget.renders[1].callback("obsolete-theme"));
+  await expect(submit).toBeDisabled();
+  await page.evaluate(() => (window as unknown as { __themeWidget: { renders: { callback: (token: string) => void }[] } }).__themeWidget.renders[2].callback("global-dark"));
   await expect(submit).toBeEnabled();
   await page.getByRole("link", { name: /Privacidade/ }).first().click();
-  await expect.poll(async () => (await state()).removed.length).toBe(2);
-  await page.evaluate(() => (window as unknown as { __themeWidget: { renders: { callback: (token: string) => void }[] } }).__themeWidget.renders[1].callback("after-unmount"));
-  expect((await state()).renders).toHaveLength(2);
+  await expect.poll(async () => (await state()).removed.length).toBe(3);
+  await page.evaluate(() => (window as unknown as { __themeWidget: { renders: { callback: (token: string) => void }[] } }).__themeWidget.renders[2].callback("after-unmount"));
+  expect((await state()).renders).toHaveLength(3);
 });
