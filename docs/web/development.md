@@ -122,6 +122,8 @@ npm run build
 npm run start
 ```
 
+`npm run build` usa webpack (`next build --webpack`): o host de build da Hostinger não tem GLIBC 2.29, o SWC nativo não carrega e o Turbopack exige bindings nativos; o painel não permite alterar o comando de build. `npm run build:turbopack` mantém o build Turbopack para uso local. Os gates e o E2E validam o build webpack, o mesmo publicado.
+
 Para testes de navegador, instalar o browser correspondente uma vez com `npx playwright install chromium firefox webkit`, executar `npm run build` e depois `npm run test:e2e`. O runner inicia e encerra duas instâncias do mesmo build: porta 3100 com `FORM_MODE=demo`, porta 3101 sem simulação. Não reutiliza servidor existente. Nesta fundação, `force-dynamic` permite resolver o modo exclusivamente no servidor em cada request; parâmetros públicos não controlam a simulação. Para desenvolvimento manual demo, definir `$env:FORM_MODE='demo'` antes de `npm run dev`; retirar a variável restaura o modo indisponível após reiniciar o processo.
 
 Verificar `npm audit` e `npm audit --omit=dev`. Medição histórica de 11/10/2026 (não é audit atual): o audit de produção retornou zero advisories; o audit completo retornou cinco high na cadeia de desenvolvimento; a cadeia de desenvolvimento ESLint/fast-glob/micromatch/braces tem GHSA-vfj7-8cjw-p6xm sem patch publicado. Não executar correções `--force` nem declarar ausência de risco. Rechecagem antes de cada publicação. No preflight de 17/10/2026, advisories oficiais de 14/10 exigiram atualizar Next para 16.4.2 (correções em 16.4.1) e alinhar React/React DOM a 19.3.1; npm audit de produção sozinho havia retornado zero na versão antiga. Evidências e gates desta atualização no PLAN.md.
