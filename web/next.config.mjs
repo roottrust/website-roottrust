@@ -1,6 +1,5 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+/** @type {import("next").NextConfig} */
+const nextConfig = {
   cacheComponents: false,
   poweredByHeader: false,
   // The report PDFs are read at runtime only by the internal jobs route; keep them out of every other trace.
